@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo | FANS</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f3f5f9;
+            color: #1d2939;
+        }
+
+        header {
+            background: #0052cc;
+            color: white;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-size: 26px;
+        }
+
+        header button {
+            background: white;
+            color: #0052cc;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .container {
+            width: 94%;
+            max-width: 900px;
+            margin: 30px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10);
+        }
+
+        h2 {
+            margin-bottom: 22px;
+            color: #003d99;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 13px;
+            margin-bottom: 18px;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .preview {
+            display: none;
+            margin-bottom: 18px;
+        }
+
+        .preview img {
+            width: 100%;
+            max-height: 350px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .publicar {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #0052cc;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .publicar:hover {
+            background: #003d99;
+        }
+
+        #mensagemSistema {
+            margin-top: 16px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>FANS | Administrador</h1>
+    <button id="sair">Sair</button>
+</header>
+
+<main class="container">
+
+    <section class="card">
+
+        <h2>Novo comunicado</h2>
+
+        <form id="formAviso">
+
+            <label for="titulo">Título</label>
+            <input type="text" id="titulo" required>
+
+            <label for="mensagem">Mensagem</label>
+            <textarea id="mensagem" required></textarea>
+
+            <label for="destinatario">Destinatário</label>
+            <select id="destinatario" required>
+                <option value="todos">Todos os AAs</option>
+                <option value="login-especifico">Login específico</option>
+            </select>
+
+            <div id="campoLogin" style="display: none;">
+                <label for="loginDestino">Login do AA</label>
+                <input type="text" id="loginDestino">
+            </div>
+
+            <label for="imagem">Imagem</label>
+            <input type="file" id="imagem" accept="image/*">
+
+            <div class="preview" id="preview">
+                <img id="imagemPreview" alt="Pré-visualização">
+            </div>
+
+            <button class="publicar" type="submit">Publicar aviso</button>
+
+            <p id="mensagemSistema"></p>
+
+        </form>
+
+    </section>
+
+</main>
+
+<script>
+    const perfil = localStorage.getItem("fansPerfil");
+
+    if (perfil !== "admin") {
+        window.location.href = "../login/page.html";
+    }
+
+    const destinatario = document.getElementById("destinatario");
+    const campoLogin = document.getElementById("campoLogin");
+    const imagem = document.getElementById("imagem");
+    const preview = document.getElementById("preview");
+    const imagemPreview = document.getElementById("imagemPreview");
+    const formulario = document.getElementById("formAviso");
+    const mensagemSistema = document.getElementById("mensagemSistema");
+
+    let imagemBase64 = "";
+
+    destinatario.addEventListener("change", function () {
+        campoLogin.style.display =
+            destinatario.value === "login-especifico" ? "block" : "none";
+    });
+
+    imagem.addEventListener("change", function () {
+        const arquivo = imagem.files[0];
+
+        if (!arquivo) {
+            imagemBase64 = "";
+            preview.style.display = "none";
+            return;
+        }
+
+        const leitor = new FileReader();
+
+        leitor.onload = function () {
+            imagemBase64 = leitor.result;
+            imagemPreview.src = imagemBase64;
+            preview.style.display = "block";
+        };
+
+        leitor.readAsDataURL(arquivo);
+    });
+
+    formulario.addEventListener("submit", function (evento) {
+        evento.preventDefault();
+
+        const titulo = document.getElementById("titulo").value.trim();
+        const mensagem = document.getElementById("mensagem").value.trim();
+        const tipoDestino = destinatario.value;
+        const loginDestino = document.getElementById("loginDestino").value.trim();
+
+        if (tipoDestino === "login-especifico" && !loginDestino) {
+            mensagemSistema.textContent = "Informe o login do destinatário.";
+            mensagemSistema.style.color = "#d92d20";
+            return;
+        }
+
+        const avisos = JSON.parse(localStorage.getItem("fansAvisos")) || [];
+
+        avisos.unshift({
+            id: Date.now(),
+            titulo,
+            mensagem,
+            imagem: imagemBase64,
+            destino: tipoDestino,
+            loginDestino,
+            data: new Date().toLocaleString("pt-BR")
+        });
+
+        localStorage.setItem("fansAvisos", JSON.stringify(avisos));
+
+        mensagemSistema.textContent = "Aviso publicado com sucesso.";
+        mensagemSistema.style.color = "#039855";
+
+        formulario.reset();
+        imagemBase64 = "";
+        preview.style.display = "none";
+        campoLogin.style.display = "none";
+    });
+
+    document.getElementById("sair").addEventListener("click", function () {
+        localStorage.removeItem("fansLogin");
+        localStorage.removeItem("fansPerfil");
+        window.location.href = "../login/page.html";
+    });
+</script>
+
+</body>
+</html>
