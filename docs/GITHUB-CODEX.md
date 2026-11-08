@@ -31,8 +31,8 @@ Prompt inicial:
 
 ## Railway
 Conecte o serviço Next.js ao repositório `luisgussamazon/baixardado`.
-Adicione PostgreSQL e configure `DATABASE_URL`, `OPENAI_API_KEY`,
-`BOOTSTRAP_SECRET`, `AI_MODEL`, `DAILY_MESSAGE_LIMIT`, `NEXT_PUBLIC_APP_NAME`.
+Adicione PostgreSQL e configure `DATABASE_URL`, `BOOTSTRAP_SECRET`,
+`DAILY_MESSAGE_LIMIT` e `NEXT_PUBLIC_APP_NAME`. A versão atual pesquisa na web sem OpenAI nem modelo baixado.
 Leia o README para detalhes. As credenciais nunca devem estar no Git.
 
 Este repositório está PUBLICAMENTE visível no momento desta preparação.

@@ -23,7 +23,6 @@ export async function POST(req:Request) {
     const data=await parseJson(req);
     if (!data || typeof data.description !== "string" || !data.description.trim() || data.description.includes("\0") || data.description.length > PROJECT_LIMITS.description)
       return apiError("Descreva o sistema em até 4.000 caracteres.");
-    if (!process.env.OPENAI_API_KEY) return apiError("OpenAI não configurada no servidor.",503);
     if (req.signal.aborted) return apiError("Solicitação cancelada.",400);
     const description=data.description.trim();
     const id=await reserveProject(user.id,description);

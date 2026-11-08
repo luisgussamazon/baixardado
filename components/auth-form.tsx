@@ -30,15 +30,15 @@ export default function AuthForm({mode}:{mode:"login"|"setup"}) {
     <div className="auth-layout">
       <section className="auth-intro">
         <div className="brand brand-large"><div className="brand-icon"><Sparkles size={21}/></div><span>A3X<span className="brand-accent"> AI</span></span></div>
-        <div className="hero-label"><span className="status-dot"/> INTELIGÊNCIA QUE ACOMPANHA VOCÊ</div>
+        <div className="hero-label"><span className="status-dot"/> PESQUISA COM FONTES, NO SEU RITMO</div>
         <h1>Um universo de<br/><em>ideias começa</em><br/>aqui.</h1>
-        <p>Crie, explore e encontre respostas com um assistente que acompanha o seu ritmo.</p>
-        <div className="auth-points"><span><ShieldCheck size={16}/> Histórico privado</span><span><Sparkles size={16}/> Respostas inteligentes</span></div>
+        <p>Pesquise, confira as fontes e organize suas descobertas no seu próprio espaço.</p>
+        <div className="auth-points"><span><ShieldCheck size={16}/> Histórico privado</span><span><Sparkles size={16}/> Fontes na web</span></div>
       </section>
       <section className="auth-card">
         <div className="auth-card-top"><div className="auth-lock"><LockKeyhole size={21}/></div><span>{isSetup?"PRIMEIRO ACESSO":"ACESSO SEGURO"}</span></div>
         <h2>{isSetup?"Crie sua conta":"Bem-vindo de volta"}</h2>
-        <p className="auth-subtitle">{isSetup?"Configure o primeiro usuário da sua IA.":"Entre para continuar suas conversas."}</p>
+        <p className="auth-subtitle">{isSetup?"Configure o primeiro acesso ao seu espaço de pesquisa.":"Entre para continuar suas pesquisas."}</p>
         <form onSubmit={submit} className="auth-form">
           <label htmlFor="email">E-mail</label>
           <div className="field"><Mail size={18}/><input id="email" type="email" autoComplete="email" placeholder="voce@exemplo.com" value={email} onChange={e=>setEmail(e.target.value)} required maxLength={254}/></div>

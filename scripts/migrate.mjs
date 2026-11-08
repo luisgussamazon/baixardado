@@ -10,7 +10,8 @@ if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL ausente. Configure a variável antes de rodar as migrações.');
   process.exit(1);
 }
-const client = new pg.Client({connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 8_000});
+const client = new pg.Client({connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 8_000,
+  statement_timeout: 60_000, query_timeout: 65_000});
 try {
   await client.connect();
   await client.query('SELECT pg_advisory_lock(90428100)');
@@ -31,7 +32,8 @@ try {
   }
   console.log('Banco atualizado.');
 } catch (error) {
-  console.error('Falha na migração:');
+  const code = typeof error?.code === 'string' && /^[A-Z0-9_]{2,40}$/.test(error.code) ? error.code : 'UNKNOWN';
+  console.error('Falha na migração. Código:', code, 'Verifique DATABASE_URL e a disponibilidade do Postgres.');
   process.exitCode = 1;
 } finally {
   try {await client.query('SELECT pg_advisory_unlock(90428100)');} catch {}

@@ -17,7 +17,7 @@ let work:typeof import("next/dist/server/app-render/work-async-storage.external"
 let CookieStore:typeof import("next/dist/server/web/spec-extension/cookies").ResponseCookies;
 const users=["00000000-0000-4000-8000-000000000001","00000000-0000-4000-8000-000000000002"];
 const sample={name:"Tarefas",summary:"Projeto de teste local",files:[{path:"README.md",content:"# Tarefas\nInstalação"},{path:"src/app.ts",content:'const exemplo = "olá";'}]};
-let prevKey:string|undefined,prevLimit:string|undefined,prevModel:string|undefined;
+let prevLimit:string|undefined;
 
 before(async()=>{
   Object.assign(globalThis,{AsyncLocalStorage});
@@ -53,12 +53,12 @@ beforeEach(async()=>{
   };
   mock.method(db,"query",query);
   mock.method(db,"connect",async()=>({query,release(){}}));
-  prevKey=process.env.OPENAI_API_KEY;prevLimit=process.env.DAILY_MESSAGE_LIMIT;prevModel=process.env.AI_MODEL;
-  process.env.OPENAI_API_KEY="placeholder-test-local";process.env.DAILY_MESSAGE_LIMIT="50";process.env.AI_MODEL="modelo-configurado-teste";
+  prevLimit=process.env.DAILY_MESSAGE_LIMIT;
+  process.env.DAILY_MESSAGE_LIMIT="50";
 });
 afterEach(()=>{
   mock.restoreAll();
-  for(const [key,value] of [["OPENAI_API_KEY",prevKey],["DAILY_MESSAGE_LIMIT",prevLimit],["AI_MODEL",prevModel]]){
+  for(const [key,value] of [["DAILY_MESSAGE_LIMIT",prevLimit]]){
     if(value===undefined)delete process.env[key!];else process.env[key!]=value;
   }
 });
@@ -71,14 +71,11 @@ function request(body:unknown={description:"Sistema de tarefas"},origin="https:/
   return new Request("https://app.example/api/projects",{method:"POST",headers:{host:"app.example",origin,"content-type":"application/json"},body:JSON.stringify(body)});
 }
 const context=(id:string)=>({params:Promise.resolve({id})});
-function provider(project:unknown=sample,terminal="response.completed",raw=false){
-  const fetch=mock.method(globalThis,"fetch",async(_url:unknown,init:RequestInit)=>{
-    const body=JSON.parse(String(init.body));
-    assert.equal(body.model,"modelo-configurado-teste");assert.equal(body.store,false);assert.equal(body.text.format.strict,true);
-    const events=[{type:"response.output_text.delta",delta:raw?String(project):JSON.stringify(project)},{type:terminal}];
-    return new Response(events.map(e=>`data: ${JSON.stringify(e)}\n\n`).join(""),{headers:{"content-type":"text/event-stream"}});
+function provider(){
+  return mock.method(globalThis,"fetch",async(url:unknown)=>{
+    assert.equal(new URL(String(url)).hostname,"www.bing.com");
+    return new Response('<rss><channel><item><title>Sistema de tarefas</title><link>https://example.com/documentacao</link><description>Referencia tecnica</description></item></channel></rss>');
   });
-  return fetch;
 }
 async function generate(){
   const res=await session(0,()=>projects.POST(request()));
@@ -103,7 +100,8 @@ test("geração válida persiste múltiplos arquivos e ZIP apenas para o proprie
   provider();
   const {id,text}=await generate();assert.match(text,/event: done/);
   const mine=await session(0,()=>detail.GET(request(),context(id)));assert.equal(mine.status,200);
-  assert.deepEqual((await mine.json()).project.files,sample.files);
+  const expected=(await mine.json()).project.files as typeof sample.files;
+  assert(expected.some(file=>file.path==="docs/pesquisa.md"&&file.content.includes("example.com")));
   assert.equal((await session(1,()=>detail.GET(request(),context(id)))).status,404);
   assert.deepEqual((await (await session(1,()=>projects.GET())).json()).projects,[]);
   assert.equal((await session(1,()=>download.GET(request(),context(id)))).status,404);
@@ -111,30 +109,18 @@ test("geração válida persiste múltiplos arquivos e ZIP apenas para o proprie
   const zip=await session(0,()=>download.GET(request(),context(id)));assert.equal(zip.status,200);
   assert.equal(zip.headers.get("content-type"),"application/zip");assert.match(zip.headers.get("cache-control")!,/no-store/);
   const files=unzipSync(new Uint8Array(await zip.arrayBuffer()));
-  for(const file of sample.files)assert.equal(strFromU8(files[file.path]),file.content);
+  for(const file of expected)assert.equal(strFromU8(files[file.path]),file.content);
   assert.equal((await session(1,()=>detail.DELETE(request(),context(id)))).status,409);
   assert.equal((await session(0,()=>detail.DELETE(request(),context(id)))).status,200);
   assert.equal((await session(0,()=>detail.GET(request(),context(id)))).status,404);
 });
 
-test("saída inválida, traversal, JSON quebrado e geração incompleta não liberam ZIP",async()=>{
-  for(const [output,terminal] of [
-    [{...sample,files:[{path:"../escape",content:"x"},sample.files[0]]},"response.completed"],
-    [{...sample,files:[{path:"a.ts",content:"x".repeat(33000)},sample.files[0]]},"response.completed"],
-    [sample,"response.incomplete"],[{nonsense:true},"response.completed"],
-    ["{","response.completed"],[sample,"response.refusal.done"],
-    [{...sample,files:[{path:"a.ts",content:"x".repeat(270000)},sample.files[0]]},"response.completed"],
-  ] as const){
-    provider(output,terminal,typeof output==="string");
-    const {id,text}=await generate();assert.match(text,/event: failure/);assert.doesNotMatch(text,/event: done/);
-    const saved=await pg.query<{status:string;files:unknown[]}>("SELECT status,files FROM programmer_projects WHERE id=$1",[id]);
-    assert.equal(saved.rows[0].status,"failed");assert.deepEqual(saved.rows[0].files,[]);
-    assert.equal((await session(0,()=>download.GET(request(),context(id)))).status,409);
-    mock.restoreAll();
-    // Restaura somente o transporte original; os adaptadores do banco precisam permanecer ativos.
-    const query=async(sql:string,params?:unknown[])=>{const r=await pg.query(sql,params);return {rows:r.rows,rowCount:r.affectedRows??r.rows.length};};
-    mock.method(db,"query",query);mock.method(db,"connect",async()=>({query,release(){}}));
-  }
+test("busca indisponivel nao libera projeto nem ZIP",async()=>{
+  mock.method(globalThis,"fetch",async()=>new Response("unavailable",{status:503}));
+  const {id,text}=await generate();assert.match(text,/event: failure/);assert.doesNotMatch(text,/event: done/);
+  const saved=await pg.query<{status:string;files:unknown[]}>("SELECT status,files FROM programmer_projects WHERE id=$1",[id]);
+  assert.equal(saved.rows[0].status,"failed");assert.deepEqual(saved.rows[0].files,[]);
+  assert.equal((await session(0,()=>download.GET(request(),context(id)))).status,409);
 });
 
 test("reserva respeita 100 projetos e recupera geração expirada sem gastar cota extra",async()=>{

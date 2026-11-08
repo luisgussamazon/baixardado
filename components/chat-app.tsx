@@ -13,10 +13,10 @@ import {
 type ChatSummary = {id:string;title:string;updated_at:string};
 type Message = {id:string;role:"user"|"assistant";content:string};
 const suggestions = [
-  {icon:Lightbulb, title:"Explorar ideias",text:"Me ajude a desenvolver uma ideia inovadora de aplicativo."},
-  {icon:FileText, title:"Criar conteúdo",text:"Crie um texto profissional e envolvente sobre um novo projeto."},
-  {icon:Code2, title:"Programar",text:"Me explique como organizar um projeto moderno em TypeScript."},
-  {icon:Zap, title:"Aumentar produtividade",text:"Monte um plano simples para organizar minhas prioridades da semana."},
+  {icon:Lightbulb, title:"Explorar ideias",text:"Exemplos de aplicativos e projetos inovadores."},
+  {icon:FileText, title:"Encontrar referências",text:"Guias de escrita profissional para apresentação de projetos."},
+  {icon:Code2, title:"Programar",text:"Documentação e organização de projetos TypeScript."},
+  {icon:Zap, title:"Aumentar produtividade",text:"Métodos de organização e planejamento semanal."},
 ];
 
 async function requestJson(url:string, init?:RequestInit) {
@@ -177,7 +177,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
     </aside>
     <main className="main-chat">
       <header className="chat-topbar">
-        <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/> Assistente inteligente</span></div></div>
+        <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/> Pesquisa web · sem modelo de IA</span></div></div>
         <ModeSwitch mode="chat" disabled={busy}/>
       </header>
       <div className="conversation-scroll">
@@ -186,8 +186,8 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
           <div className="welcome">
             <div className="welcome-symbol"><Sparkles size={28}/></div>
             <div className="eyebrow">SUA MENTE. NOVAS POSSIBILIDADES.</div>
-            <h1>O que vamos <span>criar hoje?</span></h1>
-            <p>Uma pergunta pode ser o começo de algo incrível.<br/>Estou aqui para ajudar você a ir mais longe.</p>
+            <h1>O que vamos <span>pesquisar hoje?</span></h1>
+            <p>Encontre resultados, trechos e links para conferir.<br/>Sem OpenAI, sem modelo baixado e sem respostas inventadas.</p>
             <div className="suggestion-grid">{suggestions.map(item=><button className="suggestion" key={item.title} onClick={()=>{void send(item.text);}} disabled={busy}><item.icon size={21}/><strong>{item.title}</strong><span>{item.text}</span><span className="suggestion-arrow">↗</span></button>)}</div>
           </div> : <div className="messages">
             {messages.map(m=><div key={m.id} className={`message-row ${m.role}`}>
@@ -203,7 +203,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
         {error&&<div className="chat-error" role="alert">{error}<button onClick={()=>setError("")} aria-label="Fechar erro"><X size={15}/></button></div>}
         <div className="composer"><textarea ref={textarea} rows={1} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void send();}}} placeholder="Pergunte o que quiser..." disabled={busy||loading} aria-label="Mensagem" maxLength={4000}/>
           <div className="composer-actions"><div className="composer-label"><Bot size={16}/> Pense além do óbvio</div><button className="send-btn" disabled={!input.trim()||busy||loading} title="Enviar mensagem" aria-label="Enviar mensagem" onClick={()=>void send()}>{busy?<span className="mini-spinner"/>:<ArrowUp size={20}/>}</button></div>
-        </div><p className="disclaimer">A IA pode cometer erros. Confira informações importantes antes de utilizá-las.</p>
+        </div><p className="disclaimer">A consulta é enviada ao buscador. Confira as fontes; trechos podem estar incompletos ou desatualizados.</p>
       </div>
     </main>
   </div>;

@@ -4,7 +4,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET() {
   let ready = false;
-  if (process.env.DATABASE_URL && process.env.OPENAI_API_KEY) {
+  if (process.env.DATABASE_URL) {
     try {
       const result = await db.query<{ready:boolean}>(`SELECT
         to_regclass('users') IS NOT NULL AND to_regclass('sessions') IS NOT NULL AND

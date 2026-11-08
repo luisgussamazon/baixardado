@@ -3,12 +3,10 @@ export const PROJECT_LIMITS = {
   files: 20,
   fileBytes: 32_768,
   totalBytes: 131_072,
-  outputBytes: 262_144,
   pathLength: 160,
   depth: 8,
   projects: 100,
   description: 4_000,
-  outputTokens: 8_000,
 } as const;
 
 export type ProjectFile = { path: string; content: string };
@@ -58,15 +56,3 @@ export function validateProject(value: unknown): GeneratedProject {
   }
   return {name:data.name.trim(),summary:data.summary.trim(),files};
 }
-
-export const projectOutputSchema = {
-  type: "object", additionalProperties: false,
-  required: ["name", "summary", "files"],
-  properties: {
-    name: {type:"string"}, summary: {type:"string"},
-    files: {type:"array",items:{
-      type:"object",additionalProperties:false,required:["path","content"],
-      properties:{path:{type:"string"},content:{type:"string"}},
-    }},
-  },
-};
