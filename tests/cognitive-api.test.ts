@@ -21,7 +21,7 @@ before(async()=>{
   ({workAsyncStorage:work}=await import("next/dist/server/app-render/work-async-storage.external"));
   ({ResponseCookies:CookieStore}=await import("next/dist/server/web/spec-extension/cookies"));
   pg=new PGlite();await pg.exec((await readFile("sql/001_initial.sql","utf8")).replace("CREATE EXTENSION IF NOT EXISTS pgcrypto;",""));
-  for(const name of ["002_programmer_projects.sql","003_knowledge_entries.sql","004_knowledge_seed_v1.sql","005_dialogue_seed_v2.sql","006_cognitive_engine.sql","006_cognitive_engine.sql"])await pg.exec(await readFile("sql/"+name,"utf8"));
+  for(const name of ["002_programmer_projects.sql","003_knowledge_entries.sql","004_knowledge_seed_v1.sql","005_dialogue_seed_v2.sql","006_cognitive_engine.sql","006_cognitive_engine.sql","007_local_model_bridge.sql"])await pg.exec(await readFile("sql/"+name,"utf8"));
   for(const [i,user] of users.entries()){
     await pg.query("INSERT INTO users(id,email,password_hash) VALUES($1,$2,'local-test')",[user,`cognitive-${i}@example.test`]);
     await pg.query("INSERT INTO sessions(token_hash,user_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '1 day')",[createHash("sha256").update(`cognitive-${i}`).digest("hex"),user]);

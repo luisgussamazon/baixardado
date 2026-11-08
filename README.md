@@ -1,12 +1,16 @@
 # A3X AI — pesquisa na web com histórico privado
 
+## Conversa com modelo aberto na sua máquina
+
+O Chat pode conversar com **Qwen3 4B Instruct** executado no computador autorizado da conta, sem OpenAI ou API paga de IA. A ponte faz somente conexões HTTPS de saída; o Ollama fica em localhost. Autorize o código em `/conectar`. O computador precisa continuar ligado e com a ponte em execução. Sem modelo online, permanece o motor por regras, identificado na interface. Veja [instalação, limites e privacidade](docs/MODELO-LOCAL.md).
+
 O [Laboratório de Autonomia Científica](docs/AUTONOMIA-CIENTIFICA.md) compara políticas de roteamento em um benchmark sintético offline. `/laboratorio` mostra resultados com login. `npm run research:study` gera relatório e proposta sem aplicar mudanças; `research:branch` requer confirmação para criar um worktree de revisão, sem commit, push ou deploy. O holdout ficou em 20/24 antes e depois: não houve demonstração de ganho generalizável.
 
-O [A3X Cognitive Engine](docs/A3X-COGNITIVE-ENGINE.md) adiciona personalidade executiva original, interpretação por regras, planos com estado persistido e memória privada aprovada em `/memoria`. Não usa modelos generativos. Para começar: `planeje estudar TypeScript`, depois `iniciar plano`. Fatos, preferências e correções precisam de aprovação explícita. O Programador exige confirmação antes de enviar sua descrição ao buscador.
+O [A3X Cognitive Engine](docs/A3X-COGNITIVE-ENGINE.md) mantém interpretação por regras, planos persistidos e memória privada aprovada em `/memoria`; a conversa generativa é uma camada opcional com o modelo local autorizado. Para começar um plano: `planeje estudar TypeScript`, depois `iniciar plano`. Fatos, preferências e correções precisam de aprovação explícita. O Programador exige confirmação antes de enviar sua descrição ao buscador.
 
 No Chat, `pesquise ...` prepara a consulta; confirme com `confirmo envio à web` para autorizar seu envio. A confirmação vale apenas para aquela consulta, por até dez minutos.
 
-Aplicação independente em Next.js 15, React 19, TypeScript e PostgreSQL. A versão atual **não usa OpenAI, outro modelo generativo nem download de modelos**. Pesquisa fontes públicas e organiza resultados e trechos, sem inventar sínteses. A3X AI é a marca do produto; não é um modelo treinado do zero.
+Aplicação independente em Next.js 15, React 19, TypeScript e PostgreSQL. **Não usa OpenAI nem APIs pagas de IA.** O modelo aberto é baixado e executado exclusivamente na máquina autorizada, não no Railway. Pode sintetizar trechos recuperados com fontes, mas também pode cometer erros. A3X AI é a marca do aplicativo; não é um modelo treinado do zero.
 
 O Chat também possui [conversa local por intenções e contexto](docs/CONVERSA-LOCAL.md): cumprimentos, nome no contexto recente, perguntas de continuidade, planejamento inicial e contas simples. Não envia essas mensagens à web. Escreva **pesquise** seguido do assunto para consultar fontes, ou confirme uma oferta de pesquisa. Não equivale a um modelo de linguagem e não compreende assuntos arbitrários.
 

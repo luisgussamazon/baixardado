@@ -1,8 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import SafeMarkdown from "@/components/safe-markdown";
 import ModeSwitch from "@/components/mode-switch";
 import Link from "next/link";
 import {
@@ -39,6 +38,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
   const [sidebar,setSidebar] = useState(false);
   const [collapsed,setCollapsed] = useState(false);
   const [copied,setCopied] = useState<string|null>(null);
+  const [modelOnline,setModelOnline]=useState(false);
   const skipNextLoad = useRef<string|null>(null);
   const sending = useRef(false);
   const chatEnd = useRef<HTMLDivElement|null>(null);
@@ -48,6 +48,10 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
     try {const data=await requestJson("/api/conversations");setChats(data.conversations);}catch(err){setError(err instanceof Error?err.message:"Erro de conexão.");}
   },[]);
   useEffect(()=>{void refreshChats();},[refreshChats]);
+  useEffect(()=>{
+    let active=true;const refresh=()=>{void requestJson("/api/local-model").then(data=>{if(active)setModelOnline(data.enabled&&data.devices.some((device:{online:boolean})=>device.online));}).catch(()=>{if(active)setModelOnline(false);});};
+    refresh();const timer=setInterval(refresh,15000);return()=>{active=false;clearInterval(timer);};
+  },[]);
   useEffect(()=>{
     if (!activeId) {setMessages([]);setLoading(false);return;}
     if (skipNextLoad.current===activeId) {skipNextLoad.current=null;return;}
@@ -172,6 +176,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
         </div></>}
       </div>
       <div className="sidebar-bottom">
+        {!collapsed&&<Link href="/conectar" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Conectar modelo do meu computador</Link>}
         {!collapsed&&<Link href="/laboratorio" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Laboratório científico · experimental</Link>}
         {!collapsed&&<div className="privacy-note"><ShieldCheck size={16}/><span>Conversas privadas e salvas</span></div>}
         <div className="profile"><div className="avatar">{email.slice(0,1).toUpperCase()}</div>{!collapsed&&<div className="profile-meta"><strong>Minha conta</strong><span title={email}>{email}</span></div>}<button className="icon-button logout" title="Sair" aria-label="Sair" onClick={signOut}><LogOut size={17}/></button></div>
@@ -179,7 +184,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
     </aside>
     <main className="main-chat">
       <header className="chat-topbar">
-        <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/> Conversa local e pesquisa sob pedido</span></div></div>
+        <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/>{modelOnline?" Qwen3 4B · no seu computador":" Modelo offline · respostas por regras"}</span></div></div>
         <div className="cognitive-nav"><ModeSwitch mode="chat" disabled={busy}/><Link href="/memoria" aria-disabled={busy} onClick={event=>{if(busy)event.preventDefault();}}>Minha memória</Link></div>
       </header>
       <div className="conversation-scroll">
@@ -195,7 +200,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
             {messages.map(m=><div key={m.id} className={`message-row ${m.role}`}>
               <div className={`message-avatar ${m.role}`}>{m.role==="assistant"?<Sparkles size={18}/>:email.charAt(0).toUpperCase()}</div>
               <div className="message-main"><div className="message-author">{m.role==="user"?"Você":appName}</div>
-                {m.content ? <div className="message-content">{m.role==="assistant"?<ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>:<p>{m.content}</p>}</div> : <div className="thinking"><span/><span/><span/></div>}
+                {m.content ? <div className="message-content">{m.role==="assistant"?<SafeMarkdown>{m.content}</SafeMarkdown>:<p>{m.content}</p>}</div> : <div className="thinking"><span/><span/><span/></div>}
                 {m.role==="assistant"&&!!m.content&&<button className="copy-btn" onClick={()=>void copyMessage(m.id,m.content)} title="Copiar resposta">{copied===m.id?<Check size={14}/>:<Copy size={14}/>} {copied===m.id?"Copiado":"Copiar"}</button>}
               </div>
             </div>)}<div ref={chatEnd}/></div>}

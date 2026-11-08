@@ -36,6 +36,7 @@ before(async()=>{
   const migration=await readFile("sql/003_knowledge_entries.sql","utf8");
   await pg.exec(migration);await pg.exec(migration);
   await pg.exec(await readFile("sql/006_cognitive_engine.sql","utf8"));
+  await pg.exec(await readFile("sql/007_local_model_bridge.sql","utf8"));
   assert.equal((await pg.query<{title:string}>("SELECT title FROM conversations")).rows[0].title,"Conversa anterior");
   rows=parseKnowledgeJsonl(await readFile(file,"utf8"));
   await importKnowledge({query},rows);

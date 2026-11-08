@@ -3,7 +3,7 @@ import { decodeHTML } from "entities";
 import { isIP } from "node:net";
 
 export type WebResult = {title:string;url:string;snippet:string};
-export type WebResearch = {source:"Bing"|"Wikipedia";results:WebResult[]};
+export type WebResearch = {source:"Bing"|"Wikipedia"|"Múltiplas fontes";results:WebResult[];queries?:string[];failedQueries?:number};
 export function publicSourceUrl(value:unknown):string|null {
   if(typeof value!=="string"||value.length>2000)return null;
   try {
@@ -71,8 +71,18 @@ export async function searchWeb(query:string,signal:AbortSignal):Promise<WebRese
   return {source:"Wikipedia",results};
 }
 const markdown=(value:string)=>value.replace(/[\\`*_{}\[\]<>#!|]/g,"\\$&");
+export async function searchMany(query:string,signal:AbortSignal):Promise<WebResearch>{
+  const queries=[...new Set(query.split(/[;\n]+/).map(term=>term.trim()).filter(Boolean))];
+  if(!queries.length||queries.length>3)throw new Error("Use de uma a três pesquisas separadas por ponto e vírgula.");
+  if(queries.length===1)return searchWeb(queries[0],signal);
+  const answers=await Promise.allSettled(queries.map(term=>searchWeb(term,signal)));
+  signal.throwIfAborted();const seen=new Set<string>(),results:WebResult[]=[];
+  for(const answer of answers)if(answer.status==="fulfilled")for(const item of answer.value.results)if(!seen.has(item.url)){seen.add(item.url);results.push(item);}
+  if(answers.every(answer=>answer.status==="rejected"))throw new Error("Buscas indisponíveis.");
+  return {source:"Múltiplas fontes",results:results.slice(0,12),queries,failedQueries:answers.filter(answer=>answer.status==="rejected").length};
+}
 export function researchMarkdown(research:WebResearch):string{
-  const intro=research.source==="Wikipedia"?"Busca enciclopédica na Wikipedia (alternativa à busca geral).":"Pesquisa na web via Bing.";
+  const intro=research.source==="Múltiplas fontes"?`Pesquisa pública em ${research.queries?.length??1} consultas, via Bing/Wikipedia. ${research.failedQueries?`${research.failedQueries} consulta(s) falharam.`:""}`:research.source==="Wikipedia"?"Busca enciclopédica na Wikipedia (alternativa à busca geral).":"Pesquisa na web via Bing.";
   if(!research.results.length)return `${intro}\n\nNão encontrei resultados para esta consulta. Tente termos mais curtos ou específicos. Nenhuma resposta foi inventada.`;
   return `${intro}\n\nResultados e trechos encontrados — sem síntese por modelo de IA:\n\n`+
     research.results.map((r,i)=>`### ${i+1}. ${markdown(r.title)}\n\n${markdown(r.snippet)}\n\n[Fonte: ${new URL(r.url).hostname}](${r.url})`).join("\n\n")+

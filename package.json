@@ -14,7 +14,8 @@
     "test": "tsx --tsconfig tests/tsconfig.json --test tests/*.test.ts tests/*.test.tsx",
     "research:study": "tsx scripts/research-study.ts",
     "research:plan": "tsx scripts/research-plan.ts",
-    "research:branch": "tsx scripts/research-branch.ts"
+    "research:branch": "tsx scripts/research-branch.ts",
+    "model:connect": "tsx scripts/model-worker.ts"
   },
   "engines": {
     "node": ">=22.0.0"
