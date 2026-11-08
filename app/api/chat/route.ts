@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { apiError, isJson, isUuid, parseJson } from "@/lib/http";
 import { getUser, validOrigin } from "@/lib/security";
 import { converse, type ConversationTurn } from "@/lib/local-conversation";
+import { shouldLookupPersonalKnowledge } from "@/lib/dialogue-knowledge";
 import { searchKnowledge, knowledgeMarkdown } from "@/lib/knowledge-search";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,9 +74,10 @@ export async function POST(req: Request) {
               const research = decision.kind==="search" ? await searchWeb(decision.query,abort.signal) : null;
               abort.signal.throwIfAborted();
               let unavailable=false;
-              const hits=decision.kind==="reply"&&decision.knowledgeQuery?
-                await searchKnowledge(decision.knowledgeQuery,user.id).catch(()=>{unavailable=true;return [];}):[];
-              full = decision.kind==="reply" ? (hits.length?knowledgeMarkdown(hits):
+              const hits=decision.kind==="reply"&&(decision.knowledgeQuery||shouldLookupPersonalKnowledge(message))?
+                await searchKnowledge(decision.knowledgeQuery??message,user.id).catch(()=>{unavailable=true;return [];}):[];
+              const relevantHits=decision.kind==="reply"&&!decision.knowledgeQuery?hits.filter(hit=>hit.scope==="private"):hits;
+              full = decision.kind==="reply" ? (relevantHits.length?knowledgeMarkdown(relevantHits):
                 (unavailable?"A base local está temporariamente indisponível.\n\n":"")+decision.text) : researchMarkdown(research!);
               send("delta",{text:full});
               await db.query("INSERT INTO messages(conversation_id,role,content) VALUES($1,'assistant',$2)",[id,full]);

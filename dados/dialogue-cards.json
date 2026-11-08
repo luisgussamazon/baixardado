@@ -1,0 +1,1095 @@
+[
+  {
+    "id": "visao-a3x",
+    "title": "O que é o A3X AI?",
+    "topic": "A3X AI",
+    "queries": [
+      "o que é a3x",
+      "como funciona o a3x ai",
+      "o que essa ia consegue fazer",
+      "me explica a ia própria",
+      "quero criar uma inteligencia artificial tipo chatgpt",
+      "criar inteligencia artificial propria",
+      "ia propria tipo chatgpt"
+    ],
+    "keywords": [
+      "plataforma",
+      "assistente",
+      "funcionalidades"
+    ],
+    "answer": "O A3X AI é seu aplicativo de assistência com Chat, pesquisa web e modo Programador. Ele usa dados próprios e regras para orientar; a versão atual não possui um modelo generativo.",
+    "details": "Ele recebe a mensagem, verifica regras de diálogo, busca respostas cadastradas e consulta a web somente quando você pede. Pode guardar histórico no PostgreSQL. Para gerar sistemas inéditos automaticamente com maior flexibilidade, seria necessário integrar um modelo de linguagem.",
+    "followup": "Você quer começar pelo Chat, pelo Programador ou por ensinar respostas?"
+  },
+  {
+    "id": "quero-ensinar",
+    "title": "Como ensinar o A3X AI",
+    "topic": "Conhecimento",
+    "queries": [
+      "quero ensinar minha ia",
+      "como ensinar o a3x ai",
+      "adicionar conhecimento à ia",
+      "cadastrar perguntas e respostas",
+      "ensinar o robô"
+    ],
+    "keywords": [
+      "aprender",
+      "treinar",
+      "ensinar"
+    ],
+    "answer": "Você pode cadastrar uma pergunta e sua resposta na área **Ensinar**, com palavras-chave e uma fonte opcional. O aplicativo poderá recuperar essas informações quando receber questões parecidas.",
+    "details": "Abra **Ensinar**, digite uma pergunta objetiva, escreva uma resposta que você revisou e salve. Teste no Chat com outras palavras. Se uma resposta não for encontrada, acrescente sinônimos na pergunta ou nas palavras-chave. Isso não modifica os pesos de um modelo.",
+    "followup": "Qual assunto você quer ensinar primeiro: programação, Railway ou seus processos?"
+  },
+  {
+    "id": "ia-responder",
+    "title": "Respostas espontâneas: o que significa",
+    "topic": "A3X AI",
+    "queries": [
+      "responder espontaneamente",
+      "quero que ela converse sozinha",
+      "interagir como você",
+      "conversar naturalmente",
+      "respostas espontaneas",
+      "como implementar respostas espontaneas",
+      "resposta espontanea",
+      "responder espontaneamente",
+      "como implementar resposta espontanea"
+    ],
+    "keywords": [
+      "conversa",
+      "natural",
+      "interação"
+    ],
+    "answer": "O A3X pode conversar de maneira mais contextual: reconhecer assuntos, responder conteúdos cadastrados e fazer perguntas de continuidade. Isso não equivale a raciocínio generativo ou a iniciar conversas sem que alguém interaja.",
+    "details": "O motor de diálogo identifica uma intenção, escolhe uma resposta relevante, consulta o histórico recente e oferece uma próxima pergunta. Caso não reconheça o assunto, admite a limitação e pode oferecer pesquisa web. Para iniciar mensagens no futuro seria preciso um agendador autorizado.",
+    "followup": "Quer experimentar um diálogo sobre a criação de um sistema?"
+  },
+  {
+    "id": "custo-zero",
+    "title": "Como usar sem API paga",
+    "topic": "Custos",
+    "queries": [
+      "não quero pagar openai",
+      "quero ia sem custo",
+      "sem api paga",
+      "ia gratuita",
+      "zero custo api",
+      "não quero pagar API e vou ensinar minha IA",
+      "quero sem api paga e ensinar conhecimento"
+    ],
+    "keywords": [
+      "custos",
+      "gratis",
+      "free"
+    ],
+    "answer": "A versão atual do A3X funciona sem uma API de geração de texto: usa regras, conhecimento e busca web pública. Isso evita taxa de API por pergunta, mas a hospedagem e o banco no Railway podem consumir recursos pagos.",
+    "details": "Separe os gastos: (1) uso de API de IA, que está desativada; (2) aplicativo Railway; (3) PostgreSQL; (4) busca externa, que hoje usa fontes públicas sem garantia de disponibilidade. Defina limites e monitore o painel Usage. Não presuma que um servidor público ficará gratuito para sempre.",
+    "followup": "Quer revisar os limites de uso do Railway ou as capacidades da versão sem modelo?"
+  },
+  {
+    "id": "api-openai",
+    "title": "Para que serve OPENAI_API_KEY?",
+    "topic": "Integrações",
+    "queries": [
+      "por que openai_api_key",
+      "pra que serve chave openai",
+      "api key da openai",
+      "remover openai",
+      "não quero openai"
+    ],
+    "keywords": [
+      "openai",
+      "chave",
+      "api"
+    ],
+    "answer": "`OPENAI_API_KEY` autorizava chamadas aos modelos OpenAI na versão anterior. A versão atual do A3X não a exige. Não coloque chaves em arquivos do GitHub.",
+    "details": "No Railway, confira o código implantado antes de remover variáveis antigas. Remover a variável não revoga uma chave que já foi emitida: para isso, revogue-a na conta do provedor. A assinatura do ChatGPT é separada da cobrança da API.",
+    "followup": "Quer confirmar quais variáveis ainda são necessárias no A3X AI?"
+  },
+  {
+    "id": "modelo-livre",
+    "title": "Modelo aberto vs regras",
+    "topic": "Modelos",
+    "queries": [
+      "modelo aberto é grátis",
+      "open source e ia",
+      "ollama sem pagar",
+      "qwen coder",
+      "modelos de codigo aberto"
+    ],
+    "keywords": [
+      "ollama",
+      "qwen",
+      "modelo",
+      "livre"
+    ],
+    "answer": "Um modelo aberto pode gerar respostas novas se for executado em hardware capaz de rodá-lo. O motor local por regras não executa esse tipo de modelo, então responde apenas às funções implementadas e aos conhecimentos cadastrados.",
+    "details": "Para incorporar um modelo aberto é preciso planejar CPU/GPU, memória, licença e latência. Hospedá-lo no Railway pode custar mais do que manter apenas o site. Sem o modelo, o A3X continua útil para consulta, orientação, pesquisa e templates.",
+    "followup": "Quer comparar recursos necessários ou manter o modo econômico?"
+  },
+  {
+    "id": "rag-conceito",
+    "title": "RAG e treinamento",
+    "topic": "Conhecimento",
+    "queries": [
+      "o que é rag",
+      "diferença rag treinamento",
+      "quero treinar com documentos",
+      "aprender com arquivos",
+      "base de conhecimento"
+    ],
+    "keywords": [
+      "rag",
+      "treinamento",
+      "documentos"
+    ],
+    "answer": "RAG é recuperar trechos de um acervo para fundamentar uma resposta. Não é treinamento dos pesos de um modelo. No A3X sem modelo, usamos recuperação textual e respostas cadastradas.",
+    "details": "Uma implementação segura separa conteúdos globais dos privados, registra fontes, permite correções e limita tamanhos. Para documentos longos, primeiro faça extração de texto, divisão em trechos e revisão dos direitos de uso. A recuperação sozinha não cria entendimento novo.",
+    "followup": "Quer montar sua primeira coleção de perguntas e respostas?"
+  },
+  {
+    "id": "vs-code",
+    "title": "Abrir projeto no VS Code",
+    "topic": "Ambiente",
+    "queries": [
+      "como abrir projeto no vs code",
+      "configurar vscode",
+      "abrir pasta a3x ai",
+      "visual studio code"
+    ],
+    "keywords": [
+      "vscode",
+      "pasta",
+      "workspace"
+    ],
+    "answer": "No VS Code, abra a pasta raiz do A3X AI, aquela que contém `package.json`, `app/`, `lib/` e `sql/`. É nela que os comandos de projeto devem ser executados.",
+    "details": "No menu **File → Open Folder**, selecione a pasta do repositório. Abra Terminal → New Terminal e execute `pwd` (PowerShell: `Get-Location`) para conferir o caminho. Para trabalhar com Codex, mantenha essa pasta como workspace ativo.",
+    "followup": "Quer verificar a conexão Git ou os comandos de teste?"
+  },
+  {
+    "id": "node-npm",
+    "title": "NPM não é reconhecido",
+    "topic": "Ambiente",
+    "queries": [
+      "npm não é reconhecido",
+      "npm install erro",
+      "node não encontrado",
+      "commandnotfound npm",
+      "powershell npm"
+    ],
+    "keywords": [
+      "node",
+      "npm",
+      "dependências"
+    ],
+    "answer": "Quando `npm` não é reconhecido, o Node.js provavelmente não está instalado no Windows ou não entrou no PATH. Para versionar código com Git, Node.js local não é obrigatório.",
+    "details": "Se precisar executar o app localmente, instale Node.js LTS, reinicie o VS Code e teste `node -v` e `npm.cmd -v`. Em PowerShell, `npm.cmd install` evita possíveis bloqueios de `npm.ps1`. No Railway, o build instala as dependências.",
+    "followup": "Você quer rodar localmente ou apenas publicar via GitHub e Railway?"
+  },
+  {
+    "id": "powershell-caminho",
+    "title": "Erro de pasta ou script inexistente",
+    "topic": "Ambiente",
+    "queries": [
+      "caminho não existe",
+      "script não encontrado",
+      "file .ps1 não existe",
+      "test-path false",
+      "cd caminho não existe"
+    ],
+    "keywords": [
+      "powershell",
+      "caminho",
+      "script"
+    ],
+    "answer": "Esse erro significa que o terminal está em uma pasta diferente da pasta que contém o arquivo, ou que o ZIP ainda não foi extraído. Primeiro localize o arquivo.",
+    "details": "Use `Get-Location` para ver a pasta atual e `Get-ChildItem -Recurse -Filter \"arquivo.ps1\"` para localizar o script. Depois entre na pasta raiz com `cd \"CAMINHO\"` e confira `Test-Path .\\scripts\\arquivo.ps1` antes de executá-lo. Não execute scripts de origem desconhecida.",
+    "followup": "Quer mostrar o caminho que o terminal está exibindo?"
+  },
+  {
+    "id": "github-vs-git",
+    "title": "Git e GitHub: diferença",
+    "topic": "GitHub",
+    "queries": [
+      "git é github",
+      "qual diferença git github",
+      "conectar git ao vscode",
+      "para que serve git",
+      "o que é repositório"
+    ],
+    "keywords": [
+      "git",
+      "github",
+      "repositório"
+    ],
+    "answer": "Git registra o histórico dos arquivos no seu computador. GitHub hospeda esse histórico para colaboração e integração com Railway e Codex.",
+    "details": "O fluxo é: editar → `git status` → revisar diff → `git add` → `git commit` → `git push`. O comando `git remote -v` mostra qual repositório remoto está conectado. Antes do push, confira que não há segredos no commit.",
+    "followup": "Quer que eu explique commit, push ou Pull Request?"
+  },
+  {
+    "id": "git-remote",
+    "title": "Conferir conexão GitHub",
+    "topic": "GitHub",
+    "queries": [
+      "git remote -v",
+      "conectar repositório ao vscode",
+      "ver se git conectado",
+      "origin main",
+      "verificar branch",
+      "conectar vs code com github",
+      "conectar o vscode ao github",
+      "conectar git ao vscode",
+      "conectar git com repositorio"
+    ],
+    "keywords": [
+      "origin",
+      "remote",
+      "status"
+    ],
+    "answer": "Na pasta do projeto, `git remote -v` mostra o endereço configurado para enviar e receber arquivos; `git status` mostra a branch e alterações pendentes.",
+    "details": "Se aparecer `Your branch is up to date with origin/main`, a branch local está sincronizada com o remoto naquele instante. Isso não garante que seu serviço Railway já tenha publicado o commit. Use `git log -1 --oneline` para ver a revisão local.",
+    "followup": "Quer conferir a branch atual ou enviar alterações?"
+  },
+  {
+    "id": "git-commit",
+    "title": "Como fazer commit e push",
+    "topic": "GitHub",
+    "queries": [
+      "como fazer commit",
+      "git push",
+      "publicar branch",
+      "enviar código ao github",
+      "salvar as alterações no git"
+    ],
+    "keywords": [
+      "commit",
+      "push",
+      "branch"
+    ],
+    "answer": "Um commit salva uma versão local; `git push` envia essa versão ao remoto. Antes de ambos, revise cuidadosamente os arquivos que serão publicados.",
+    "details": "Na branch de trabalho execute `git status`, `git add -A`, `git diff --cached --name-only`, `git diff --cached --check`, `git commit -m \"feat: descrever mudança\"` e `git push -u origin NOME-DA-BRANCH`. Nunca versione `.env.local`, chaves ou senhas.",
+    "followup": "Quer criar um Pull Request depois do push?"
+  },
+  {
+    "id": "git-pager",
+    "title": "Como sair do (END) no terminal",
+    "topic": "GitHub",
+    "queries": [
+      "tela end do git",
+      "git ficou no end",
+      "sair do less",
+      "como sair do terminal end"
+    ],
+    "keywords": [
+      "less",
+      "pager",
+      "terminal"
+    ],
+    "answer": "Quando aparece `(END)` após um comando Git, você está em um visualizador de páginas como `less`. Pressione **Q** para voltar ao terminal.",
+    "details": "Depois, execute `git status` para confirmar a situação do projeto. Isso não indica erro nem significa que alguma alteração foi aplicada. Você também pode executar `git --no-pager log -3` se quiser ver a saída sem o paginador.",
+    "followup": "Quer continuar com o commit ou conferir o remoto?"
+  },
+  {
+    "id": "pull-request",
+    "title": "Criar PR sem fazer merge",
+    "topic": "GitHub",
+    "queries": [
+      "como criar pull request",
+      "pr github sem merge",
+      "criar revisão para main",
+      "compare branch main",
+      "revisar mudanças"
+    ],
+    "keywords": [
+      "pull request",
+      "merge",
+      "revisão"
+    ],
+    "answer": "Pull Request é um pedido de revisão para incorporar alterações de uma branch a outra. No GitHub, confira **base: main** e **compare: sua branch**. Criar o PR não equivale a fazer merge.",
+    "details": "No GitHub selecione **base: main** e **compare: sua branch**. Revise os arquivos e clique em **Create pull request** (ou Draft). Não clique em **Merge pull request** até validar testes e deploy. Confirme se a base inclui correções anteriores.",
+    "followup": "Quer que eu explique como revisar a aba Files changed?"
+  },
+  {
+    "id": "backup-fans",
+    "title": "Preservar sistemas existentes",
+    "topic": "GitHub",
+    "queries": [
+      "substituir projeto e fazer backup",
+      "não mexer outros projetos",
+      "backup antes de substituir",
+      "repositório só para ia"
+    ],
+    "keywords": [
+      "backup",
+      "segurança",
+      "repositorio"
+    ],
+    "answer": "Antes de substituir um projeto, preserve uma branch ou tag de backup. O A3X deve permanecer isolado dos demais repositórios.",
+    "details": "Confira o alvo exato de cada operação Git, faça backup, leia o diff e evite `git push --force` sem justificativa. Um backup do código não substitui backup do banco de produção. Não copie credenciais para o novo repositório.",
+    "followup": "Quer verificar a branch de backup ou planejar o próximo deploy?"
+  },
+  {
+    "id": "codex",
+    "title": "O que o Codex faz",
+    "topic": "Desenvolvimento",
+    "queries": [
+      "codex para programar",
+      "codex vs chat",
+      "usar codex vscode",
+      "codex no projeto"
+    ],
+    "keywords": [
+      "codex",
+      "extensão",
+      "programação"
+    ],
+    "answer": "O Codex pode ler e modificar arquivos de um projeto no VS Code, propor mudanças, executar testes e preparar commits conforme suas permissões. Não confunda a extensão do Codex com o próprio motor de IA do A3X.",
+    "details": "Uma boa tarefa informa contexto, caminhos, comportamento esperado, testes, restrições de segurança e proibição de deploy automático. Faça o Codex ler `AGENTS.md` e revisar diffs antes de aceitar mudanças.",
+    "followup": "Quer um exemplo de tarefa para o Codex?"
+  },
+  {
+    "id": "railway-intro",
+    "title": "O que é Railway?",
+    "topic": "Railway",
+    "queries": [
+      "o que é railway",
+      "o que é ferrovia",
+      "para que serve railway",
+      "railway cloud"
+    ],
+    "keywords": [
+      "railway",
+      "hospedagem",
+      "ferrovia"
+    ],
+    "answer": "Railway é uma plataforma de hospedagem. O A3X pode usar Railway para executar o site Next.js e um serviço PostgreSQL, enquanto o GitHub guarda o código.",
+    "details": "No painel Railway, o serviço do aplicativo aponta para o repositório e branch configurados. Configure variáveis privadas em **Variables**, consulte **Deployments** para acompanhar publicações e **Deploy Logs** para diagnosticar falhas. Hospedagem pode ter custo.",
+    "followup": "Quer entender deploy, banco de dados ou domínio?"
+  },
+  {
+    "id": "railway-linked",
+    "title": "GitHub já conectado ao Railway",
+    "topic": "Railway",
+    "queries": [
+      "railway já conectado github",
+      "não preciso railway cli",
+      "railway deploy github",
+      "railway source branch"
+    ],
+    "keywords": [
+      "railway",
+      "github",
+      "deploy"
+    ],
+    "answer": "Se o serviço Railway já está vinculado ao repositório GitHub, normalmente não é necessário conectar o terminal via Railway CLI para publicar. Confirme a branch configurada no painel.",
+    "details": "Abra o serviço → Settings → Source e confira o repositório e a branch. A branch que contém testes novos pode ainda não ser a branch de produção. Faça merge apenas após revisão e deixe o Railway implantar conforme suas configurações de deploy.",
+    "followup": "Quer conferir a branch publicada ou analisar os logs?"
+  },
+  {
+    "id": "railway-failed",
+    "title": "Application failed to respond",
+    "topic": "Railway",
+    "queries": [
+      "application failed to respond",
+      "site no railway não abre",
+      "railway erro 502",
+      "meu site está online mas não abre",
+      "erro no domínio railway"
+    ],
+    "keywords": [
+      "erro",
+      "railway",
+      "deploy",
+      "502"
+    ],
+    "answer": "O domínio pode estar acessível enquanto o aplicativo não atende às solicitações. As causas comuns incluem processo que caiu, porta incorreta, erro de inicialização ou banco inacessível.",
+    "details": "Confira **Deploy Logs**, **Build Logs** e **Network Logs**; procure a primeira mensagem de erro. Verifique se o serviço escuta `0.0.0.0` na variável `PORT`, e se `/api/health` retorna 200. Não altere configurações às cegas: use a mensagem concreta dos logs.",
+    "followup": "Você consegue informar a primeira mensagem de erro dos Deploy Logs?"
+  },
+  {
+    "id": "railway-vars",
+    "title": "Variáveis necessárias no Railway",
+    "topic": "Railway",
+    "queries": [
+      "variáveis railway",
+      "0 variables",
+      "database_url railway",
+      "configurei variables",
+      "bootstrap_secret"
+    ],
+    "keywords": [
+      "env",
+      "variables",
+      "postgresql"
+    ],
+    "answer": "O A3X atual precisa de `DATABASE_URL` para o PostgreSQL e `BOOTSTRAP_SECRET` para a primeira conta. `DAILY_MESSAGE_LIMIT` e `NEXT_PUBLIC_APP_NAME` são opcionais. Ele não precisa de `OPENAI_API_KEY`.",
+    "details": "A URL deve apontar para um banco acessível pelo serviço Railway, normalmente como Reference Variable do PostgreSQL do mesmo ambiente. Um valor com `localhost` em produção normalmente é incorreto. Nunca copie a senha do banco em mensagens ou no código público.",
+    "followup": "Você já criou o serviço PostgreSQL no mesmo ambiente?"
+  },
+  {
+    "id": "postgres",
+    "title": "PostgreSQL e histórico",
+    "topic": "Banco de dados",
+    "queries": [
+      "postgresql do railway",
+      "como criar banco postgres",
+      "onde salva conversa",
+      "banco de dados a3x",
+      "postgres cloud"
+    ],
+    "keywords": [
+      "postgres",
+      "sql",
+      "histórico"
+    ],
+    "answer": "O PostgreSQL armazena contas, sessões, mensagens, projetos e conhecimentos ensinados. Ele deve ser persistente, acessado com credenciais privadas e ter backup antes de migrações.",
+    "details": "No Railway adicione um serviço PostgreSQL, depois configure `DATABASE_URL` no serviço do aplicativo como referência à variável do banco. Execute migrações incrementalmente e teste o endpoint `/api/health`. Nunca use o mesmo banco para experimentos destrutivos e produção.",
+    "followup": "Quer revisar a configuração de conexão ou migrações?"
+  },
+  {
+    "id": "migration",
+    "title": "Migrações sem perder histórico",
+    "topic": "Banco de dados",
+    "queries": [
+      "npm run db migrate",
+      "migração banco",
+      "criar tabela sem apagar",
+      "sql migrations",
+      "schema_migrations"
+    ],
+    "keywords": [
+      "sql",
+      "migrate",
+      "schema"
+    ],
+    "answer": "Migração é uma alteração versionada no banco: por exemplo, adicionar uma tabela sem apagar mensagens antigas. Na arquitetura A3X, o script lê arquivos `sql/*.sql` na ordem e registra o que aplicou.",
+    "details": "Antes de aplicar em produção, faça backup, teste a migração em banco descartável e verifique rollback e compatibilidade. Nunca edite uma migração já aplicada; crie a próxima numerada. Revise logs sem imprimir credenciais.",
+    "followup": "Quer saber como validar a migração de conhecimento?"
+  },
+  {
+    "id": "health",
+    "title": "Como testar /api/health",
+    "topic": "Railway",
+    "queries": [
+      "api health",
+      "healthcheck railway",
+      "site responde 503",
+      "verificar funcionamento api",
+      "status saúde aplicação"
+    ],
+    "keywords": [
+      "health",
+      "check",
+      "endpoint"
+    ],
+    "answer": "A rota `/api/health` verifica se a aplicação consegue alcançar o banco e se as tabelas essenciais existem. HTTP 200 indica que essas verificações passaram, não que toda a IA esteja funcionando.",
+    "details": "Se a rota retornar 503, investigue `DATABASE_URL`, migrações e logs. Teste também login, histórico, pesquisa, Programador e ZIP antes de considerar a publicação homologada.",
+    "followup": "Quer montar um checklist de homologação completo?"
+  },
+  {
+    "id": "port",
+    "title": "Porta e bind do Railway",
+    "topic": "Railway",
+    "queries": [
+      "porta 8080",
+      "railway port",
+      "variável port railway",
+      "escutar 0.0.0.0",
+      "porta errada"
+    ],
+    "keywords": [
+      "port",
+      "8080",
+      "networking"
+    ],
+    "answer": "O servidor precisa escutar a porta definida pela variável `PORT` e aceitar conexões em `0.0.0.0` dentro do contêiner. Uma divergência pode fazer o domínio retornar erro de conexão.",
+    "details": "Verifique o comando de start, as variáveis e os Deploy Logs. Se o domínio aponta para 8080, confirme que o aplicativo realmente escuta 8080 ou use a configuração automática recomendada pela plataforma.",
+    "followup": "Quer revisar o start command do serviço?"
+  },
+  {
+    "id": "railway-fees",
+    "title": "Como reduzir custos Railway",
+    "topic": "Custos",
+    "queries": [
+      "railway gratis",
+      "railway cobrar",
+      "controle custo railway",
+      "quanto custa hospedagem",
+      "limite uso railway"
+    ],
+    "keywords": [
+      "custo",
+      "railway",
+      "orçamento"
+    ],
+    "answer": "Mesmo sem API de IA paga, site e banco no Railway podem consumir CPU, RAM, disco e rede. Planos, créditos e limites mudam: consulte o painel de preços e uso antes de assumir custo zero.",
+    "details": "Configure alertas e limites de orçamento, mantenha poucas réplicas, use descanso por inatividade se adequado e monitore banco/armazenamento. Se atingir um limite rígido, o serviço pode ficar indisponível.",
+    "followup": "Quer estimar custo por mês ou revisar os alertas de uso?"
+  },
+  {
+    "id": "web-search",
+    "title": "Como funciona a busca web",
+    "topic": "Pesquisa",
+    "queries": [
+      "ela faz pesquisa na web",
+      "como pesquisar na internet",
+      "bing wikipedia no a3x",
+      "pesquise sobre",
+      "sem api de busca"
+    ],
+    "keywords": [
+      "bing",
+      "wikipedia",
+      "web"
+    ],
+    "answer": "O Chat usa o RSS público do Bing e, se necessário, consulta a Wikipédia em português. Ele mostra links e trechos com fonte; não sintetiza páginas como um modelo generativo.",
+    "details": "Escreva `Pesquise ...` seguido do tema. Confira data, fonte e contexto nas páginas originais. Serviços públicos podem mudar, bloquear consultas ou ter limitações de uso comercial; o A3X deve lidar com falhas sem inventar resultados.",
+    "followup": "Quer pesquisar um tema técnico ou melhorar a relevância?"
+  },
+  {
+    "id": "search-protection",
+    "title": "Fontes e proteção na web",
+    "topic": "Pesquisa",
+    "queries": [
+      "busca retornou erro",
+      "fontes confiáveis",
+      "validar urls pesquisa",
+      "não confiar em trechos",
+      "rss bloqueio"
+    ],
+    "keywords": [
+      "pesquisa",
+      "segurança",
+      "links"
+    ],
+    "answer": "Trechos de buscadores podem estar incompletos ou desatualizados. O A3X deve validar URLs, limitar tempo e tamanho da resposta e nunca executar conteúdo recuperado.",
+    "details": "Para temas importantes, use fontes oficiais e mostre ao usuário o link original. Se o buscador falhar, informe que a pesquisa falhou em vez de fabricar dados. Não tente contornar CAPTCHA nem restrições de acesso.",
+    "followup": "Quer melhorar os filtros de fontes?"
+  },
+  {
+    "id": "programador-modo",
+    "title": "O que faz o Modo Programador atual",
+    "topic": "Programador",
+    "queries": [
+      "modo programador faz sistema",
+      "criar sistema de estoque",
+      "gerar código automaticamente",
+      "programador tipo codex",
+      "faz código igual chatgpt"
+    ],
+    "keywords": [
+      "programar",
+      "geração",
+      "codigo"
+    ],
+    "answer": "Na versão sem modelo generativo, o Programador pesquisa referências e cria um template inicial com HTML, CSS, JavaScript e documentação. Ele **não implementa automaticamente** todas as regras de negócio de um sistema complexo.",
+    "details": "Para projetos reais, defina requisitos, autenticação, dados, fluxos, telas e critérios de teste. Use o Codex no VS Code para desenvolver e testar o código gerado ou planejado; o A3X atual serve como apoio e documentação.",
+    "followup": "Qual sistema você quer planejar: estoque, vendas ou outro?"
+  },
+  {
+    "id": "codigo-download",
+    "title": "Como baixar os projetos gerados",
+    "topic": "Programador",
+    "queries": [
+      "baixar zip do projeto",
+      "download arquivos código",
+      "árvore de pastas programador",
+      "salvar projeto zip"
+    ],
+    "keywords": [
+      "zip",
+      "arquivo",
+      "download"
+    ],
+    "answer": "No Modo Programador, os arquivos criados ficam associados à sua conta e podem ser vistos na árvore do projeto, copiados e baixados em ZIP.",
+    "details": "Abra um projeto salvo, revise os arquivos e use Download ZIP. Antes de executar código em seu computador, confira dependências e segurança. Os templates não incluem backend funcional automaticamente.",
+    "followup": "Quer orientação para abrir o ZIP no VS Code?"
+  },
+  {
+    "id": "security-secrets",
+    "title": "Proteção de senhas e chaves",
+    "topic": "Segurança",
+    "queries": [
+      "não enviar api key",
+      "segredos no github",
+      "senha em env",
+      "env local",
+      "proteger credenciais"
+    ],
+    "keywords": [
+      "segurança",
+      "token",
+      "senha"
+    ],
+    "answer": "Segredos nunca devem entrar em commits, exemplos reais ou mensagens públicas. Use variáveis de ambiente no Railway e `.env.local` ignorado pelo Git.",
+    "details": "Antes do push execute `git diff --cached --name-only`, confira `.gitignore`, e, se uma chave vazou, revogue-a e gere uma nova. Se necessário, limpe o histórico de Git com apoio especializado.",
+    "followup": "Quer revisar seu `.gitignore` ou a configuração de variáveis?"
+  },
+  {
+    "id": "auth",
+    "title": "Como funciona o login",
+    "topic": "Segurança",
+    "queries": [
+      "login no a3x",
+      "criar primeira conta",
+      "bootstrap secret",
+      "setup primeira conta",
+      "senha do painel"
+    ],
+    "keywords": [
+      "login",
+      "setup",
+      "sessão"
+    ],
+    "answer": "O A3X usa sessões privadas e senhas protegidas por hash. A primeira conta é criada em `/setup`, autorizada por `BOOTSTRAP_SECRET`, e o cadastro inicial é bloqueado após a primeira conta existir.",
+    "details": "Nunca exponha `BOOTSTRAP_SECRET` na web ou no GitHub. Use HTTPS, cookies seguros, limites de tentativa e autorização por proprietário em todas as rotas privadas. Depois do cadastro inicial, avalie remover a variável do ambiente.",
+    "followup": "Quer testar o login ou conferir as sessões?"
+  },
+  {
+    "id": "historico",
+    "title": "Histórico privado de conversas",
+    "topic": "Chat",
+    "queries": [
+      "guardar conversas",
+      "memória do chat",
+      "histórico de mensagens",
+      "voltar conversa anterior",
+      "salvar perguntas respostas"
+    ],
+    "keywords": [
+      "histórico",
+      "memória",
+      "mensagens"
+    ],
+    "answer": "O histórico de mensagens e projetos fica no PostgreSQL e é separado por usuário. O motor de conversa consulta parte do histórico recente para manter continuidade, mas não é memória ilimitada nem treinamento.",
+    "details": "Para continuidade, ele lê as mensagens anteriores daquela conversa. Se você excluir a conversa, os dados correspondentes são removidos pelo fluxo existente. Conhecimentos cadastrados na área Ensinar são independentes das conversas.",
+    "followup": "Quer ensinar uma resposta permanente ou consultar uma conversa antiga?"
+  },
+  {
+    "id": "testes",
+    "title": "Como testar o projeto",
+    "topic": "Desenvolvimento",
+    "queries": [
+      "npm test",
+      "typecheck build",
+      "testes automatizados",
+      "validar projeto",
+      "como saber se está pronto"
+    ],
+    "keywords": [
+      "testes",
+      "ci",
+      "build"
+    ],
+    "answer": "Testes unitários verificam partes do código, mas não substituem a homologação com o banco e o ambiente Railway. A versão só está pronta depois de testar fluxos reais.",
+    "details": "Com dependências instaladas, execute `npm test`, `npm run typecheck`, `npm run build` e `npm audit --audit-level=moderate`. Teste login, chat, pesquisa, Programador, exportação ZIP e migrações no ambiente de homologação.",
+    "followup": "Quer montar um checklist para publicar com segurança?"
+  },
+  {
+    "id": "ci",
+    "title": "O que é CI",
+    "topic": "Desenvolvimento",
+    "queries": [
+      "github actions ci",
+      "wait for ci",
+      "pipeline de teste",
+      "automação build"
+    ],
+    "keywords": [
+      "ci",
+      "github actions",
+      "pipeline"
+    ],
+    "answer": "CI executa verificações automaticamente após commits e Pull Requests. Ajuda a identificar regressões antes de liberar a branch principal.",
+    "details": "A CI do projeto pode instalar dependências e executar testes, TypeScript e build. Se falhar, abra os logs do job, corrija o problema e rode novamente. Passar CI não prova que o PostgreSQL real esteja configurado.",
+    "followup": "Quer ver como ler erros do GitHub Actions?"
+  },
+  {
+    "id": "arquitetura",
+    "title": "Arquitetura do aplicativo",
+    "topic": "A3X AI",
+    "queries": [
+      "estrutura do projeto",
+      "arquitetura nextjs",
+      "onde fica rota api",
+      "componentes e lib"
+    ],
+    "keywords": [
+      "nextjs",
+      "estrutura",
+      "app"
+    ],
+    "answer": "O A3X usa Next.js no frontend e no backend, com rotas em `app/api`, componentes em `components`, regras de negócio em `lib` e migrações em `sql`.",
+    "details": "A interface envia mensagens a `/api/chat`; o backend autentica, reserva cota, consulta o motor de diálogo/pesquisa e salva a resposta. O PostgreSQL persiste histórico e projetos. Nunca coloque senhas ou tokens no frontend.",
+    "followup": "Quer conhecer uma dessas pastas em detalhe?"
+  },
+  {
+    "id": "html-css-js",
+    "title": "HTML, CSS e JavaScript",
+    "topic": "Programação",
+    "queries": [
+      "o que é html css javascript",
+      "começar site do zero",
+      "criar página web",
+      "como funcionam html e css"
+    ],
+    "keywords": [
+      "html",
+      "css",
+      "javascript"
+    ],
+    "answer": "HTML define a estrutura da página, CSS controla aparência e JavaScript implementa interações no navegador. Juntos são a base de muitos sites.",
+    "details": "Comece com um `index.html`, um `style.css` e um `app.js`. Faça um formulário simples e teste no navegador. Para guardar dados com segurança ou autenticar usuários, acrescente um backend e banco de dados.",
+    "followup": "Quer ver um exemplo de formulário simples?"
+  },
+  {
+    "id": "typescript",
+    "title": "TypeScript para iniciantes",
+    "topic": "Programação",
+    "queries": [
+      "o que é typescript",
+      "typescript vs javascript",
+      "tipagem typescript",
+      "aprender typescript"
+    ],
+    "keywords": [
+      "ts",
+      "typescript",
+      "tipos"
+    ],
+    "answer": "TypeScript acrescenta verificação estática de tipos ao JavaScript, ajudando a detectar erros antes da execução. É utilizado no A3X AI.",
+    "details": "Comece tipando funções, objetos e respostas de API, e evite `any` sem justificativa. Execute `npm run typecheck` após mudanças. Tipos não substituem validação de entradas recebidas pela rede.",
+    "followup": "Quer exemplo de interface e função tipada?"
+  },
+  {
+    "id": "node-servidor",
+    "title": "O que é Node.js",
+    "topic": "Programação",
+    "queries": [
+      "para que serve nodejs",
+      "o que é node js",
+      "node no railway",
+      "nodejs backend"
+    ],
+    "keywords": [
+      "node",
+      "javascript",
+      "servidor"
+    ],
+    "answer": "Node.js executa JavaScript fora do navegador e é usado para iniciar o servidor Next.js do A3X no Railway.",
+    "details": "O servidor recebe solicitações HTTP, verifica autenticação, consulta PostgreSQL e produz respostas. Em produção, configure porta e endereço conforme o provedor. Não envie credenciais ao navegador.",
+    "followup": "Quer saber como o Next.js usa Node?"
+  },
+  {
+    "id": "nextjs",
+    "title": "O que é Next.js",
+    "topic": "Programação",
+    "queries": [
+      "o que é nextjs",
+      "next.js react",
+      "app router next",
+      "como criar projeto next"
+    ],
+    "keywords": [
+      "next",
+      "react",
+      "framework"
+    ],
+    "answer": "Next.js é um framework React que pode renderizar páginas e expor rotas de API. O A3X usa App Router.",
+    "details": "Arquivos `page.tsx` definem páginas e `route.ts` em `app/api` define endpoints. Separe funções de interface e lógica de servidor. Use controle de acesso em todas as rotas que manipulam dados privados.",
+    "followup": "Quer entender App Router ou componentes React?"
+  },
+  {
+    "id": "api-http",
+    "title": "APIs e rotas HTTP",
+    "topic": "Programação",
+    "queries": [
+      "o que é api",
+      "get post diferença",
+      "criar api",
+      "endpoint backend"
+    ],
+    "keywords": [
+      "api",
+      "http",
+      "endpoint"
+    ],
+    "answer": "API é uma interface para dois programas trocarem dados. Em aplicações web, GET costuma consultar e POST criar ou iniciar ações; autenticação e validação continuam necessárias.",
+    "details": "Defina formato de entrada, respostas de sucesso e erro, códigos HTTP e limites de tamanho. Nunca confie em dados vindos do navegador. Escreva testes de entradas inválidas, usuários não autorizados e falhas do banco.",
+    "followup": "Quer exemplo de uma rota GET ou POST?"
+  },
+  {
+    "id": "sql-basico",
+    "title": "SQL e segurança",
+    "topic": "Banco de dados",
+    "queries": [
+      "o que é sql",
+      "select insert update",
+      "sql injection",
+      "consultar tabela banco"
+    ],
+    "keywords": [
+      "sql",
+      "consulta",
+      "banco"
+    ],
+    "answer": "SQL permite consultar e modificar dados em um banco relacional. Para evitar injeção de SQL, use consultas parametrizadas, por exemplo `$1` no PostgreSQL.",
+    "details": "Evite concatenar entradas do usuário em comandos SQL. Configure índices para consultas frequentes e teste permissões. Antes de ALTER/DROP em produção, faça backup e planeje migração compatível.",
+    "followup": "Quer ver exemplo de SELECT parametrizado?"
+  },
+  {
+    "id": "debug",
+    "title": "Como investigar um erro",
+    "topic": "Desenvolvimento",
+    "queries": [
+      "meu código dá erro",
+      "erro no terminal",
+      "como corrigir bug",
+      "debug programação",
+      "aplicação travou"
+    ],
+    "keywords": [
+      "erro",
+      "bug",
+      "debug"
+    ],
+    "answer": "Para corrigir um erro, primeiro reproduza o problema e leia a mensagem completa. Identifique o primeiro erro relevante, não apenas o último efeito.",
+    "details": "Anote o comando usado, ambiente, comportamento esperado e observado. Reproduza localmente ou em homologação, faça uma alteração pequena e rode os testes. Ao pedir ajuda, remova senhas, tokens e dados privados dos logs.",
+    "followup": "Você pode informar a mensagem do erro sem dados sensíveis?"
+  },
+  {
+    "id": "planejamento",
+    "title": "Planejar um sistema do zero",
+    "topic": "Desenvolvimento",
+    "queries": [
+      "quero criar um sistema",
+      "desenvolver aplicativo",
+      "montar plataforma",
+      "planejar software do zero"
+    ],
+    "keywords": [
+      "sistema",
+      "projeto",
+      "mvp"
+    ],
+    "answer": "Um projeto começa por objetivo, público, dados e funcionalidades essenciais. Antes de escrever código, descreva o primeiro fluxo que precisa funcionar.",
+    "details": "Defina quem usa o sistema, o que poderá fazer, quais dados serão armazenados, quais telas existem e como validar. Transforme isso em um MVP pequeno. Faça testes e só depois adicione recursos avançados.",
+    "followup": "Qual sistema você quer criar e qual problema ele resolve?"
+  },
+  {
+    "id": "estoque",
+    "title": "Planejamento de sistema de estoque",
+    "topic": "Desenvolvimento",
+    "queries": [
+      "criar sistema de estoque",
+      "controle de estoque",
+      "aplicativo para inventário",
+      "estoque produtos entradas saídas"
+    ],
+    "keywords": [
+      "estoque",
+      "inventário",
+      "produtos"
+    ],
+    "answer": "Para um sistema de estoque, comece com cadastro de produtos, saldos e movimentações de entrada/saída. Cada movimentação precisa de data, autor e quantidade.",
+    "details": "Modelo inicial: tabelas `products`, `stock_movements` e `users`. Regras: impedir saldo inválido, registrar alterações e consultar histórico. Depois implemente permissões, relatórios e testes de concorrência. Isso é um plano, não um sistema pronto.",
+    "followup": "Você precisa controlar um depósito ou várias unidades?"
+  },
+  {
+    "id": "monitoramento",
+    "title": "Manter a IA online",
+    "topic": "Railway",
+    "queries": [
+      "site 24 horas",
+      "a3x online",
+      "manter aplicação disponível",
+      "monitorar disponibilidade"
+    ],
+    "keywords": [
+      "online",
+      "disponibilidade",
+      "railway"
+    ],
+    "answer": "Para manter o A3X acessível, monitore saúde do processo, banco, limites de memória e conta de hospedagem. Status online não prova que todas as páginas funcionam.",
+    "details": "Use healthcheck, logs, métricas e alertas. Teste `/chat`, login e consulta de dados. Se o provedor suspende recursos por inatividade, explique o atraso na primeira visita. Faça backup do banco.",
+    "followup": "Quer conferir o healthcheck ou as métricas?"
+  },
+  {
+    "id": "ensinar-correcao",
+    "title": "Corrigir uma resposta ensinada",
+    "topic": "Conhecimento",
+    "queries": [
+      "quero corrigir resposta",
+      "ela respondeu errado",
+      "editar conhecimento",
+      "apagar ensino",
+      "retificar resposta"
+    ],
+    "keywords": [
+      "editar",
+      "corrigir",
+      "ensinar"
+    ],
+    "answer": "Na área Ensinar você pode editar a resposta e as palavras-chave de um registro seu, ou excluí-lo. Isso modifica o acervo recuperável, não treina um modelo.",
+    "details": "Ao corrigir, mantenha o enunciado específico, inclua exemplos e verifique o resultado com uma pergunta diferente. Respostas privadas ficam associadas à sua conta. Para conhecimentos globais do pacote, edite o arquivo de dados e faça revisão por branch/PR.",
+    "followup": "Quer corrigir uma pergunta específica?"
+  },
+  {
+    "id": "dados-privados",
+    "title": "Ensino privado vs conhecimento global",
+    "topic": "Conhecimento",
+    "queries": [
+      "minhas respostas são privadas",
+      "quem vê meus dados ensinados",
+      "isolamento por usuário",
+      "dados do conhecimento"
+    ],
+    "keywords": [
+      "privacidade",
+      "segurança",
+      "usuários"
+    ],
+    "answer": "Os conhecimentos que você cadastrar na interface devem ficar vinculados à sua conta. Os materiais gerais incorporados ao código são compartilhados com todos os usuários da instalação.",
+    "details": "Não publique informações pessoais, senhas ou documentos sigilosos no repositório público. As rotas da área Ensinar verificam a sessão e filtram pelo identificador do proprietário no servidor; confira esse isolamento com testes.",
+    "followup": "Quer distinguir conteúdo público de conteúdo privado?"
+  },
+  {
+    "id": "sem-api-nao-codex",
+    "title": "Limites sem modelo generativo",
+    "topic": "A3X AI",
+    "queries": [
+      "vai programar igual você",
+      "igual ao chatgpt",
+      "gerar qualquer programa",
+      "sem ia pronta faz tudo",
+      "como criar programa completo",
+      "a3x consegue programar igual ao codex",
+      "a3x programa igual chatgpt",
+      "ia própria vai codar igual você"
+    ],
+    "keywords": [
+      "codex",
+      "chatgpt",
+      "programação"
+    ],
+    "answer": "Sem um modelo de linguagem ou um motor de geração específico, o A3X não interpreta qualquer pedido e não produz código inédito com qualidade equivalente ao Codex. Ele pode orientar, pesquisar, recuperar exemplos e montar templates.",
+    "details": "Para chegar mais perto de um agente programador, precisará de modelo generativo, ferramentas controladas de arquivos e testes, avaliação de segurança e infraestrutura adequada. Nada disso deve ser chamado de pronto se ainda não foi implementado.",
+    "followup": "Você prefere melhorar a base de conhecimento ou avaliar um modelo aberto futuramente?"
+  },
+  {
+    "id": "como-prosseguir",
+    "title": "O que fazer depois de publicar",
+    "topic": "Desenvolvimento",
+    "queries": [
+      "o que faço agora",
+      "proximo passo",
+      "e agora",
+      "como continuar projeto",
+      "o que falta"
+    ],
+    "keywords": [
+      "continuar",
+      "próximo",
+      "passos"
+    ],
+    "answer": "O melhor próximo passo depende do estágio: se ainda está no VS Code, valide testes e Git; se já está online, confirme banco, login, pesquisa e logs; se estiver ensinando a IA, teste recuperação e fonte.",
+    "details": "Para uma entrega segura: revise a branch, execute testes e build, faça PR, aplique migração em homologação com backup e só então publique a branch aprovada. A publicação não deve ocorrer automaticamente sem sua autorização.",
+    "followup": "Em qual etapa você está agora: código, GitHub, Railway ou ensino?"
+  },
+  {
+    "id": "pesquisa-fonte",
+    "title": "Como citar fontes",
+    "topic": "Pesquisa",
+    "queries": [
+      "mostrar fonte da resposta",
+      "resposta com link",
+      "referência confiável",
+      "como validar informação"
+    ],
+    "keywords": [
+      "fontes",
+      "referências",
+      "citação"
+    ],
+    "answer": "Sempre que uma resposta vier do acervo ou da web, indique sua origem. Conhecimento cadastrado manualmente pode informar título e URL, e pesquisa externa deve mostrar a página de origem.",
+    "details": "Uma fonte ajuda a conferir a informação, mas não garante que esteja atualizada. Compare com documentação oficial quando o assunto for técnico ou sensível. Não invente links nem datas.",
+    "followup": "Você quer adicionar fontes a um conhecimento?"
+  },
+  {
+    "id": "lei-fonte",
+    "title": "Licenças de dados importados",
+    "topic": "Conhecimento",
+    "queries": [
+      "posso copiar documentação",
+      "licença do conteúdo",
+      "direitos autorais da base",
+      "importar artigo na ia"
+    ],
+    "keywords": [
+      "licença",
+      "documentação",
+      "copyright"
+    ],
+    "answer": "Não copie indiscriminadamente textos protegidos para o acervo. Prefira exemplos e explicações autorais, e registre links e licenças quando usar materiais de terceiros.",
+    "details": "Para conteúdos próprios, informe autoria. Para conteúdo de terceiros, revise termos de uso, licenças, atribuição e limites de redistribuição. Links não substituem permissão para republicar textos integrais.",
+    "followup": "Quer organizar os registros por origem e licença?"
+  },
+  {
+    "id": "faixa-hospedagem",
+    "title": "Banco e API sem custos ocultos",
+    "topic": "Custos",
+    "queries": [
+      "quero tudo grátis na nuvem",
+      "não quero surpresa na conta",
+      "precisa de cartão",
+      "sem pagar railway"
+    ],
+    "keywords": [
+      "gratis",
+      "custo",
+      "nuvem"
+    ],
+    "answer": "Nenhuma API paga de geração de texto será usada neste pacote. Porém Railway, banco de dados, rede e armazenamento seguem a política de cobrança vigente da sua conta.",
+    "details": "Revise plano, créditos, alertas e limites rígidos no painel antes de disponibilizar para muitas pessoas. Evite jobs contínuos e armazenamento excessivo. Para testes, faça poucas consultas e acompanhe Usage.",
+    "followup": "Quer montar um orçamento de teste?"
+  },
+  {
+    "id": "relatorio-tecnico",
+    "title": "Relatório de revisão do Codex",
+    "topic": "Desenvolvimento",
+    "queries": [
+      "revisao tecnica codex",
+      "25 testes aprovados",
+      "relatorio tecnico",
+      "testes build passaram"
+    ],
+    "keywords": [
+      "relatório",
+      "testes",
+      "codex"
+    ],
+    "answer": "Um relatório do Codex é um registro útil do que foi feito, mas não substitui a verificação na branch e na implantação atual. Confirme resultados, versões e ambiente.",
+    "details": "Use `git status`, `git log`, os relatórios em `docs/` e o GitHub Actions. Valide banco, migrações, login e recursos no Railway. Um build aprovado não é confirmação de que o site público responde.",
+    "followup": "Quer revisar a checklist de homologação?"
+  },
+  {
+    "id": "como-usar-chat",
+    "title": "Como conversar com A3X",
+    "topic": "Chat",
+    "queries": [
+      "como eu pergunto para a3x",
+      "usar chat a3x",
+      "perguntas que entende",
+      "ajuda no chat"
+    ],
+    "keywords": [
+      "chat",
+      "conversa",
+      "perguntas"
+    ],
+    "answer": "Faça perguntas objetivas em português, por exemplo: “Como faço um commit?”, “O que é PostgreSQL?” ou “Como ensino uma resposta?”. Para pesquisa externa, escreva `Pesquise ...`.",
+    "details": "Se o A3X reconhecer o assunto, ele explica e propõe o próximo passo. Se não reconhecer, pode pedir esclarecimento. Você pode adicionar respostas novas na área Ensinar, sem alterar arquivos. Nem toda pergunta terá solução.",
+    "followup": "Quer testar uma pergunta sobre GitHub ou Railway?"
+  }
+]

@@ -1,3 +1,4 @@
+import { answerWithDialogueCards } from "./dialogue-knowledge";
 export type ConversationTurn = {role:"user"|"assistant";content:string};
 export type ConversationDecision = {kind:"reply";text:string;knowledgeQuery?:string}|{kind:"search";query:string};
 const normalize=(value:string)=>value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();
@@ -78,6 +79,8 @@ export function converse(message:string,history:ConversationTurn[]=[]):Conversat
   if(/^(tchau|ate mais|ate logo|boa noite vou dormir)[!. ]*$/.test(text))return reply(`Até mais${named}. Suas conversas ficam no seu histórico para você retomar depois.`);
   if(/\b(o que (voce )?(consegue|pode) fazer|me ajude|preciso de ajuda|ajuda|suas funcoes)\b/.test(text)&&text.length<140)
     return reply("Posso conversar por intenções, usar seu nome no contexto recente, organizar um objetivo em passos e fazer contas simples. Para consultar informações externas, escreva **pesquise** seguido do assunto. No Programador, você encontra pesquisa técnica e um template de arquivos; não gero sistemas completos sem um modelo.");
+  const libraryResponse=answerWithDialogueCards(message,turns);
+  if(libraryResponse)return reply(libraryResponse);
   const goal=message.trim().match(/^(?:quero|preciso|gostaria de)\s+(aprender|estudar|criar|construir|organizar|planejar)\s+([\s\S]+)$/i);
   if(goal){
     const subject=quote(goal[2]);

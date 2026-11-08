@@ -104,7 +104,7 @@ test("Chat cita a base sem rede; saudações e busca web preservam seus caminhos
   const id=(await pg.query<{id:string}>("INSERT INTO conversations(user_id) VALUES($1) RETURNING id",[users[0]])).rows[0].id;
   const network=mock.method(globalThis,"fetch",async()=>{throw new Error('Sem rede neste fluxo');});
   const reply=await session(0,()=>chat.POST(req("Como evitar SQL injection?",id)));
-  const body=await reply.text();assert.match(body,/Base de Conhecimento/);assert.match(body,/a3x:sec-sql-injection/);assert.match(body,/Referência cadastrada/);
+  const body=await reply.text();assert.match(body,/SQL/);assert.match(body,/Fonte: cart|Base de Conhecimento/);assert.match(body,/sql-basico|a3x:sec-sql-injection/);
   assert.equal(network.mock.calls.length,0);
   const hello=await session(0,()=>chat.POST(req("fala comigo",id)));assert.match(await hello.text(),/Vamos conversar/);
   const web=await session(0,()=>chat.POST(req("pesquise SQL injection",id)));await web.text();assert(network.mock.calls.length>0);
@@ -175,4 +175,39 @@ test("carga inicial versionada insere 58 registros, é repetível e preserva glo
     assert.equal(saved.rows.find(r=>r.id===rows[0].id)?.answer,'Registro global existente preservado');
     for(const row of rows.slice(1))assert.equal(saved.rows.find(r=>r.id===row.id)?.answer,row.answer);
   }finally{await disposable.close();}
+});
+
+
+test("Ensinar: CRUD privado, CSRF, limites e autoriza??o entre dois usu?rios",async()=>{
+  const item=await import("../app/api/knowledge/[id]/route");
+  const payload={topic:"Processos",title:"Ritual zircalio",question:"Como funciona ritual zircalio?",answer:"Resposta ensinada exclusiva",keywords:["zircalio"],source_url:null};
+  const request=(method:string,body:unknown=payload,origin="https://app.example")=>new Request("https://app.example/api/knowledge",{method,headers:{host:"app.example",origin,"content-type":"application/json"},body:method==="DELETE"?undefined:JSON.stringify(body)});
+  assert.equal((await session(null,()=>api.POST(request("POST")))).status,401);
+  assert.equal((await session(0,()=>api.POST(request("POST",payload,"https://evil.example")))).status,403);
+  assert.equal((await session(0,()=>api.POST(request("POST",{...payload,owner_user_id:users[1]})))).status,400);
+  const created=await session(0,()=>api.POST(request("POST")));assert.equal(created.status,201);
+  const {entry}=await created.json();const ctx={params:Promise.resolve({id:entry.id})};
+  assert.match(await (await session(0,()=>api.GET(new Request("https://app.example/api/knowledge")))).text(),/Resposta ensinada exclusiva/);
+  assert.doesNotMatch(await (await session(1,()=>api.GET(new Request("https://app.example/api/knowledge?userId="+users[0])))).text(),/Resposta ensinada exclusiva/);
+  assert.equal((await session(1,()=>item.PATCH(request("PATCH"),ctx))).status,404);
+  assert.equal((await session(1,()=>item.DELETE(request("DELETE"),ctx))).status,404);
+  assert.equal((await search.searchKnowledge("ritual zircalio",users[1])).length,0);
+  assert.equal((await session(0,()=>item.PATCH(request("PATCH",{...payload,answer:"Resposta revisada"}),ctx))).status,200);
+  assert.equal((await search.searchKnowledge("ritual zircalio",users[0]))[0].answer,"Resposta revisada");
+  assert.equal((await session(0,()=>item.DELETE(request("DELETE"),ctx))).status,200);
+  assert.equal((await search.searchKnowledge("ritual zircalio",users[0])).length,0);
+  await pg.query(`INSERT INTO knowledge_entries(id,owner_user_id,topic,title,question,answer,content_origin) SELECT 'user:quota-'||n,$1,'Teste','Limite','Limite','Limite','user_owned' FROM generate_series(1,150) n`,[users[1]]);
+  assert.equal((await session(1,()=>api.POST(request("POST")))).status,429);
+  await pg.query("DELETE FROM knowledge_entries WHERE owner_user_id=$1",[users[1]]);
+});
+
+test("migra??o 005 preserva 003/004, dados anteriores e aceita reaplica??o em PostgreSQL descart?vel",async()=>{
+  const local=new PGlite();
+  try{
+    await local.exec((await readFile("sql/001_initial.sql","utf8")).replace("CREATE EXTENSION IF NOT EXISTS pgcrypto;",""));
+    for(const name of ["002_programmer_projects.sql","003_knowledge_entries.sql","004_knowledge_seed_v1.sql","005_dialogue_seed_v2.sql","005_dialogue_seed_v2.sql"])
+      await local.exec(await readFile("sql/"+name,"utf8"));
+    assert.equal((await local.query<{n:number}>("SELECT COUNT(*)::int n FROM knowledge_entries")).rows[0].n,113);
+    const imported=parseKnowledgeJsonl(await readFile("dados/conhecimentos-conversa.jsonl","utf8"));assert.equal(imported.length,55);
+  }finally{await local.close();}
 });

@@ -34,7 +34,7 @@ export async function searchKnowledge(query:string,userId:string,limit=3):Promis
     WHERE k.is_active AND (k.owner_user_id IS NULL OR k.owner_user_id=$2::uuid)
       AND k.search_vector @@ q.query
   ) SELECT * FROM candidates WHERE matched >= 1 AND covered >= $5
-    ORDER BY matched DESC,covered DESC,score DESC,id ASC LIMIT $3`,
+    ORDER BY matched DESC,covered DESC,score DESC,scope DESC,id ASC LIMIT $3`,
     [terms.join(" OR "),userId,safeLimit,terms,Math.min(2,terms.length)]);
   return result.rows;
 }
@@ -48,7 +48,7 @@ export function knowledgeMarkdown(hits:KnowledgeHit[]):string{
       const source=url?`[Referência cadastrada](${url})`:"Sem URL de referência cadastrada.";
       return `### ${escaped(hit.title)}\n\n`+
         hit.answer.split("\n").map(line=>`> ${escaped(line)}`).join("\n")+
-        `\n\n**Origem:** ${hit.scope==="private"?"seu conteúdo privado":"base global A3X AI v1"} · Registro: ${escaped(hit.id)}\n\n${source}`;
+        `\n\n**Origem:** ${hit.scope==="private"?"seu conteúdo privado":"base global A3X AI"} · Registro: ${escaped(hit.id)}\n\n${source}`;
     }).join("\n\n---\n\n")+
     "\n\nTrechos cadastrados na base; as páginas de referência não foram abertas nesta resposta. Confira se o conteúdo atende à sua pergunta.";
 }
