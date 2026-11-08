@@ -1,0 +1,510 @@
+{
+  "train": [
+    {
+      "text": "pesquise segurança de JavaScript",
+      "intent": "web_search"
+    },
+    {
+      "text": "busque novidades de TypeScript",
+      "intent": "web_search"
+    },
+    {
+      "text": "pesquisa na internet sobre PostgreSQL",
+      "intent": "web_search"
+    },
+    {
+      "text": "busca na web por manuais Linux",
+      "intent": "web_search"
+    },
+    {
+      "text": "pesquise documentação de Railway",
+      "intent": "web_search"
+    },
+    {
+      "text": "busque na web por fontes confiáveis",
+      "intent": "web_search"
+    },
+    {
+      "text": "pesquise os padrões atuais",
+      "intent": "web_search"
+    },
+    {
+      "text": "pesquise sobre assuntos técnicos",
+      "intent": "web_search"
+    },
+    {
+      "text": "me ensine banco de dados",
+      "intent": "knowledge"
+    },
+    {
+      "text": "ensinar minha ia com apostilas",
+      "intent": "knowledge"
+    },
+    {
+      "text": "quero uma base de conhecimento",
+      "intent": "knowledge"
+    },
+    {
+      "text": "cadastre conhecimento em português",
+      "intent": "knowledge"
+    },
+    {
+      "text": "alimente meu acervo digital",
+      "intent": "knowledge"
+    },
+    {
+      "text": "meu acervo de manuais está vazio",
+      "intent": "knowledge"
+    },
+    {
+      "text": "organizar acervo de tutoriais",
+      "intent": "knowledge"
+    },
+    {
+      "text": "ajude a enriquecer acervo técnico",
+      "intent": "knowledge"
+    },
+    {
+      "text": "corrigir codigo em Python",
+      "intent": "programming"
+    },
+    {
+      "text": "quero criar um sistema de tarefas",
+      "intent": "programming"
+    },
+    {
+      "text": "desenvolver aplicativo de vendas",
+      "intent": "programming"
+    },
+    {
+      "text": "ajude no modo programador",
+      "intent": "programming"
+    },
+    {
+      "text": "meu algoritmo de ordenacao falhou",
+      "intent": "programming"
+    },
+    {
+      "text": "preciso corrigir o algoritmo",
+      "intent": "programming"
+    },
+    {
+      "text": "quero testar um algoritmo simples",
+      "intent": "programming"
+    },
+    {
+      "text": "me ajude com a lógica do algoritmo",
+      "intent": "programming"
+    },
+    {
+      "text": "minha aplicação no Railway falhou",
+      "intent": "deployment"
+    },
+    {
+      "text": "erro de deploy no servidor",
+      "intent": "deployment"
+    },
+    {
+      "text": "servico online não responde",
+      "intent": "deployment"
+    },
+    {
+      "text": "publicar no railway meu projeto",
+      "intent": "deployment"
+    },
+    {
+      "text": "a implantacao do site falhou",
+      "intent": "deployment"
+    },
+    {
+      "text": "uma implantacao travou",
+      "intent": "deployment"
+    },
+    {
+      "text": "preciso revisar minha hospedagem",
+      "intent": "deployment"
+    },
+    {
+      "text": "minha hospedagem está com problema",
+      "intent": "deployment"
+    },
+    {
+      "text": "subir projeto no github",
+      "intent": "git"
+    },
+    {
+      "text": "abrir pull request",
+      "intent": "git"
+    },
+    {
+      "text": "quero criar branch de teste",
+      "intent": "git"
+    },
+    {
+      "text": "como usar git push",
+      "intent": "git"
+    },
+    {
+      "text": "controle de versao do projeto",
+      "intent": "git"
+    },
+    {
+      "text": "controle de versao para equipe",
+      "intent": "git"
+    },
+    {
+      "text": "como organizar o versionamento",
+      "intent": "git"
+    },
+    {
+      "text": "o versionamento do sistema quebrou",
+      "intent": "git"
+    },
+    {
+      "text": "quero usar sem api paga",
+      "intent": "costs"
+    },
+    {
+      "text": "preciso de um serviço gratuito",
+      "intent": "costs"
+    },
+    {
+      "text": "nao quero pagar API",
+      "intent": "costs"
+    },
+    {
+      "text": "como limitar custo por usuário",
+      "intent": "costs"
+    },
+    {
+      "text": "tenho pouco orçamento",
+      "intent": "costs"
+    },
+    {
+      "text": "meu orçamento está apertado",
+      "intent": "costs"
+    },
+    {
+      "text": "preciso de economia de recursos",
+      "intent": "costs"
+    },
+    {
+      "text": "economia na infraestrutura",
+      "intent": "costs"
+    },
+    {
+      "text": "me mostre tudo o que voce sabe",
+      "intent": "capabilities"
+    },
+    {
+      "text": "o que voce consegue fazer",
+      "intent": "capabilities"
+    },
+    {
+      "text": "me surpreenda",
+      "intent": "capabilities"
+    },
+    {
+      "text": "quero conhecer suas capacidades",
+      "intent": "capabilities"
+    },
+    {
+      "text": "quais recursos estão disponíveis",
+      "intent": "capabilities"
+    },
+    {
+      "text": "me diga quais recursos possui",
+      "intent": "capabilities"
+    },
+    {
+      "text": "quero verificar recursos do assistente",
+      "intent": "capabilities"
+    },
+    {
+      "text": "liste os recursos internos",
+      "intent": "capabilities"
+    },
+    {
+      "text": "ola amigo",
+      "intent": "greeting"
+    },
+    {
+      "text": "bom dia assistente",
+      "intent": "greeting"
+    },
+    {
+      "text": "fala comigo",
+      "intent": "greeting"
+    },
+    {
+      "text": "oi tudo bem",
+      "intent": "greeting"
+    },
+    {
+      "text": "saudacoes meu assistente",
+      "intent": "greeting"
+    },
+    {
+      "text": "receba minhas saudacoes",
+      "intent": "greeting"
+    },
+    {
+      "text": "saudacoes pela manhã",
+      "intent": "greeting"
+    },
+    {
+      "text": "saudacoes e boas vindas",
+      "intent": "greeting"
+    }
+  ],
+  "validation": [
+    {
+      "text": "pesquise funcionamento do Postgres",
+      "intent": "web_search"
+    },
+    {
+      "text": "busque na web critérios de segurança",
+      "intent": "web_search"
+    },
+    {
+      "text": "pesquisa na internet sobre Linux",
+      "intent": "web_search"
+    },
+    {
+      "text": "quero incrementar o acervo",
+      "intent": "knowledge"
+    },
+    {
+      "text": "me ajude a revisar meu acervo",
+      "intent": "knowledge"
+    },
+    {
+      "text": "qual o índice de acervo técnico",
+      "intent": "knowledge"
+    },
+    {
+      "text": "o algoritmo apresentou falha",
+      "intent": "programming"
+    },
+    {
+      "text": "como melhorar o algoritmo",
+      "intent": "programming"
+    },
+    {
+      "text": "analise esse algoritmo de busca",
+      "intent": "programming"
+    },
+    {
+      "text": "a implantacao apresentou erro",
+      "intent": "deployment"
+    },
+    {
+      "text": "minha hospedagem caiu",
+      "intent": "deployment"
+    },
+    {
+      "text": "revise a implantacao do servidor",
+      "intent": "deployment"
+    },
+    {
+      "text": "configurar o versionamento",
+      "intent": "git"
+    },
+    {
+      "text": "falhas no controle de versao",
+      "intent": "git"
+    },
+    {
+      "text": "como revisar versao dos arquivos",
+      "intent": "git"
+    },
+    {
+      "text": "como ter economia de armazenamento",
+      "intent": "costs"
+    },
+    {
+      "text": "minha verba de orçamento acabou",
+      "intent": "costs"
+    },
+    {
+      "text": "preciso prever orçamento anual",
+      "intent": "costs"
+    },
+    {
+      "text": "quais recursos o assistente oferece",
+      "intent": "capabilities"
+    },
+    {
+      "text": "quero ver os recursos existentes",
+      "intent": "capabilities"
+    },
+    {
+      "text": "descreva seus recursos",
+      "intent": "capabilities"
+    },
+    {
+      "text": "saudacoes a3x",
+      "intent": "greeting"
+    },
+    {
+      "text": "minhas saudacoes",
+      "intent": "greeting"
+    },
+    {
+      "text": "saudacoes para começar",
+      "intent": "greeting"
+    }
+  ],
+  "holdout": [
+    {
+      "text": "pesquise desenvolvimento web",
+      "intent": "web_search"
+    },
+    {
+      "text": "busque documentação oficial",
+      "intent": "web_search"
+    },
+    {
+      "text": "pesquise banco de dados",
+      "intent": "web_search"
+    },
+    {
+      "text": "quero uma biblioteca privada",
+      "intent": "knowledge"
+    },
+    {
+      "text": "me ensine a cadastrar conhecimento",
+      "intent": "knowledge"
+    },
+    {
+      "text": "preciso organizar meus textos didáticos",
+      "intent": "knowledge"
+    },
+    {
+      "text": "quero escrever codigo",
+      "intent": "programming"
+    },
+    {
+      "text": "como melhorar JavaScript",
+      "intent": "programming"
+    },
+    {
+      "text": "tem um programa de exemplo",
+      "intent": "programming"
+    },
+    {
+      "text": "o site no railway caiu",
+      "intent": "deployment"
+    },
+    {
+      "text": "deploy retornou erro",
+      "intent": "deployment"
+    },
+    {
+      "text": "preciso colocar meu backend no ar",
+      "intent": "deployment"
+    },
+    {
+      "text": "o branch não atualizou",
+      "intent": "git"
+    },
+    {
+      "text": "enviar commit ao github",
+      "intent": "git"
+    },
+    {
+      "text": "revisar mudanças do repositorio",
+      "intent": "git"
+    },
+    {
+      "text": "sem gastar com API",
+      "intent": "costs"
+    },
+    {
+      "text": "manter custo zero",
+      "intent": "costs"
+    },
+    {
+      "text": "quanto custa a infraestrutura",
+      "intent": "costs"
+    },
+    {
+      "text": "o que você sabe fazer",
+      "intent": "capabilities"
+    },
+    {
+      "text": "me surpreenda com uma ideia",
+      "intent": "capabilities"
+    },
+    {
+      "text": "quero suas capacidades",
+      "intent": "capabilities"
+    },
+    {
+      "text": "boa tarde!",
+      "intent": "greeting"
+    },
+    {
+      "text": "olá tudo bem",
+      "intent": "greeting"
+    },
+    {
+      "text": "fala comigo por favor",
+      "intent": "greeting"
+    }
+  ],
+  "guardrails": [
+    {
+      "text": "pesquise fontes sobre criptografia",
+      "intent": "web_search"
+    },
+    {
+      "text": "busque exemplos de documentação",
+      "intent": "web_search"
+    },
+    {
+      "text": "como faço",
+      "intent": "clarify"
+    },
+    {
+      "text": "e depois",
+      "intent": "clarify"
+    },
+    {
+      "text": "qual a minha senha?",
+      "intent": "clarify"
+    },
+    {
+      "text": "pesquise minha senha",
+      "intent": "clarify"
+    },
+    {
+      "text": "qual é meu token",
+      "intent": "clarify"
+    },
+    {
+      "text": "pesquise chave secreta",
+      "intent": "clarify"
+    },
+    {
+      "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "intent": "clarify"
+    },
+    {
+      "text": "bom dia",
+      "intent": "greeting"
+    },
+    {
+      "text": "oi",
+      "intent": "greeting"
+    },
+    {
+      "text": "railway está com problema",
+      "intent": "deployment"
+    },
+    {
+      "text": "nao quero pagar",
+      "intent": "costs"
+    }
+  ]
+}
