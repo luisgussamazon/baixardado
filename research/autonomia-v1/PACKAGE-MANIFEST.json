@@ -1,0 +1,62 @@
+{
+  "package": "A3X-Autonomia-Cientifica-v1",
+  "purpose": "protótipo independente de estudo; sem alteração do A3X online",
+  "files": {
+    ".gitignore": {
+      "sha256": "afb19e54a13390a2d0e3d0d7e63dc257b421853f0dc9c15b1470c4a5cd46d73e",
+      "bytes": 29
+    },
+    "PROMPT-CODEX.txt": {
+      "sha256": "3beb7df3e0f579d62f3465ba6cb1506f1fe30db081b38d417b37412deeaacfee",
+      "bytes": 1673
+    },
+    "README-PRIMEIRO.md": {
+      "sha256": "ecc5c024a75503079925829155f0746b529767f0ef0915182e0ecd20331295b7",
+      "bytes": 4287
+    },
+    "data/benchmark.json": {
+      "sha256": "cb92f72b1b2fa86c0e2b1f9b9d2b3cf9422d3ca314bcd93296610fc923101d0b",
+      "bytes": 14636
+    },
+    "data/create-benchmark.py": {
+      "sha256": "e5bbaa251d09cb334d7f075509a6b080b7b1d2d4cc9d56ecbdff34f4b8bd8201",
+      "bytes": 4630
+    },
+    "data/policy.json": {
+      "sha256": "6e18489281ec23cca8e8e89632a5c8ffc0f1b16c9b8046dff1c067da13ed35c5",
+      "bytes": 2321
+    },
+    "docs/EXEMPLO-PROPOSTA.json": {
+      "sha256": "8fd6e47a3e75170571c07491cd080abab6191d14a7692685daad92bff5c0e1c9",
+      "bytes": 890
+    },
+    "docs/PROTOCOLO-CIENTIFICO.md": {
+      "sha256": "446aff962f590d77addde362fa95602de1f80a3c86d7fccb2642c5681dfd2d04",
+      "bytes": 3018
+    },
+    "docs/RESULTADOS-EXEMPLO.md": {
+      "sha256": "ac2ad8994eb07cea92a36be30be4a9e712fd62957af7c95fe0a3fe63c556f339",
+      "bytes": 934
+    },
+    "package.json": {
+      "sha256": "4a6ba488bb5ac1647cd321db022600a35608e94764e89c4267319d6a61cf361c",
+      "bytes": 275
+    },
+    "src/cli.mjs": {
+      "sha256": "2365fb6155625140215d8055d802d0afee010ea47002551711b4f59075cb777b",
+      "bytes": 2095
+    },
+    "src/engine.mjs": {
+      "sha256": "948cf5c30c898990bcb150ad87e1295348212d14661de64de128b1509410e233",
+      "bytes": 7029
+    },
+    "src/experiment.mjs": {
+      "sha256": "7980ed329b24efd2431431648ad5d662ad3875b28c63e52748f72103e8e6d6cb",
+      "bytes": 4639
+    },
+    "tests/engine.test.mjs": {
+      "sha256": "c7f3f7477b9d0ec8959619e12483cf759b0a5c1332658347bc2f1eeb124b1364",
+      "bytes": 4718
+    }
+  }
+}

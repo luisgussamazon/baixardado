@@ -26,7 +26,7 @@ export default function CognitiveMemory(){
     catch(e){setError(e instanceof Error?e.message:"Falha na operação.");}finally{setBusy(false);}
   }
   return <main className={styles.page}><div className={styles.shell}>
-    <header className={styles.top}><div><div className={styles.eyebrow}>A3X COGNITIVE ENGINE</div><h1>Minha memória</h1><p>Você decide o que autoriza. Propostas não são usadas até sua aprovação.</p></div><nav className={styles.nav}><Link href="/chat">Chat</Link><Link href="/programador">Programador</Link><Link href="/ensinar">Ensinar</Link></nav></header>
+    <header className={styles.top}><div><div className={styles.eyebrow}>A3X COGNITIVE ENGINE</div><h1>Minha memória</h1><p>Você decide o que autoriza. Propostas não são usadas até sua aprovação.</p></div><nav className={styles.nav}><Link href="/chat">Chat</Link><Link href="/programador">Programador</Link><Link href="/ensinar">Ensinar</Link><Link href="/laboratorio">Laboratório</Link></nav></header>
     <div className={styles.layout}><section className={styles.panel}><h2>Propor registro</h2>
       <p className={styles.hint}>Não inclua senhas ou tokens. Fatos e preferências aprovados podem ser consultados no Chat. Para definir o estilo, use preferência com título “tom” e valor executivo, acolhedor ou objetivo. Correções só respondem à pergunta cadastrada. Feedback fica registrado para sua revisão; não altera regras automaticamente.</p>
       <form className={styles.form} onSubmit={submit}><label>Tipo <select className="cognitive-select" value={kind} disabled={busy} onChange={e=>setKind(e.target.value as MemoryKind)}>{Object.entries(names).map(([key,name])=><option key={key} value={key}>{name}</option>)}</select></label>

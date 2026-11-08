@@ -1,5 +1,7 @@
 # A3X AI — pesquisa na web com histórico privado
 
+O [Laboratório de Autonomia Científica](docs/AUTONOMIA-CIENTIFICA.md) compara políticas de roteamento em um benchmark sintético offline. `/laboratorio` mostra resultados com login. `npm run research:study` gera relatório e proposta sem aplicar mudanças; `research:branch` requer confirmação para criar um worktree de revisão, sem commit, push ou deploy. O holdout ficou em 20/24 antes e depois: não houve demonstração de ganho generalizável.
+
 O [A3X Cognitive Engine](docs/A3X-COGNITIVE-ENGINE.md) adiciona personalidade executiva original, interpretação por regras, planos com estado persistido e memória privada aprovada em `/memoria`. Não usa modelos generativos. Para começar: `planeje estudar TypeScript`, depois `iniciar plano`. Fatos, preferências e correções precisam de aprovação explícita. O Programador exige confirmação antes de enviar sua descrição ao buscador.
 
 No Chat, `pesquise ...` prepara a consulta; confirme com `confirmo envio à web` para autorizar seu envio. A confirmação vale apenas para aquela consulta, por até dez minutos.

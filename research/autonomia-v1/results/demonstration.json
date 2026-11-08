@@ -1,0 +1,981 @@
+{
+  "study": "A3X Autonomia Científica v1",
+  "scope": "classificador offline de tópicos; não é a acurácia do Chat",
+  "limits": {
+    "maxCasesPerPartition": 256,
+    "maxTotalCases": 512,
+    "maxNewPerIntent": 3,
+    "maxProposals": 1,
+    "wallTimeMs": 10000,
+    "workerHeapMb": 256,
+    "networkCalls": 0,
+    "toolCalls": 0,
+    "executesGeneratedCode": false,
+    "automaticDeployment": false
+  },
+  "hypotheses": {
+    "H0": "não há melhoria sustentada em dados independentes",
+    "H1": "ajuste de vocabulário generaliza sem regressão de segurança"
+  },
+  "original": {
+    "train": {
+      "total": 64,
+      "correct": 36,
+      "accuracy": 0.5625,
+      "wilson95": [
+        0.4409,
+        0.6771
+      ],
+      "mistakes": [
+        {
+          "index": 12,
+          "expected": "knowledge",
+          "actual": "clarify"
+        },
+        {
+          "index": 13,
+          "expected": "knowledge",
+          "actual": "clarify"
+        },
+        {
+          "index": 14,
+          "expected": "knowledge",
+          "actual": "clarify"
+        },
+        {
+          "index": 15,
+          "expected": "knowledge",
+          "actual": "clarify"
+        },
+        {
+          "index": 20,
+          "expected": "programming",
+          "actual": "clarify"
+        },
+        {
+          "index": 21,
+          "expected": "programming",
+          "actual": "clarify"
+        },
+        {
+          "index": 22,
+          "expected": "programming",
+          "actual": "clarify"
+        },
+        {
+          "index": 23,
+          "expected": "programming",
+          "actual": "clarify"
+        },
+        {
+          "index": 28,
+          "expected": "deployment",
+          "actual": "clarify"
+        },
+        {
+          "index": 29,
+          "expected": "deployment",
+          "actual": "clarify"
+        },
+        {
+          "index": 30,
+          "expected": "deployment",
+          "actual": "clarify"
+        },
+        {
+          "index": 31,
+          "expected": "deployment",
+          "actual": "clarify"
+        },
+        {
+          "index": 36,
+          "expected": "git",
+          "actual": "clarify"
+        },
+        {
+          "index": 37,
+          "expected": "git",
+          "actual": "clarify"
+        },
+        {
+          "index": 38,
+          "expected": "git",
+          "actual": "clarify"
+        },
+        {
+          "index": 39,
+          "expected": "git",
+          "actual": "clarify"
+        },
+        {
+          "index": 44,
+          "expected": "costs",
+          "actual": "clarify"
+        },
+        {
+          "index": 45,
+          "expected": "costs",
+          "actual": "clarify"
+        },
+        {
+          "index": 46,
+          "expected": "costs",
+          "actual": "clarify"
+        },
+        {
+          "index": 47,
+          "expected": "costs",
+          "actual": "clarify"
+        },
+        {
+          "index": 52,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 53,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 54,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 55,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 60,
+          "expected": "greeting",
+          "actual": "clarify"
+        },
+        {
+          "index": 61,
+          "expected": "greeting",
+          "actual": "clarify"
+        },
+        {
+          "index": 62,
+          "expected": "greeting",
+          "actual": "clarify"
+        },
+        {
+          "index": 63,
+          "expected": "greeting",
+          "actual": "clarify"
+        }
+      ],
+      "confusion": {
+        "web_search": {
+          "web_search": 8
+        },
+        "knowledge": {
+          "knowledge": 4,
+          "clarify": 4
+        },
+        "programming": {
+          "programming": 4,
+          "clarify": 4
+        },
+        "deployment": {
+          "deployment": 4,
+          "clarify": 4
+        },
+        "git": {
+          "git": 4,
+          "clarify": 4
+        },
+        "costs": {
+          "costs": 4,
+          "clarify": 4
+        },
+        "capabilities": {
+          "capabilities": 4,
+          "clarify": 4
+        },
+        "greeting": {
+          "greeting": 4,
+          "clarify": 4
+        }
+      },
+      "predictions": [
+        "web_search",
+        "web_search",
+        "web_search",
+        "web_search",
+        "web_search",
+        "web_search",
+        "web_search",
+        "web_search",
+        "knowledge",
+        "knowledge",
+        "knowledge",
+        "knowledge",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "programming",
+        "programming",
+        "programming",
+        "programming",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "deployment",
+        "deployment",
+        "deployment",
+        "deployment",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "git",
+        "git",
+        "git",
+        "git",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "costs",
+        "costs",
+        "costs",
+        "costs",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "capabilities",
+        "capabilities",
+        "capabilities",
+        "capabilities",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "greeting",
+        "greeting",
+        "greeting",
+        "greeting",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify"
+      ]
+    },
+    "validation": {
+      "total": 24,
+      "correct": 3,
+      "accuracy": 0.125,
+      "wilson95": [
+        0.0434,
+        0.31
+      ],
+      "mistakes": [
+        {
+          "index": 3,
+          "expected": "knowledge",
+          "actual": "clarify"
+        },
+        {
+          "index": 4,
+          "expected": "knowledge",
+          "actual": "clarify"
+        },
+        {
+          "index": 5,
+          "expected": "knowledge",
+          "actual": "clarify"
+        },
+        {
+          "index": 6,
+          "expected": "programming",
+          "actual": "clarify"
+        },
+        {
+          "index": 7,
+          "expected": "programming",
+          "actual": "clarify"
+        },
+        {
+          "index": 8,
+          "expected": "programming",
+          "actual": "clarify"
+        },
+        {
+          "index": 9,
+          "expected": "deployment",
+          "actual": "clarify"
+        },
+        {
+          "index": 10,
+          "expected": "deployment",
+          "actual": "clarify"
+        },
+        {
+          "index": 11,
+          "expected": "deployment",
+          "actual": "clarify"
+        },
+        {
+          "index": 12,
+          "expected": "git",
+          "actual": "clarify"
+        },
+        {
+          "index": 13,
+          "expected": "git",
+          "actual": "clarify"
+        },
+        {
+          "index": 14,
+          "expected": "git",
+          "actual": "clarify"
+        },
+        {
+          "index": 15,
+          "expected": "costs",
+          "actual": "clarify"
+        },
+        {
+          "index": 16,
+          "expected": "costs",
+          "actual": "clarify"
+        },
+        {
+          "index": 17,
+          "expected": "costs",
+          "actual": "clarify"
+        },
+        {
+          "index": 18,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 19,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 20,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 21,
+          "expected": "greeting",
+          "actual": "clarify"
+        },
+        {
+          "index": 22,
+          "expected": "greeting",
+          "actual": "clarify"
+        },
+        {
+          "index": 23,
+          "expected": "greeting",
+          "actual": "clarify"
+        }
+      ],
+      "confusion": {
+        "web_search": {
+          "web_search": 3
+        },
+        "knowledge": {
+          "clarify": 3
+        },
+        "programming": {
+          "clarify": 3
+        },
+        "deployment": {
+          "clarify": 3
+        },
+        "git": {
+          "clarify": 3
+        },
+        "costs": {
+          "clarify": 3
+        },
+        "capabilities": {
+          "clarify": 3
+        },
+        "greeting": {
+          "clarify": 3
+        }
+      },
+      "predictions": [
+        "web_search",
+        "web_search",
+        "web_search",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify"
+      ]
+    },
+    "guardrails": {
+      "total": 13,
+      "correct": 13,
+      "accuracy": 1,
+      "wilson95": [
+        0.7719,
+        1
+      ],
+      "mistakes": [],
+      "confusion": {
+        "web_search": {
+          "web_search": 2
+        },
+        "clarify": {
+          "clarify": 7
+        },
+        "greeting": {
+          "greeting": 2
+        },
+        "deployment": {
+          "deployment": 1
+        },
+        "costs": {
+          "costs": 1
+        }
+      },
+      "predictions": [
+        "web_search",
+        "web_search",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "greeting",
+        "greeting",
+        "deployment",
+        "costs"
+      ]
+    },
+    "holdout": {
+      "total": 24,
+      "correct": 20,
+      "accuracy": 0.8333,
+      "wilson95": [
+        0.6415,
+        0.9332
+      ],
+      "mistakes": [
+        {
+          "index": 5,
+          "expected": "knowledge",
+          "actual": "clarify"
+        },
+        {
+          "index": 11,
+          "expected": "deployment",
+          "actual": "clarify"
+        },
+        {
+          "index": 15,
+          "expected": "costs",
+          "actual": "clarify"
+        },
+        {
+          "index": 17,
+          "expected": "costs",
+          "actual": "clarify"
+        }
+      ],
+      "confusion": {
+        "web_search": {
+          "web_search": 3
+        },
+        "knowledge": {
+          "knowledge": 2,
+          "clarify": 1
+        },
+        "programming": {
+          "programming": 3
+        },
+        "deployment": {
+          "deployment": 2,
+          "clarify": 1
+        },
+        "git": {
+          "git": 3
+        },
+        "costs": {
+          "clarify": 2,
+          "costs": 1
+        },
+        "capabilities": {
+          "capabilities": 3
+        },
+        "greeting": {
+          "greeting": 3
+        }
+      },
+      "predictions": [
+        "web_search",
+        "web_search",
+        "web_search",
+        "knowledge",
+        "knowledge",
+        "clarify",
+        "programming",
+        "programming",
+        "programming",
+        "deployment",
+        "deployment",
+        "clarify",
+        "git",
+        "git",
+        "git",
+        "clarify",
+        "costs",
+        "clarify",
+        "capabilities",
+        "capabilities",
+        "capabilities",
+        "greeting",
+        "greeting",
+        "greeting"
+      ]
+    }
+  },
+  "candidate": {
+    "train": {
+      "total": 64,
+      "correct": 60,
+      "accuracy": 0.9375,
+      "wilson95": [
+        0.85,
+        0.9754
+      ],
+      "mistakes": [
+        {
+          "index": 52,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 53,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 54,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 55,
+          "expected": "capabilities",
+          "actual": "clarify"
+        }
+      ],
+      "confusion": {
+        "web_search": {
+          "web_search": 8
+        },
+        "knowledge": {
+          "knowledge": 8
+        },
+        "programming": {
+          "programming": 8
+        },
+        "deployment": {
+          "deployment": 8
+        },
+        "git": {
+          "git": 8
+        },
+        "costs": {
+          "costs": 8
+        },
+        "capabilities": {
+          "capabilities": 4,
+          "clarify": 4
+        },
+        "greeting": {
+          "greeting": 8
+        }
+      },
+      "predictions": [
+        "web_search",
+        "web_search",
+        "web_search",
+        "web_search",
+        "web_search",
+        "web_search",
+        "web_search",
+        "web_search",
+        "knowledge",
+        "knowledge",
+        "knowledge",
+        "knowledge",
+        "knowledge",
+        "knowledge",
+        "knowledge",
+        "knowledge",
+        "programming",
+        "programming",
+        "programming",
+        "programming",
+        "programming",
+        "programming",
+        "programming",
+        "programming",
+        "deployment",
+        "deployment",
+        "deployment",
+        "deployment",
+        "deployment",
+        "deployment",
+        "deployment",
+        "deployment",
+        "git",
+        "git",
+        "git",
+        "git",
+        "git",
+        "git",
+        "git",
+        "git",
+        "costs",
+        "costs",
+        "costs",
+        "costs",
+        "costs",
+        "costs",
+        "costs",
+        "costs",
+        "capabilities",
+        "capabilities",
+        "capabilities",
+        "capabilities",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "greeting",
+        "greeting",
+        "greeting",
+        "greeting",
+        "greeting",
+        "greeting",
+        "greeting",
+        "greeting"
+      ]
+    },
+    "validation": {
+      "total": 24,
+      "correct": 21,
+      "accuracy": 0.875,
+      "wilson95": [
+        0.69,
+        0.9566
+      ],
+      "mistakes": [
+        {
+          "index": 18,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 19,
+          "expected": "capabilities",
+          "actual": "clarify"
+        },
+        {
+          "index": 20,
+          "expected": "capabilities",
+          "actual": "clarify"
+        }
+      ],
+      "confusion": {
+        "web_search": {
+          "web_search": 3
+        },
+        "knowledge": {
+          "knowledge": 3
+        },
+        "programming": {
+          "programming": 3
+        },
+        "deployment": {
+          "deployment": 3
+        },
+        "git": {
+          "git": 3
+        },
+        "costs": {
+          "costs": 3
+        },
+        "capabilities": {
+          "clarify": 3
+        },
+        "greeting": {
+          "greeting": 3
+        }
+      },
+      "predictions": [
+        "web_search",
+        "web_search",
+        "web_search",
+        "knowledge",
+        "knowledge",
+        "knowledge",
+        "programming",
+        "programming",
+        "programming",
+        "deployment",
+        "deployment",
+        "deployment",
+        "git",
+        "git",
+        "git",
+        "costs",
+        "costs",
+        "costs",
+        "clarify",
+        "clarify",
+        "clarify",
+        "greeting",
+        "greeting",
+        "greeting"
+      ]
+    },
+    "guardrails": {
+      "total": 13,
+      "correct": 13,
+      "accuracy": 1,
+      "wilson95": [
+        0.7719,
+        1
+      ],
+      "mistakes": [],
+      "confusion": {
+        "web_search": {
+          "web_search": 2
+        },
+        "clarify": {
+          "clarify": 7
+        },
+        "greeting": {
+          "greeting": 2
+        },
+        "deployment": {
+          "deployment": 1
+        },
+        "costs": {
+          "costs": 1
+        }
+      },
+      "predictions": [
+        "web_search",
+        "web_search",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "clarify",
+        "greeting",
+        "greeting",
+        "deployment",
+        "costs"
+      ]
+    },
+    "holdout": {
+      "total": 24,
+      "correct": 20,
+      "accuracy": 0.8333,
+      "wilson95": [
+        0.6415,
+        0.9332
+      ],
+      "mistakes": [
+        {
+          "index": 5,
+          "expected": "knowledge",
+          "actual": "clarify"
+        },
+        {
+          "index": 11,
+          "expected": "deployment",
+          "actual": "clarify"
+        },
+        {
+          "index": 15,
+          "expected": "costs",
+          "actual": "clarify"
+        },
+        {
+          "index": 17,
+          "expected": "costs",
+          "actual": "clarify"
+        }
+      ],
+      "confusion": {
+        "web_search": {
+          "web_search": 3
+        },
+        "knowledge": {
+          "knowledge": 2,
+          "clarify": 1
+        },
+        "programming": {
+          "programming": 3
+        },
+        "deployment": {
+          "deployment": 2,
+          "clarify": 1
+        },
+        "git": {
+          "git": 3
+        },
+        "costs": {
+          "clarify": 2,
+          "costs": 1
+        },
+        "capabilities": {
+          "capabilities": 3
+        },
+        "greeting": {
+          "greeting": 3
+        }
+      },
+      "predictions": [
+        "web_search",
+        "web_search",
+        "web_search",
+        "knowledge",
+        "knowledge",
+        "clarify",
+        "programming",
+        "programming",
+        "programming",
+        "deployment",
+        "deployment",
+        "clarify",
+        "git",
+        "git",
+        "git",
+        "clarify",
+        "costs",
+        "clarify",
+        "capabilities",
+        "capabilities",
+        "capabilities",
+        "greeting",
+        "greeting",
+        "greeting"
+      ]
+    }
+  },
+  "paired": {
+    "validation": {
+      "improved": 18,
+      "regressed": 0,
+      "exactMcNemarP": 0.00000762939453125
+    },
+    "holdout": {
+      "improved": 0,
+      "regressed": 0,
+      "exactMcNemarP": 1
+    }
+  },
+  "changes": [
+    {
+      "intent": "knowledge",
+      "keyword": "acervo"
+    },
+    {
+      "intent": "programming",
+      "keyword": "algoritmo"
+    },
+    {
+      "intent": "programming",
+      "keyword": "corrigir"
+    },
+    {
+      "intent": "deployment",
+      "keyword": "hospedagem"
+    },
+    {
+      "intent": "deployment",
+      "keyword": "implantacao"
+    },
+    {
+      "intent": "git",
+      "keyword": "controle"
+    },
+    {
+      "intent": "git",
+      "keyword": "versao"
+    },
+    {
+      "intent": "git",
+      "keyword": "versionamento"
+    },
+    {
+      "intent": "costs",
+      "keyword": "economia"
+    },
+    {
+      "intent": "costs",
+      "keyword": "orcamento"
+    },
+    {
+      "intent": "greeting",
+      "keyword": "saudacoes"
+    }
+  ],
+  "decision": {
+    "selectedForHumanReview": true,
+    "safetyPreserved": true,
+    "holdoutNotWorse": true,
+    "generalizationDemonstrated": false,
+    "note": "Seleção usa treino/validação/controles. Holdout apenas relata generalização. Dados sintéticos autorais; nenhuma autorização de aplicação."
+  },
+  "provenance": {
+    "target": "config/research-policy.ts",
+    "baselineSha256": "21db2f0628b5bd756b70f12b59a792203b9e9e8f6bdba157d1e354c4f37983ae",
+    "candidateSha256": "334b3580b78255056b823047c754de7c623e37c834fb7f3e268fe640eac088eb",
+    "benchmarkSha256": "cb92f72b1b2fa86c0e2b1f9b9d2b3cf9422d3ca314bcd93296610fc923101d0b",
+    "application": "not-applied",
+    "approvalRequired": true
+  },
+  "resources": {
+    "elapsedMs": 41.628,
+    "cpuMs": 78,
+    "heapUsedBytes": 11665424,
+    "node": "22.23.4",
+    "platform": "win32",
+    "arch": "x64"
+  }
+}
