@@ -3,8 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import ModeSwitch from "@/components/mode-switch";
 import {
-  ArrowUp, Bot, Check, ChevronDown, Copy, FileText, Lightbulb, Menu,
+  ArrowUp, Bot, Check, Copy, FileText, Lightbulb, Menu,
   MessageSquare, PanelLeftClose, Plus, ShieldCheck,
   Sparkles, Trash2, X, LogOut, Code2, Zap
 } from "lucide-react";
@@ -177,7 +178,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
     <main className="main-chat">
       <header className="chat-topbar">
         <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/> Assistente inteligente</span></div></div>
-        <div className="model-chip"><Sparkles size={14}/> A3X AI <ChevronDown size={13}/></div>
+        <ModeSwitch mode="chat" disabled={busy}/>
       </header>
       <div className="conversation-scroll">
         <div className="conversation-content">

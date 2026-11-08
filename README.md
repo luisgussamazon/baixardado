@@ -11,6 +11,20 @@ Projeto independente, feito em **Next.js App Router + TypeScript + PostgreSQL + 
 - Rate limit básico de tentativas de login/setup por IP. Verificação de origem para operações de escrita.
 - PostgreSQL persistente com migrações idempotentes. `healthcheck` do Railway.
 - Responsivo no computador e no celular, tema escuro e interface tipo chat.
+- Dois modos: **Chat** para conversas e **Programador** para gerar projetos privados com múltiplos arquivos, árvore de pastas, destaque de sintaxe, cópia de código e download ZIP.
+
+## Modo Programador
+
+Após entrar, selecione **Programador** no topo ou abra `/programador`. Descreva o sistema, linguagens e funcionalidades desejadas e clique em **Gerar projeto**. O progresso aparece durante a geração; os arquivos são abertos somente após a resposta completa e a validação no servidor. Selecione arquivos no explorador, use **Copiar** ou **Baixar ZIP**. O histórico de projetos é separado das conversas e permite reabrir e excluir seus projetos.
+
+- Descrição: até 4.000 caracteres. Cada geração aceita consome uma solicitação da mesma cota diária do Chat, inclusive se falhar ou for cancelada depois da reserva.
+- Uma geração simultânea e até 100 projetos por usuário; exclua projetos para liberar espaço.
+- Entre 2 e 20 arquivos de texto, até 32 KiB por arquivo e 128 KiB de conteúdo total. Caminhos relativos portáveis: até 160 caracteres e 8 níveis, sem traversal, dispositivos Windows, colisões, `.git` ou arquivos `.env` (exceto `.env.example`).
+- A geração usa `AI_MODEL` e exige suporte a Structured Outputs na Responses API. O teto do Programador é de 8.000 tokens de saída e 120 segundos; o Chat mantém seus limites anteriores de 1.600 tokens e 4.000 caracteres.
+- A chave permanece exclusivamente no servidor. O ZIP é montado em memória após nova validação e autorização por usuário.
+- **O código gerado não é executado, instalado, testado ou publicado pelo A3X AI.** Não há terminal, preview executável, edição, upload nem acesso ao seu repositório. Revise o código antes de usá-lo.
+
+Detalhes de implementação, testes e limitações: [docs/MODO-PROGRAMADOR.md](docs/MODO-PROGRAMADOR.md).
 
 ## Requisitos
 
@@ -47,6 +61,8 @@ Para trabalhar no VS Code com Codex, leia `docs/GITHUB-CODEX.md` e `AGENTS.md`.
    - `DAILY_MESSAGE_LIMIT` ex.: `50`.
    - `NEXT_PUBLIC_APP_NAME` ex.: `A3X AI`.
 4. O `railway.json` configura `npm run db:migrate` antes de cada implantação e `npm run start` na inicialização. O script `postbuild` copia os arquivos estáticos para o servidor standalone. Faça o deploy.
+
+   A migração incremental `sql/002_programmer_projects.sql` é necessária para o Modo Programador. O healthcheck também verifica a presença dessa tabela. Ela não altera o histórico existente. Nesta implementação, a migração foi exercitada somente em banco local descartável; a aplicação em Railway depende de implantação autorizada.
 5. Em **Settings → Networking**, gere um domínio HTTPS. Abra `/setup`, forneça `BOOTSTRAP_SECRET` e crie sua conta.
 6. Depois da criação da conta inicial, você pode **remover `BOOTSTRAP_SECRET`** das variáveis e redeployar; o cadastro inicial continuará bloqueado pela existência da conta.
 7. Confira o login, o envio de mensagens, o histórico, a exclusão e o logout. Habilite backups do PostgreSQL, monitore consumo e configure o domínio definitivo.

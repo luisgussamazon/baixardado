@@ -45,3 +45,7 @@ Os testes de rotas simulam acesso ao pool e transporte HTTP da OpenAI; não subs
 - Não há recuperação de conta, administração de usuários ou observabilidade completa. O healthcheck não valida credenciais OpenAI nem permissões/colunas de cada tabela.
 - A interface mantém limites de 100 conversas e 200 mensagens visíveis; o contexto enviado ao modelo usa as últimas 24 mensagens.
 - Upload, pesquisa web, voz e cobrança permanecem fora do produto.
+
+## Evolução na branch feature/modo-programador
+
+A revisão acima descreve a base `fix/production-readiness`. A implementação posterior dos modos Chat/Programador, a migração incremental `002_programmer_projects.sql` e sua verificação estão documentadas em [MODO-PROGRAMADOR.md](MODO-PROGRAMADOR.md). A nova funcionalidade mantém os fluxos e limites do Chat; gera arquivos somente como dados para revisão e download, sem executar código.
