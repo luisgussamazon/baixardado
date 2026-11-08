@@ -17,11 +17,11 @@ export async function reserveProject(userId:string, description:string): Promise
       COALESCE(BOOL_OR(status='generating'),false) AS busy FROM programmer_projects WHERE user_id=$1`,[userId]);
     if (count.rows[0].busy) throw new ProjectRequestError("Já existe um projeto sendo gerado. Aguarde a conclusão.",409);
     if (count.rows[0].total >= PROJECT_LIMITS.projects) throw new ProjectRequestError("Limite de 100 projetos atingido. Exclua um projeto para continuar.",429);
-    const limit = Math.floor(Math.max(1,Math.min(1000,Number(process.env.DAILY_MESSAGE_LIMIT || "50") || 50)));
+    const limit = Math.floor(Math.max(1,Math.min(1000,Number(process.env.DAILY_PROJECT_LIMIT || process.env.DAILY_MESSAGE_LIMIT || "50") || 50)));
     const usage = await client.query(`INSERT INTO daily_usage(user_id,day,requests) VALUES($1,CURRENT_DATE,1)
       ON CONFLICT(user_id,day) DO UPDATE SET requests=daily_usage.requests+1
       WHERE daily_usage.requests<$2 RETURNING requests`,[userId,limit]);
-    if (!usage.rowCount) throw new ProjectRequestError(`Limite diário de ${limit} solicitações atingido. A cota é compartilhada com o Chat.`,429);
+    if (!usage.rowCount) throw new ProjectRequestError(`Limite diário de ${limit} projetos atingido. O Chat não tem cota diária de perguntas.`,429);
     const created = await client.query<{id:string}>(`INSERT INTO programmer_projects(user_id,description)
       VALUES($1,$2) RETURNING id`,[userId,description]);
     await client.query("COMMIT");

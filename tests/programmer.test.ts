@@ -155,15 +155,19 @@ test("falha de persistência reverte a cota; download revalida conteúdo armazen
   assert.equal(downloadRes.status,503);assert.doesNotMatch(await downloadRes.text(),/não expor/);
 });
 
-test("cota é compartilhada com Chat e reserva negada não deixa projeto pendente",async()=>{
+test("cota de projetos não limita perguntas no Chat e reserva negada não deixa projeto pendente",async()=>{
   process.env.DAILY_MESSAGE_LIMIT="1";provider();
   const {text}=await generate();assert.match(text,/event: done/);
   assert.equal((await session(0,()=>projects.POST(request()))).status,429);
   assert.equal((await pg.query("SELECT * FROM programmer_projects")).rows.length,1);
   const conversation=await pg.query<{id:string}>("INSERT INTO conversations(user_id) VALUES($1) RETURNING id",[users[0]]);
   const res=await session(0,()=>chat.POST(request({conversationId:conversation.rows[0].id,message:"pergunta"})));
-  assert.equal(res.status,429);
-  assert.equal((await pg.query("SELECT * FROM messages")).rows.length,0);
+  assert.equal(res.status,200);await res.text();
+  assert.equal((await pg.query("SELECT * FROM messages")).rows.length,2);
+  await pg.query("UPDATE daily_usage SET requests=1000000 WHERE user_id=$1",[users[0]]);
+  const again=await session(0,()=>chat.POST(request({conversationId:conversation.rows[0].id,message:"Olá"})));
+  assert.equal(again.status,200);await again.text();
+  assert.equal((await pg.query<{requests:number}>("SELECT requests FROM daily_usage WHERE user_id=$1",[users[0]])).rows[0].requests,1000000);
 });
 
 test("conversa local não acessa rede e contexto não atravessa conversas ou usuários",async()=>{

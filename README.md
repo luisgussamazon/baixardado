@@ -32,7 +32,7 @@ Veja [BASE-CONHECIMENTO.md](docs/BASE-CONHECIMENTO.md) para comandos, segurança
 - Busca geral via RSS público do Bing. Se indisponível, busca enciclopédica via Wikipedia em português, identificada como tal. Sem garantia de disponibilidade, cobertura ou ordenação.
 - Programador: pesquisa técnica e **template estático** de cinco arquivos (README, pesquisa, HTML, CSS e JavaScript). As regras de negócio descritas não são implementadas automaticamente. Projetos antigos permanecem privados e disponíveis.
 - Árvore de pastas, destaque de sintaxe, cópia e ZIP autorizado por proprietário.
-- Cota diária compartilhada, uma criação simultânea e até 100 projetos por usuário.
+- Chat sem cota diária de perguntas; cota separada de projetos, uma criação simultânea e até 100 projetos por usuário.
 - Interface responsiva em português. Nenhum código de projeto é executado no servidor.
 
 Consultas são enviadas ao buscador ou à Wikipedia. Não inclua dados confidenciais. O histórico fica no seu PostgreSQL, conforme solicitado pelo responsável. Trechos podem estar incompletos ou desatualizados; confira as fontes.
@@ -52,7 +52,7 @@ npm run dev
 | --- | --- |
 | `DATABASE_URL` | Conexão PostgreSQL obrigatória. |
 | `BOOTSTRAP_SECRET` | Segredo de pelo menos 24 caracteres para a primeira conta. Pode ser removido após o cadastro inicial. |
-| `DAILY_MESSAGE_LIMIT` | Cota por usuário e dia; padrão 50, máximo 1000. |
+| `DAILY_PROJECT_LIMIT` | Cota de projetos por usuário e dia; padrão 50, máximo 1000. Chat sem cota diária. |
 | `NEXT_PUBLIC_APP_NAME` | Nome público, padrão A3X AI. |
 
 Nenhuma chave de IA é necessária. `OPENAI_API_KEY` e `AI_MODEL` são ignoradas e podem ser removidas do painel pelo responsável. Remover o SDK não revoga uma chave antiga no provedor.
@@ -93,3 +93,7 @@ CI em `.github/workflows/ci.yml`, sem deploy. Testes usam PostgreSQL descartáve
 ## Diálogo Interativo v2
 
 `/ensinar` permite cadastrar, editar e excluir até 150 perguntas e respostas privadas por conta. Biblioteca editorial com 55 cartões e continuidade contextual. Migrações 003/004 preservadas; 005 adiciona somente novos IDs. Sem upload de documentos ou modelos. [Relatório](docs/RELATORIO-DIALOGO-v2.md).
+
+## Autonomia controlada
+
+Veja [estudos e código experimental](docs/AUTONOMIA-CONTROLADA.md). O Chat não tem cota diária de perguntas. Recursos físicos, concorrência e tempo de resposta continuam finitos.

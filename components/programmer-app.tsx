@@ -170,7 +170,7 @@ export default function ProgrammerApp({email,appName}:{email:string;appName:stri
           <label htmlFor="project-description">O que você quer construir?</label>
           <textarea id="project-description" value={description} onChange={e=>setDescription(e.target.value)} disabled={busy} maxLength={PROJECT_LIMITS.description}
             placeholder="Ex.: um sistema de tarefas em React e TypeScript, com filtros por status, dados locais e instruções para rodar." rows={4} required/>
-          <div className="project-prompt-footer"><span>{description.length.toLocaleString("pt-BR")} / 4.000 · Cota compartilhada com o Chat</span>
+          <div className="project-prompt-footer"><span>{description.length.toLocaleString("pt-BR")} / 4.000 · Cota de projetos separada do Chat</span>
             {busy?<button className="project-secondary" type="button" onClick={()=>{setProgress("Cancelando...");request.current?.abort();}}><Square size={14}/> Cancelar</button>:
             <button className="primary-btn" type="submit" disabled={!description.trim()||loading}><Code2 size={17}/> Pesquisar e criar base</button>}
           </div>

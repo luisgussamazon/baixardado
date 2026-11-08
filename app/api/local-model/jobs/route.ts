@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getDevice } from "@/lib/model-device";
 import { apiError,isJson,isUuid,parseJson } from "@/lib/http";
+import { runDueStudy } from "@/lib/autonomous-study";
 export const runtime="nodejs";export const dynamic="force-dynamic";
 export async function POST(req:Request){
   try{
@@ -17,6 +18,9 @@ export async function POST(req:Request){
     }
     if(body.action==="poll"){
       if(Object.keys(body).length!==1)return apiError("Dados inválidos.");
+      await db.query("UPDATE local_model_devices SET last_seen=NOW() WHERE id=$1 AND user_id=$2",[device.id,device.user_id]);
+      // Apenas consultas públicas fixas, sem mensagens do usuário. Uma execução global por dia.
+      await runDueStudy().catch(()=>false);
       await db.query("UPDATE local_model_devices SET last_seen=NOW() WHERE id=$1 AND user_id=$2",[device.id,device.user_id]);
       await db.query("DELETE FROM local_model_jobs WHERE user_id=$1 AND expires_at<NOW()",[device.user_id]);
       const result=await db.query(`WITH candidate AS (SELECT id FROM local_model_jobs WHERE device_id=$1 AND user_id=$2 AND status='queued' AND expires_at>NOW()

@@ -177,6 +177,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
       </div>
       <div className="sidebar-bottom">
         {!collapsed&&<Link href="/conectar" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Conectar modelo do meu computador</Link>}
+        {!collapsed&&<Link href="/estudos" className="privacy-note">Estudos autom?ticos</Link>}
         {!collapsed&&<Link href="/laboratorio" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Laboratório científico · experimental</Link>}
         {!collapsed&&<div className="privacy-note"><ShieldCheck size={16}/><span>Conversas privadas e salvas</span></div>}
         <div className="profile"><div className="avatar">{email.slice(0,1).toUpperCase()}</div>{!collapsed&&<div className="profile-meta"><strong>Minha conta</strong><span title={email}>{email}</span></div>}<button className="icon-button logout" title="Sair" aria-label="Sair" onClick={signOut}><LogOut size={17}/></button></div>

@@ -12,6 +12,7 @@ let CookieStore:typeof import("next/dist/server/web/spec-extension/cookies").Res
 const users=["00000000-0000-4000-8000-000000000001","00000000-0000-4000-8000-000000000002"],conversations:string[]=[];
 async function query(sql:string,params?:unknown[]){const r=await pg.query(sql,params);return {rows:r.rows,rowCount:r.affectedRows??r.rows.length};}
 before(async()=>{
+  process.env.A3X_AUTO_STUDY="0"; // Coleta pública tem fixture separado; nunca rede real nesta suíte.
   Object.assign(globalThis,{AsyncLocalStorage});({db}=await import("../lib/db"));api=await import("../app/api/local-model/route");pair=await import("../app/api/local-model/pair/route");jobs=await import("../app/api/local-model/jobs/route");model=await import("../lib/local-model");chat=await import("../app/api/chat/route");
   ({workUnitAsyncStorage:storage}=await import("next/dist/server/app-render/work-unit-async-storage.external"));({workAsyncStorage:work}=await import("next/dist/server/app-render/work-async-storage.external"));({ResponseCookies:CookieStore}=await import("next/dist/server/web/spec-extension/cookies"));
   pg=new PGlite();await pg.exec((await readFile("sql/001_initial.sql","utf8")).replace("CREATE EXTENSION IF NOT EXISTS pgcrypto;",""));
