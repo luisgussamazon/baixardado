@@ -33,9 +33,9 @@ try {
   & git rm -r -q -- .
   if ($LASTEXITCODE -ne 0) { throw "Nao consegui remover o codigo antigo do clone." }
 
-  $Raizes = @('app','components','docs','lib','public','scripts','sql')
+  $Raizes = @('app','components','docs','lib','public','scripts','sql','tests','.github')
   $ArquivosRaiz = @('.env.example','.gitignore','AGENTS.md','README.md',
-     'next-env.d.ts','next.config.ts','package.json','railway.json','tsconfig.json')
+     'next-env.d.ts','next.config.ts','package.json','package-lock.json','railway.json','tsconfig.json')
   $Copiados = 0
 
   foreach ($File in Get-ChildItem -LiteralPath $Fonte -File -Recurse -Force) {

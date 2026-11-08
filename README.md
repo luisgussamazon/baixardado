@@ -21,7 +21,7 @@ Projeto independente, feito em **Next.js App Router + TypeScript + PostgreSQL + 
 ## Como usar no VS Code
 
 1. Extraia o ZIP, abra a pasta `a3x-ai` no VS Code.
-2. No terminal, execute `npm install`.
+2. No terminal, execute `npm ci` (instala as versões verificadas do `package-lock.json`).
 3. Copie `.env.example` para `.env.local` e edite `DATABASE_URL`, `OPENAI_API_KEY`, `BOOTSTRAP_SECRET` e (opcional) `AI_MODEL`.
 4. Com o PostgreSQL acessível, execute `npm run db:migrate`. O script lê automaticamente `.env.local` no Node.js 22 (recomendado).
 5. Execute `npm run dev` e abra `http://localhost:3000`.
@@ -59,18 +59,24 @@ Links: https://railway.com/guides/nextjs ; https://developers.openai.com/api/doc
 - Não possui upload de arquivos, pesquisa web, RAG, voz, cobrança por assinatura ou gestão de equipe. São módulos futuros, não funcionalidades já implementadas.
 - Limite de mensagens diário é por usuário, **não um teto financeiro garantido**. Configure limites de orçamento e alertas no provedor da API e no Railway.
 - O uso de modelos pela API pode gerar cobrança mesmo quando a resposta é interrompida. Revise retenção, termos e privacidade antes de abrir acesso ao público.
-- O endpoint `/api/health` confirma que o processo está de pé, não verifica banco nem provedor externo.
+- O endpoint `/api/health` retorna 200 somente com `DATABASE_URL` e `OPENAI_API_KEY` presentes e as tabelas necessárias acessíveis no PostgreSQL. Caso contrário, retorna 503 sem detalhes privados. Não chama a OpenAI nem verifica a validade da chave ou disponibilidade do modelo.
 - Ainda é um MVP. Antes de oferta comercial ou usuários públicos, adicione testes de integração, auditoria, observabilidade, recuperação de conta, proteção antiabuso, políticas e backups verificados.
-- Não foi possível rodar `npm install`, `npm run build` ou integração real com banco/API neste ambiente de criação sem acesso ao registro npm. Valide após instalar dependências.
+- A revisão local e seus limites estão em [docs/REVISAO-TECNICA.md](docs/REVISAO-TECNICA.md). Os testes usam PostgreSQL descartável via PGlite e transporte OpenAI simulado; homologação no Railway e integração com serviços reais continuam necessárias.
 
 ## Comandos úteis
 
 ```bash
-npm install
+npm ci
+npm test
 npm run typecheck
 npm run build
 npm run dev
 ```
+
+O CI em `.github/workflows/ci.yml` executa testes, tipos e build sem publicar.
+O início standalone usa `scripts/start.mjs`, respeita `PORT` e fixa a escuta em `0.0.0.0` para o Railway.
+Em produção, acesse a aplicação por HTTPS; cookies de sessão são seguros e operações de escrita exigem origem HTTPS correspondente ao host.
+O limite diário usa `CURRENT_DATE` do PostgreSQL (normalmente UTC no Railway); tentativas aceitas podem consumir a cota mesmo se o provedor falhar.
 
 ## Proteção de dados
 
