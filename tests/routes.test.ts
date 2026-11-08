@@ -72,6 +72,7 @@ test("stream completo persiste resposta; incompleto não persiste resposta parci
       if(sql.includes("RETURNING busy_until"))return result([{busy_until:"2099-01-01 00:00:00+00"}]);
       if(sql.includes("RETURNING requests"))return result([{requests:1}]);
       if(sql.includes("SELECT role,content"))return result([{role:"user",content:"teste"}]);
+      if(sql.includes("SELECT s.state"))return result([{state:{version:1,turns:1,topic:null,lastIntent:"web",goal:null,pendingWeb:{query:"teste",expires:Date.now()+600000}}}]);
       return result();
     };
     mock.method(db,"query",query);
@@ -81,11 +82,11 @@ test("stream completo persiste resposta; incompleto não persiste resposta parci
       return complete ? new Response('<rss><channel><item><title>Fonte de teste</title><link>https://example.com/doc</link><description>Trecho de pesquisa teste</description></item></channel></rss>') : new Response('unavailable',{status:503});
     });
     try {
-      const res=await session(true,()=>chat.POST(request("chat",{conversationId:id,message:"pesquise teste"})));
+      const res=await session(true,()=>chat.POST(request("chat",{conversationId:id,message:"confirmo envio à web"})));
       assert.equal(res.status,200);
       const text=await res.text();
       assert.match(text,complete?/event: done/:/event: failure/);
-      assert.equal(queries.some(sql=>sql.includes("VALUES($1,'assistant'")),complete);
+      assert.equal(queries.some(sql=>sql.includes("INSERT INTO messages")&&sql.includes("'assistant'")),complete);
       assert(queries.includes("COMMIT"));
       assert(queries.some(sql=>sql.includes("busy_until=$3")));
     } finally {
@@ -108,6 +109,7 @@ test("cancelar leitura interrompe transporte da busca e libera a conversa", asyn
     if(sql.includes("RETURNING busy_until"))return result([{busy_until:"2099-01-01 00:00:00+00"}]);
     if(sql.includes("RETURNING requests"))return result([{requests:1}]);
     if(sql.includes("SELECT role,content"))return result([{role:"user",content:"teste"}]);
+    if(sql.includes("SELECT s.state"))return result([{state:{version:1,turns:1,topic:null,lastIntent:"web",goal:null,pendingWeb:{query:"teste",expires:Date.now()+600000}}}]);
     if(sql.includes("busy_until=$3"))unlocked=true;
     return result();
   };
@@ -122,7 +124,7 @@ test("cancelar leitura interrompe transporte da busca e libera a conversa", asyn
     });
   });
   try {
-    const res=await session(true,()=>chat.POST(request("chat",{conversationId:id,message:"pesquise teste"})));
+    const res=await session(true,()=>chat.POST(request("chat",{conversationId:id,message:"confirmo envio à web"})));
     await started;
     await res.body!.cancel();
     for(let i=0;i<50&&!unlocked;i++)await new Promise(resolve=>setTimeout(resolve,10));

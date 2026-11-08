@@ -81,13 +81,14 @@ export default function ProgrammerApp({email,appName}:{email:string;appName:stri
     event.preventDefault();
     const prompt=description.trim();
     if(inFlight.current||loading||!prompt||description.length>PROJECT_LIMITS.description)return;
+    if(!window.confirm("Autoriza enviar esta descrição ao buscador público para pesquisar referências? Remova dados pessoais ou confidenciais antes de confirmar."))return;
     inFlight.current=true;setBusy(true);setError("");setProject(null);setActiveId(null);setProgress("Iniciando geração...");
     selection.current++;
     const abort=new AbortController();request.current=abort;
     let createdId="";
     try {
       const res=await fetch("/api/projects",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({description:prompt}),signal:abort.signal});
+        body:JSON.stringify({description:prompt,confirmWeb:true}),signal:abort.signal});
       if(!res.ok){
         const data=await res.json().catch(()=>({}));
         if(res.status===401)window.location.assign("/login");

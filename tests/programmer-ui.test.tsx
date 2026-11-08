@@ -20,6 +20,7 @@ before(async()=>{
     HTMLAnchorElement:dom.window.HTMLAnchorElement,MutationObserver:dom.window.MutationObserver,
     IS_REACT_ACT_ENVIRONMENT:true});
   Object.defineProperty(globalThis,"navigator",{configurable:true,value:dom.window.navigator});
+  dom.window.confirm=()=>true;
   ui=await import("@testing-library/react");
 });
 afterEach(()=>{ui.cleanup();mock.restoreAll();});
@@ -30,7 +31,7 @@ function transport(options:{failure?:boolean;empty?:boolean}={}){
     const url=String(input);
     if(url.endsWith("/download"))return new Response(new Uint8Array([80,75]),{headers:{"content-type":"application/zip"}});
     if(url==="/api/projects"&&init?.method==="POST"){
-      assert.deepEqual(JSON.parse(String(init.body)),{description:"Meu sistema de tarefas"});
+      assert.deepEqual(JSON.parse(String(init.body)),{description:"Meu sistema de tarefas",confirmWeb:true});
       return new Response(options.failure?'event: failure\ndata: {"message":"Cota local atingida"}\n\n':
         `event: started\ndata: {"id":"${id}"}\n\nevent: done\ndata: {"id":"${id}"}\n\n`);
     }

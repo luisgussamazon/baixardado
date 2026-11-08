@@ -37,6 +37,7 @@ before(async()=>{
   await pg.query("INSERT INTO messages(conversation_id,role,content) VALUES($1,'user','histórico anterior preservado')",[existing.rows[0].id]);
   const migration=await readFile("sql/002_programmer_projects.sql","utf8");
   await pg.exec(migration);await pg.exec(migration);
+  await pg.exec(await readFile("sql/006_cognitive_engine.sql","utf8"));
   assert.equal((await pg.query<{content:string}>("SELECT content FROM messages")).rows[0].content,"histórico anterior preservado");
 });
 after(async()=>{await pg.close();});
@@ -67,7 +68,7 @@ function session<T>(user:number|null,fn:()=>T){
   if(user!==null)cookies.set("a3x_session",`token-${user}`);
   return work.run({route:"/api/projects"} as never,()=>storage.run({type:"request",phase:"action",cookies,userspaceMutableCookies:cookies} as never,fn));
 }
-function request(body:unknown={description:"Sistema de tarefas"},origin="https://app.example"){
+function request(body:unknown={description:"Sistema de tarefas",confirmWeb:true},origin="https://app.example"){
   return new Request("https://app.example/api/projects",{method:"POST",headers:{host:"app.example",origin,"content-type":"application/json"},body:JSON.stringify(body)});
 }
 const context=(id:string)=>({params:Promise.resolve({id})});
@@ -201,4 +202,11 @@ test("reserva impede geração simultânea; cancelamento aborta provedor e regis
   }
   assert.equal(aborted,true);assert.equal(status,"failed");
   assert.equal((await pg.query<{requests:number}>("SELECT requests FROM daily_usage")).rows[0].requests,1);
+});
+
+test("Programador não envia descrição à web sem confirmação explícita",async()=>{
+  const network=mock.method(globalThis,"fetch",async()=>{throw new Error("Não deve acessar rede");});
+  const response=await session(0,()=>projects.POST(request({description:"Contato pessoa@example.com"})));
+  assert.equal(response.status,403);assert.equal(network.mock.calls.length,0);
+  assert.equal((await pg.query("SELECT * FROM programmer_projects")).rows.length,0);
 });

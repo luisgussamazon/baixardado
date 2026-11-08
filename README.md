@@ -1,5 +1,9 @@
 # A3X AI — pesquisa na web com histórico privado
 
+O [A3X Cognitive Engine](docs/A3X-COGNITIVE-ENGINE.md) adiciona personalidade executiva original, interpretação por regras, planos com estado persistido e memória privada aprovada em `/memoria`. Não usa modelos generativos. Para começar: `planeje estudar TypeScript`, depois `iniciar plano`. Fatos, preferências e correções precisam de aprovação explícita. O Programador exige confirmação antes de enviar sua descrição ao buscador.
+
+No Chat, `pesquise ...` prepara a consulta; confirme com `confirmo envio à web` para autorizar seu envio. A confirmação vale apenas para aquela consulta, por até dez minutos.
+
 Aplicação independente em Next.js 15, React 19, TypeScript e PostgreSQL. A versão atual **não usa OpenAI, outro modelo generativo nem download de modelos**. Pesquisa fontes públicas e organiza resultados e trechos, sem inventar sínteses. A3X AI é a marca do produto; não é um modelo treinado do zero.
 
 O Chat também possui [conversa local por intenções e contexto](docs/CONVERSA-LOCAL.md): cumprimentos, nome no contexto recente, perguntas de continuidade, planejamento inicial e contas simples. Não envia essas mensagens à web. Escreva **pesquise** seguido do assunto para consultar fontes, ou confirme uma oferta de pesquisa. Não equivale a um modelo de linguagem e não compreende assuntos arbitrários.

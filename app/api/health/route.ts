@@ -11,7 +11,9 @@ export async function GET() {
         to_regclass('conversations') IS NOT NULL AND to_regclass('messages') IS NOT NULL AND
         to_regclass('daily_usage') IS NOT NULL AND to_regclass('login_attempts') IS NOT NULL AND
         to_regclass('programmer_projects') IS NOT NULL AND
-        to_regclass('knowledge_entries') IS NOT NULL AS ready`);
+        to_regclass('knowledge_entries') IS NOT NULL AND
+        to_regclass('cognitive_records') IS NOT NULL AND
+        to_regclass('cognitive_dialogue_states') IS NOT NULL AS ready`);
       ready = result.rows[0]?.ready === true;
     } catch { /* Não expor configuração ou detalhes de conexão no endpoint público. */ }
   }

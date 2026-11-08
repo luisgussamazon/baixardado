@@ -24,6 +24,7 @@ export async function POST(req:Request) {
     if (!data || typeof data.description !== "string" || !data.description.trim() || data.description.includes("\0") || data.description.length > PROJECT_LIMITS.description)
       return apiError("Descreva o sistema em até 4.000 caracteres.");
     if (req.signal.aborted) return apiError("Solicitação cancelada.",400);
+    if(data.confirmWeb!==true)return apiError("Confirme o envio da descrição ao buscador público antes de criar o projeto.",403);
     const description=data.description.trim();
     const id=await reserveProject(user.id,description);
     return new Response(generateProjectStream(req,id,user.id,description),{headers:{
