@@ -1,0 +1,22 @@
+{
+  "archive": "A3X-AI-Base-Conhecimento-Programacao-v1.zip",
+  "archive_sha256": "49a9b22433ba7e39d6d43a1762706b946bd97cc045aa9b4f6dc76b6643cc7a08",
+  "files": {
+    "entries.jsonl": {
+      "sha256": "601f730a9f4992512178e558e3742cccc3469950900be2791c26035be4ad5ed7",
+      "bytes": 29029
+    },
+    "evaluation.jsonl": {
+      "sha256": "2156e2e198e7fffc2f012db0d5596e6666c908440ee8fa9c71ff1e9a91ba84a7",
+      "bytes": 2413
+    },
+    "FONTES-E-LICENCAS.md": {
+      "sha256": "9b39fac2ef597bd33ca8e4f01def0613ae3da3a911a458b42d9646a7ffe4e166",
+      "bytes": 2019
+    },
+    "REFERENCIA-DO-PACOTE.md": {
+      "sha256": "b85c0adf1d24b3a0fc14d175ad93290ba674192d9e1f1fa842410024961c1af7",
+      "bytes": 3953
+    }
+  }
+}

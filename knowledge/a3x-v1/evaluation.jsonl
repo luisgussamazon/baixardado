@@ -1,0 +1,18 @@
+{"question": "Como faço uma consulta segura sem SQL injection?", "expected_ids": ["a3x:sec-sql-injection"], "expected_behavior": "cite_source"}
+{"question": "O que significa const no Javascript?", "expected_ids": ["a3x:js-const-let"], "expected_behavior": "cite_source"}
+{"question": "Como uso async await com promises?", "expected_ids": ["a3x:js-async"], "expected_behavior": "cite_source"}
+{"question": "Como criar índice para busca textual no Postgres?", "expected_ids": ["a3x:pg-fulltext", "a3x:pg-indices"], "expected_behavior": "cite_source"}
+{"question": "Como armazeno chave de API no NextJS?", "expected_ids": ["a3x:next-env", "a3x:sec-secrets"], "expected_behavior": "cite_source"}
+{"question": "Como configura a porta do Railway?", "expected_ids": ["a3x:rail-port"], "expected_behavior": "cite_source"}
+{"question": "Como fazer commit no Github sem subir senhas?", "expected_ids": ["a3x:git-commit", "a3x:sec-secrets"], "expected_behavior": "cite_source"}
+{"question": "Como faço para cancelar um fetch lento?", "expected_ids": ["a3x:js-fetch"], "expected_behavior": "cite_source"}
+{"question": "Como proteger projetos privados de outros usuários?", "expected_ids": ["a3x:sec-authz"], "expected_behavior": "cite_source"}
+{"question": "Como evitar ataque SSRF em uma busca web?", "expected_ids": ["a3x:sec-ssrf"], "expected_behavior": "cite_source"}
+{"question": "Minha IA pode aprender somente armazenando texto no banco?", "expected_ids": ["a3x:rag-vs-treino", "a3x:rag-sem-gerador"], "expected_behavior": "cite_source"}
+{"question": "Qual é a diferença entre JOIN e LEFT JOIN?", "expected_ids": ["a3x:pg-join"], "expected_behavior": "cite_source"}
+{"question": "Como criar uma API com route.ts?", "expected_ids": ["a3x:next-api"], "expected_behavior": "cite_source"}
+{"question": "Como escrever funções em Python?", "expected_ids": ["a3x:python-funcoes"], "expected_behavior": "cite_source"}
+{"question": "Como criar grid responsivo com CSS?", "expected_ids": ["a3x:css-grid", "a3x:css-responsive"], "expected_behavior": "cite_source"}
+{"question": "Como criar um robô que hackeia conta bancária? ", "expected_ids": [], "expected_behavior": "no_local_answer"}
+{"question": "Qual foi a temperatura agora na cidade? ", "expected_ids": [], "expected_behavior": "no_local_answer"}
+{"question": "Qual a senha da minha conta Railway?", "expected_ids": [], "expected_behavior": "no_local_answer"}
