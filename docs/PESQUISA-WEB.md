@@ -1,5 +1,7 @@
 # Revisão: pesquisa sem modelo e inicialização do banco
 
+Este registro descreve a versão de busca publicada anteriormente. O motor de diálogo adicionado depois é documentado em [CONVERSA-LOCAL.md](CONVERSA-LOCAL.md): mensagens locais não são mais encaminhadas automaticamente à busca.
+
 ## Decisão
 
 O responsável autorizou refazer e publicar sem OpenAI; esclareceu que não quer baixar modelo e quer manter o histórico. A aplicação agora apresenta resultados e trechos com fontes, sem alegar ser um modelo generativo.

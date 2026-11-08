@@ -81,7 +81,7 @@ test("stream completo persiste resposta; incompleto não persiste resposta parci
       return complete ? new Response('<rss><channel><item><title>Fonte de teste</title><link>https://example.com/doc</link><description>Trecho de pesquisa teste</description></item></channel></rss>') : new Response('unavailable',{status:503});
     });
     try {
-      const res=await session(true,()=>chat.POST(request("chat",{conversationId:id,message:"teste"})));
+      const res=await session(true,()=>chat.POST(request("chat",{conversationId:id,message:"pesquise teste"})));
       assert.equal(res.status,200);
       const text=await res.text();
       assert.match(text,complete?/event: done/:/event: failure/);
@@ -122,7 +122,7 @@ test("cancelar leitura interrompe transporte da busca e libera a conversa", asyn
     });
   });
   try {
-    const res=await session(true,()=>chat.POST(request("chat",{conversationId:id,message:"teste"})));
+    const res=await session(true,()=>chat.POST(request("chat",{conversationId:id,message:"pesquise teste"})));
     await started;
     await res.body!.cancel();
     for(let i=0;i<50&&!unlocked;i++)await new Promise(resolve=>setTimeout(resolve,10));

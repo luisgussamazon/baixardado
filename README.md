@@ -2,11 +2,13 @@
 
 Aplicação independente em Next.js 15, React 19, TypeScript e PostgreSQL. A versão atual **não usa OpenAI, outro modelo generativo nem download de modelos**. Pesquisa fontes públicas e organiza resultados e trechos, sem inventar sínteses. A3X AI é a marca do produto; não é um modelo treinado do zero.
 
+O Chat também possui [conversa local por intenções e contexto](docs/CONVERSA-LOCAL.md): cumprimentos, nome no contexto recente, perguntas de continuidade, planejamento inicial e contas simples. Não envia essas mensagens à web. Escreva **pesquise** seguido do assunto para consultar fontes, ou confirme uma oferta de pesquisa. Não equivale a um modelo de linguagem e não compreende assuntos arbitrários.
+
 ## Funcionalidades
 
 - Login com scrypt, sessão HttpOnly e histórico privado por usuário.
 - Primeiro acesso em `/setup`, protegido por `BOOTSTRAP_SECRET`, encerrado após criar a primeira conta.
-- Chat de pesquisa: resultados e trechos com links; SSE e salvamento no histórico.
+- Chat: conversa local por regras e contexto; pesquisa com fontes sob pedido, SSE e salvamento no histórico.
 - Busca geral via RSS público do Bing. Se indisponível, busca enciclopédica via Wikipedia em português, identificada como tal. Sem garantia de disponibilidade, cobertura ou ordenação.
 - Programador: pesquisa técnica e **template estático** de cinco arquivos (README, pesquisa, HTML, CSS e JavaScript). As regras de negócio descritas não são implementadas automaticamente. Projetos antigos permanecem privados e disponíveis.
 - Árvore de pastas, destaque de sintaxe, cópia e ZIP autorizado por proprietário.
@@ -63,7 +65,7 @@ CI em `.github/workflows/ci.yml`, sem deploy. Testes usam PostgreSQL descartáve
 - Pergunta/descrição até 4.000 caracteres. Cota usa a data do PostgreSQL; tentativas reservadas contam mesmo se falharem ou forem canceladas.
 - Histórico: 100 conversas recentes, 200 mensagens por conversa; até 100 projetos por usuário.
 - Arquivos: 2 a 20, 32 KiB por arquivo, 128 KiB no total, caminhos de 160 caracteres e 8 níveis. Traversal, colisões, `.git`, dispositivos Windows e `.env` (salvo `.env.example`) são bloqueados.
-- Cada pergunta é uma consulta independente, sem contexto semântico. Sem raciocínio generativo ou criação automática de sistemas completos.
+- O diálogo local usa até 24 mensagens recentes da mesma conversa; cada busca externa continua sendo uma consulta independente. Sem raciocínio generativo ou criação automática de sistemas completos.
 - RSS público não é API comercial contratada; revisar termos e contratar uma API de busca antes de oferta comercial. Não contornamos CAPTCHA ou bloqueios.
 - Sem upload, voz, cobrança, recuperação de conta, convites ou administração de equipe. Configure backups e proteção de borda.
 - `.env*` e `.tools/` são ignorados pelo Git. Nunca versione segredos. Repositório público.
