@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import ModeSwitch from "@/components/mode-switch";
+import Link from "next/link";
 import {
   ArrowUp, Bot, Check, Copy, FileText, Lightbulb, Menu,
   MessageSquare, PanelLeftClose, Plus, ShieldCheck,
@@ -178,7 +179,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
     <main className="main-chat">
       <header className="chat-topbar">
         <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/> Conversa local e pesquisa sob pedido</span></div></div>
-        <ModeSwitch mode="chat" disabled={busy}/>
+        <div className="cognitive-nav"><ModeSwitch mode="chat" disabled={busy}/><Link href="/memoria" aria-disabled={busy} onClick={event=>{if(busy)event.preventDefault();}}>Minha memória</Link></div>
       </header>
       <div className="conversation-scroll">
         <div className="conversation-content">

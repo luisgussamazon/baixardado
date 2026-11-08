@@ -2,9 +2,11 @@ import { searchWeb, researchMarkdown } from "@/lib/web-search";
 import { db } from "@/lib/db";
 import { apiError, isJson, isUuid, parseJson } from "@/lib/http";
 import { getUser, validOrigin } from "@/lib/security";
-import { converse, type ConversationTurn } from "@/lib/local-conversation";
+import type { ConversationTurn } from "@/lib/local-conversation";
 import { shouldLookupPersonalKnowledge } from "@/lib/dialogue-knowledge";
 import { searchKnowledge, knowledgeMarkdown } from "@/lib/knowledge-search";
+import { decide, confidenceNote } from "@/lib/cognitive/engine";
+import { loadCognitiveContext, persistDialogueReply } from "@/lib/cognitive/store";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -52,7 +54,11 @@ export async function POST(req: Request) {
         WHERE c.id=$1 AND c.user_id=$2 ORDER BY m.id DESC LIMIT 25
       ) recent ORDER BY id ASC`,[id,user.id]);
       // A pergunta atual já está salva e é passada separadamente ao motor.
-      const decision=converse(message,history.rows.slice(0,-1));
+      const dialogueHistory=history.rows.slice(0,-1);
+      const context=await loadCognitiveContext(user.id,id);
+      const cognitive=decide(message,dialogueHistory,context.state,context.records);
+      const decision=cognitive.route==="web"?{kind:"search" as const,query:cognitive.query!}:
+        {kind:"reply" as const,text:cognitive.text,knowledgeQuery:cognitive.route==="unknown"?cognitive.query:undefined};
       const encoder = new TextEncoder();
       const abort = new AbortController();
       let cancelled = false;
@@ -74,14 +80,16 @@ export async function POST(req: Request) {
               const research = decision.kind==="search" ? await searchWeb(decision.query,abort.signal) : null;
               abort.signal.throwIfAborted();
               let unavailable=false;
-              const hits=decision.kind==="reply"&&(decision.knowledgeQuery||shouldLookupPersonalKnowledge(message))?
+              const hits=decision.kind==="reply"&&!cognitive.protected&&(decision.knowledgeQuery||shouldLookupPersonalKnowledge(message))?
                 await searchKnowledge(decision.knowledgeQuery??message,user.id).catch(()=>{unavailable=true;return [];}):[];
               const relevantHits=decision.kind==="reply"&&!decision.knowledgeQuery?hits.filter(hit=>hit.scope==="private"):hits;
               full = decision.kind==="reply" ? (relevantHits.length?knowledgeMarkdown(relevantHits):
                 (unavailable?"A base local está temporariamente indisponível.\n\n":"")+decision.text) : researchMarkdown(research!);
+              const confidence=relevantHits.length?"moderada":cognitive.confidence;
+              const reason=relevantHits.length?"recuperação textual; confira a fonte":cognitive.reason;
+              full+=confidenceNote(confidence,reason);
+              await persistDialogueReply(user.id,id,cognitive.state,full);
               send("delta",{text:full});
-              await db.query("INSERT INTO messages(conversation_id,role,content) VALUES($1,'assistant',$2)",[id,full]);
-              await db.query("UPDATE conversations SET updated_at=NOW() WHERE id=$1 AND user_id=$2",[id,user.id]);
               send("done",{ok:true});
             } catch (error) {
               console.error("Falha ao responder à conversa.");

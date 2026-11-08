@@ -35,6 +35,7 @@ before(async()=>{
   await pg.query("INSERT INTO conversations(user_id,title) VALUES($1,'Conversa anterior')",[users[0]]);
   const migration=await readFile("sql/003_knowledge_entries.sql","utf8");
   await pg.exec(migration);await pg.exec(migration);
+  await pg.exec(await readFile("sql/006_cognitive_engine.sql","utf8"));
   assert.equal((await pg.query<{title:string}>("SELECT title FROM conversations")).rows[0].title,"Conversa anterior");
   rows=parseKnowledgeJsonl(await readFile(file,"utf8"));
   await importKnowledge({query},rows);
@@ -107,7 +108,8 @@ test("Chat cita a base sem rede; saudações e busca web preservam seus caminhos
   const body=await reply.text();assert.match(body,/SQL/);assert.match(body,/Fonte: cart|Base de Conhecimento/);assert.match(body,/sql-basico|a3x:sec-sql-injection/);
   assert.equal(network.mock.calls.length,0);
   const hello=await session(0,()=>chat.POST(req("fala comigo",id)));assert.match(await hello.text(),/Vamos conversar/);
-  const web=await session(0,()=>chat.POST(req("pesquise SQL injection",id)));await web.text();assert(network.mock.calls.length>0);
+  const web=await session(0,()=>chat.POST(req("pesquise SQL injection",id)));await web.text();assert.equal(network.mock.calls.length,0);
+  await (await session(0,()=>chat.POST(req("confirmo envio à web",id)))).text();assert(network.mock.calls.length>0);
 });
 
 test("importador rejeita dados inválidos e rollback evita importação parcial",async()=>{
@@ -150,7 +152,7 @@ test("Programador inclui conhecimento privado somente no projeto do proprietári
   mock.method(globalThis,'fetch',async()=>new Response('<rss><channel><item><title>zirconioprojeto</title><link>https://example.com/doc</link><description>Referência de teste</description></item></channel></rss>'));
   for(const owner of [0,1]){
     const res=await session(owner,()=>projects.POST(new Request('https://app.example/api/projects',{method:'POST',
-      headers:{host:'app.example',origin:'https://app.example','content-type':'application/json'},body:JSON.stringify({description:'zirconioprojeto'})})));
+      headers:{host:'app.example',origin:'https://app.example','content-type':'application/json'},body:JSON.stringify({description:'zirconioprojeto',confirmWeb:true})})));
     assert.equal(res.status,200);assert.match(await res.text(),/event: done/);
     const saved=await pg.query<{files:{path:string;content:string}[]}>("SELECT files FROM programmer_projects WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1",[users[owner]]);
     assert.equal(JSON.stringify(saved.rows[0].files).includes('Conteúdo exclusivo do proprietário'),owner===0);
