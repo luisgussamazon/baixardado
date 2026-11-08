@@ -31,3 +31,17 @@ test("falha no carregamento de memória aparece sem expor conteúdo de outras co
   ui.render(<Component/>);assert.match((await ui.screen.findByRole("alert")).textContent!,/Faça login/);
   assert.equal(ui.screen.queryByText("Idioma"),null);
 });
+test("identidade de criador só é salva e aprovada após confirmação do nome",async()=>{
+  const records:unknown[]=[];let writes=0;
+  mock.method(globalThis,"fetch",async(_url:unknown,init?:RequestInit)=>{
+    if(init?.method==="POST"){writes++;const body=JSON.parse(String(init.body));assert.equal(body.label,"Criador do A3X AI");assert.equal(body.value,"Criador Teste");return Response.json({record:{id:"creator-test",...body,status:"pending"}});}
+    if(init?.method==="PATCH"){writes++;records.push({id:"creator-test",kind:"fact",label:"Criador do A3X AI",value:"Criador Teste",status:"approved"});return Response.json({record:{id:"creator-test",status:"approved"}});}
+    return Response.json({records});
+  });
+  const confirm=mock.method(dom.window,"confirm",()=>false);ui.render(<Component/>);
+  await ui.screen.findByText("Nenhum registro. O histórico de conversas não é aprendido automaticamente.");
+  ui.fireEvent.change(ui.screen.getByLabelText("Seu nome como criador"),{target:{value:"Criador Teste"}});
+  ui.fireEvent.click(ui.screen.getByRole("button",{name:"Salvar e aprovar meu perfil de criador"}));assert.equal(writes,0);
+  confirm.mock.mockImplementation(()=>true);ui.fireEvent.click(ui.screen.getByRole("button",{name:"Salvar e aprovar meu perfil de criador"}));
+  await ui.screen.findByText("Identidade de criador aprovada. Experimente perguntar no Chat quem criou o A3X.");assert.equal(writes,2);
+});

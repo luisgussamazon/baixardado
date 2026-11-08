@@ -2,6 +2,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import type { MemoryKind, MemoryRecord } from "@/lib/cognitive/types";
+import { CREATOR_LABEL,isCreatorLabel,validCreatorName,creatorProfile } from "@/lib/cognitive/creator";
 import styles from "./knowledge-app.module.css";
 const names:Record<MemoryKind,string>={fact:"Fato",preference:"Preferência",correction:"Correção",feedback:"Feedback"};
 async function request(url:string,init?:RequestInit){
@@ -11,9 +12,11 @@ async function request(url:string,init?:RequestInit){
 export default function CognitiveMemory(){
   const [records,setRecords]=useState<MemoryRecord[]>([]),[kind,setKind]=useState<MemoryKind>("fact");
   const [label,setLabel]=useState(""),[value,setValue]=useState(""),[question,setQuestion]=useState("");
+  const [creatorName,setCreatorName]=useState("");
   const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(""),[notice,setNotice]=useState("");
   const load=async()=>{const data=await request("/api/cognitive/records");setRecords(data.records);};
   useEffect(()=>{let active=true;request("/api/cognitive/records").then(data=>{if(active)setRecords(data.records);}).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[]);
+  useEffect(()=>{try{const name=new URLSearchParams(window.location.hash.slice(1)).get("criador");if(name&&validCreatorName(name))setCreatorName(name);}catch{/* Fragmento inválido não altera o perfil. */}},[]);
   async function submit(event:FormEvent){
     event.preventDefault();if(busy)return;setBusy(true);setError("");setNotice("");
     try{await request("/api/cognitive/records",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind,label,value,question:kind==="correction"?question:null})});setLabel("");setValue("");setQuestion("");await load();setNotice("Proposta salva. Revise e clique em Aprovar para permitir seu uso.");}
@@ -25,8 +28,23 @@ export default function CognitiveMemory(){
     try{await request(`/api/cognitive/records/${record.id}`,action==="approve"?{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"approve"})}:{method:"DELETE"});await load();setNotice(action==="approve"?"Registro aprovado para uso privado.":"Registro excluído.");}
     catch(e){setError(e instanceof Error?e.message:"Falha na operação.");}finally{setBusy(false);}
   }
+  async function saveCreator(event:FormEvent){
+    event.preventDefault();const name=creatorName.trim();if(busy||!validCreatorName(name))return;
+    if(!window.confirm(`Autoriza reconhecer ${name} como criador do aplicativo A3X AI nesta conta? A identificação é privada e não altera permissões.`))return;
+    setBusy(true);setError("");setNotice("");
+    try{
+      const data=await request("/api/cognitive/records",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind:"fact",label:CREATOR_LABEL,value:name,question:null})});
+      await request(`/api/cognitive/records/${data.record.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"approve"})});
+      await load();setCreatorName("");setNotice("Identidade de criador aprovada. Experimente perguntar no Chat quem criou o A3X.");
+    }catch(e){setError(e instanceof Error?e.message:"Falha ao definir identidade.");await load().catch(()=>{});}finally{setBusy(false);}
+  }
+  const creator=creatorProfile(records),hasCreator=records.some(record=>isCreatorLabel(record.label));
   return <main className={styles.page}><div className={styles.shell}>
     <header className={styles.top}><div><div className={styles.eyebrow}>A3X COGNITIVE ENGINE</div><h1>Minha memória</h1><p>Você decide o que autoriza. Propostas não são usadas até sua aprovação.</p></div><nav className={styles.nav}><Link href="/chat">Chat</Link><Link href="/programador">Programador</Link><Link href="/ensinar">Ensinar</Link><Link href="/laboratorio">Laboratório</Link></nav></header>
+    {error&&<p role="alert" className={styles.error}>{error}</p>}{notice&&<p role="status" className={styles.success}>{notice}</p>}
+    <section className={styles.panel} aria-label="Identidade do criador"><h2>Identidade do criador</h2><p className={styles.hint}>Perfil privado de reconhecimento do criador do aplicativo. Não concede acesso administrativo nem afirma autoria do modelo Qwen. Para alterar, exclua o registro anterior no acervo abaixo.</p>
+      {creator?<p role="status">Criador reconhecido nesta conta: <strong>{creator.name}</strong>.</p>:hasCreator?<p>Existe um perfil pendente ou conflitante. Revise e aprove ou exclua o registro abaixo.</p>:<form className={styles.form} onSubmit={saveCreator}><label>Seu nome como criador <input required maxLength={80} value={creatorName} disabled={busy||loading} onChange={e=>setCreatorName(e.target.value)}/></label><div className={styles.actions}><button className={styles.primary} disabled={busy||loading||!validCreatorName(creatorName.trim())} type="submit">Salvar e aprovar meu perfil de criador</button></div></form>}
+    </section>
     <div className={styles.layout}><section className={styles.panel}><h2>Propor registro</h2>
       <p className={styles.hint}>Não inclua senhas ou tokens. Fatos e preferências aprovados podem ser consultados no Chat. Para definir o estilo, use preferência com título “tom” e valor executivo, acolhedor ou objetivo. Correções só respondem à pergunta cadastrada. Feedback fica registrado para sua revisão; não altera regras automaticamente.</p>
       <form className={styles.form} onSubmit={submit}><label>Tipo <select className="cognitive-select" value={kind} disabled={busy} onChange={e=>setKind(e.target.value as MemoryKind)}>{Object.entries(names).map(([key,name])=><option key={key} value={key}>{name}</option>)}</select></label>
@@ -34,7 +52,7 @@ export default function CognitiveMemory(){
         {kind==="correction"&&<label>Pergunta exata <input required maxLength={500} value={question} onChange={e=>setQuestion(e.target.value)} disabled={busy}/></label>}
         <label>{kind==="correction"?"Resposta corrigida":"Conteúdo"} <textarea required maxLength={4000} rows={6} value={value} onChange={e=>setValue(e.target.value)} disabled={busy}/></label>
         <div className={styles.actions}><button className={styles.primary} disabled={busy||loading} type="submit">{busy?"Processando...":"Salvar proposta"}</button></div>
-      </form>{error&&<p role="alert" className={styles.error}>{error}</p>}{notice&&<p role="status" className={styles.success}>{notice}</p>}
+      </form>
     </section><section className={styles.panel}><h2>Registros privados · {records.length}/200</h2>
       {loading?<p role="status">Carregando...</p>:records.length===0?<p className={styles.hint}>Nenhum registro. O histórico de conversas não é aprendido automaticamente.</p>:<div className={styles.list}>{records.map(r=><article key={r.id} className={styles.entry}><span className={styles.topic}>{names[r.kind]} · {r.status==="approved"?"Aprovado":"Aguardando aprovação"}</span><h3>{r.label}</h3>{r.question&&<p className={styles.question}>{r.question}</p>}<p className={styles.answer}>{r.value}</p><div className={styles.row}>{r.status==="pending"&&<button disabled={busy} onClick={()=>void act(r,"approve")}>Aprovar</button>}<button className={styles.danger} disabled={busy} onClick={()=>void act(r,"delete")}>Excluir</button></div></article>)}</div>}
       <p className={styles.footer}>Excluir revoga o uso futuro do registro. Respostas já salvas continuam no histórico. Nenhum registro é compartilhado com outras contas.</p>

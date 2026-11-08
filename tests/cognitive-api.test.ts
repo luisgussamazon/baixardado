@@ -79,3 +79,18 @@ test("cota de memória é aplicada no banco e exclusão da conversa limpa seu es
   assert.equal((await pg.query("SELECT * FROM cognitive_dialogue_states WHERE conversation_id=$1",[conversations[0]])).rows.length,0);
   assert.equal((await pg.query("SELECT * FROM knowledge_entries")).rows.length,113);
 });
+test("perfil de criador permanece privado, aprovado separadamente e único por conta",async()=>{
+  await pg.exec("DELETE FROM cognitive_records");
+  const payload={kind:"fact",label:"Criador do A3X AI",value:"Criador Teste"};
+  const created=await session(0,()=>api.POST(request("POST",payload)));assert.equal(created.status,201);
+  const {record}=await created.json();assert.equal(record.status,"pending");
+  assert.equal((await session(0,()=>api.POST(request("POST",payload)))).status,409);
+  assert.equal((await session(1,()=>api.POST(request("POST",{...payload,value:"Outro Criador"})))).status,201);
+  assert.equal((await session(1,()=>item.PATCH(request("PATCH",{action:"approve"}),{params:Promise.resolve({id:record.id})}))).status,404);
+  assert.equal((await session(0,()=>item.PATCH(request("PATCH",{action:"approve"}),{params:Promise.resolve({id:record.id})}))).status,200);
+  const {creatorProfile}=await import("../lib/cognitive/creator");
+  assert.equal(creatorProfile((await store.loadCognitiveContext(users[0],conversations[0])).records)?.name,"Criador Teste");
+  assert.equal(creatorProfile((await store.loadCognitiveContext(users[1],conversations[1])).records),null);
+  await session(0,()=>item.DELETE(request("DELETE"),{params:Promise.resolve({id:record.id})}));
+  assert.equal(creatorProfile((await store.loadCognitiveContext(users[0],conversations[0])).records),null);
+});

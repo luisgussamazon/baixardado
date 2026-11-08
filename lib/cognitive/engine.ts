@@ -2,6 +2,7 @@ import { converse, type ConversationTurn } from "../local-conversation";
 import { enhanceA3XReply } from "../a3x-personality";
 import { interpret, normalize, containsPersonalData } from "./interpret";
 import { initialState, type CognitiveDecision, type DialogueState, type MemoryRecord } from "./types";
+import { creatorProfile,creatorQuestion } from "./creator";
 const escape=(text:string)=>text.replace(/[\\`*_{}\[\]<>#!|]/g,"\\$&");
 export function decide(message:string,history:ConversationTurn[],previous:DialogueState=initialState(),records:MemoryRecord[]=[],now=Date.now()):CognitiveDecision {
   const interpretation=interpret(message),text=normalize(message);
@@ -18,6 +19,10 @@ export function decide(message:string,history:ConversationTurn[],previous:Dialog
   }
   // Consentimento vale apenas para a pesquisa imediatamente pendente, não para futuras consultas.
   state.pendingWeb=null;
+  const creator=creatorProfile(approved);
+  if(creatorQuestion(message))return done(creator?
+    `Sim, **${escape(creator.name)}**. Nesta conta, reconheço você como criador e responsável pelo projeto A3X AI. O modelo de linguagem utilizado é um componente aberto de terceiros.\n\nPerfil privado aprovado por você · Registro: ${escape(creator.sourceId)}.`:
+    "Ainda não há um perfil de criador aprovado e sem conflitos nesta conta. Em [Minha memória](/memoria), defina seu nome na seção Identidade do criador e aprove o perfil. Essa identificação não altera permissões.",creator?"alta":"baixa","perfil privado de criador, sem alteração de privilégios");
   if(interpretation.intent==="identity")return done("Sou o A3X, um assistente tecnológico executivo feito de software. Uso um modelo aberto quando seu computador está conectado, além de memória autorizada e pesquisa sob pedido. Não sou humano nem consciente. Sem computador conectado, respondo por regras. Qual prioridade você quer organizar?");
   if(interpretation.intent==="memory"){
     if(/^(?:minhas preferencias|minha memoria|o que)/.test(text)){
@@ -63,7 +68,8 @@ export function decide(message:string,history:ConversationTurn[],previous:Dialog
   let tone:"executivo"|"acolhedor"|"objetivo"="executivo";
   const preference=approved.find(r=>r.kind==="preference"&&normalize(r.label)==="tom");
   if(preference&&["executivo","acolhedor","objetivo"].includes(preference.value))tone=preference.value as typeof tone;
-  const original=enhanceA3XReply({message,history,decision:base,original:base.text,hasKnowledge:base.text.startsWith("**A3X •"),tone});
+  let original=enhanceA3XReply({message,history,decision:base,original:base.text,hasKnowledge:base.text.startsWith("**A3X •"),tone});
+  if(creator&&/^(oi|ola|bom dia|boa tarde|boa noite|fala comigo|conversa comigo)[!?. ]*$/.test(text))original=original.replace(/^Olá[!,.]?/,`Olá, ${escape(creator.name)}!`);
   const unknown=!!base.knowledgeQuery&&original.includes("Quer que eu pesquise fontes sobre isso?");
   return {...done(original,unknown?"baixa":"moderada",unknown?"nenhuma correspondência local confiável":"correspondência em regras editoriais",false),route:unknown?"unknown":"knowledge",query:base.knowledgeQuery??message};
 }
