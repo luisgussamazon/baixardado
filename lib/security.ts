@@ -15,7 +15,7 @@ export async function hashPassword(password: string) {
 }
 export async function verifyPassword(password: string, stored: string) {
   const [salt, saved] = stored.split(":");
-  if (!salt || !saved || !/^[0-9a-f]{128}$/i.test(saved)) return false;
+  if (!/^[0-9a-f]{48}$/i.test(salt ?? "") || !/^[0-9a-f]{128}$/i.test(saved ?? "")) return false;
   const derived = await scrypt(password, salt, 64) as Buffer;
   const previous = Buffer.from(saved, "hex");
   return timingSafeEqual(derived, previous);
@@ -60,7 +60,11 @@ export function validOrigin(req: Request) {
   const origin = req.headers.get("origin");
   const host = req.headers.get("host");
   if (!origin || !host) return false;
-  try {return new URL(origin).host === host;} catch {return false;}
+  try {
+    const parsed = new URL(origin);
+    return ["http:", "https:"].includes(parsed.protocol) && parsed.host === host &&
+      (process.env.NODE_ENV !== "production" || parsed.protocol === "https:");
+  } catch {return false;}
 }
 export async function loginAllowed(key: string) {
   // Janela móvel aproximada de 15 minutos; bloqueio a partir da 9ª tentativa.

@@ -19,7 +19,7 @@ export default function AuthForm({mode}:{mode:"login"|"setup"}) {
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({email,password,...(isSetup?{setupKey}:{})}),
       });
-      const result = await response.json();
+      const result = await response.json().catch(()=>({error:"Serviço temporariamente indisponível. Tente novamente."}));
       if (!response.ok) throw new Error(result.error || "Não foi possível entrar.");
       router.replace("/chat");router.refresh();
     } catch(error) {setError(error instanceof Error ? error.message:"Erro desconhecido.");}

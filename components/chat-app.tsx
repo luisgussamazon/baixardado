@@ -3,8 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import ModeSwitch from "@/components/mode-switch";
 import {
-  ArrowUp, Bot, Check, ChevronDown, Copy, FileText, Lightbulb, Menu,
+  ArrowUp, Bot, Check, Copy, FileText, Lightbulb, Menu,
   MessageSquare, PanelLeftClose, Plus, ShieldCheck,
   Sparkles, Trash2, X, LogOut, Code2, Zap
 } from "lucide-react";
@@ -38,6 +39,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
   const [collapsed,setCollapsed] = useState(false);
   const [copied,setCopied] = useState<string|null>(null);
   const skipNextLoad = useRef<string|null>(null);
+  const sending = useRef(false);
   const chatEnd = useRef<HTMLDivElement|null>(null);
   const textarea = useRef<HTMLTextAreaElement|null>(null);
 
@@ -46,10 +48,10 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
   },[]);
   useEffect(()=>{void refreshChats();},[refreshChats]);
   useEffect(()=>{
-    if (!activeId) {setMessages([]);return;}
+    if (!activeId) {setMessages([]);setLoading(false);return;}
     if (skipNextLoad.current===activeId) {skipNextLoad.current=null;return;}
     let cancelled=false;
-    setLoading(true);setError("");
+    setLoading(true);setMessages([]);setError("");
     requestJson(`/api/conversations/${activeId}/messages`)
       .then(data=>{if(!cancelled)setMessages(data.messages.map((m:{id:number;role:"user"|"assistant";content:string})=>({...m,id:String(m.id)})));})
       .catch(err=>{if(!cancelled)setError(err.message);})
@@ -85,7 +87,8 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
   }
   async function send(override?:string) {
     const question=(override??input).trim();
-    if (!question || busy || question.length>4000) return;
+    if (!question || sending.current || loading || question.length>4000) return;
+    sending.current=true;
     setBusy(true);setError("");setInput("");
     let id=activeId;
     try {
@@ -108,34 +111,44 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
       }
       if (!res.body) throw new Error("Servidor não enviou uma resposta.");
       const reader=res.body.getReader();
-      const decoder=new TextDecoder();
-      let buffer="", done=false, failure="";
-      function consume(part:string) {
-        const event=part.split("\n").find(line=>line.startsWith("event: "))?.slice(7);
-        const line=part.split("\n").find(line=>line.startsWith("data: "));
-        if(!event || !line) return;
-        const data=JSON.parse(line.slice(6));
-        if(event==="delta")setMessages(prev=>prev.map(m=>m.id===answerId?{...m,content:m.content+data.text}:m));
-        if(event==="failure")failure=data.message;
-        if(event==="done")done=true;
-      }
-      while (true) {
-        const part=await reader.read();
-        if (part.done) break;
-        buffer+=decoder.decode(part.value,{stream:true});
-        let idx;
-        while((idx=buffer.indexOf("\n\n"))!==-1){const event=buffer.slice(0,idx);buffer=buffer.slice(idx+2);consume(event);}
-      }
-      if(buffer.trim())consume(buffer);
-      if(failure || !done) {
-        setMessages(prev=>prev.filter(m=>m.id!==answerId));
-        throw new Error(failure||"Resposta interrompida, confira seu histórico.");
-      }
+      try {
+        const decoder=new TextDecoder();
+        let buffer="", done=false, failure="";
+        function consume(part:string) {
+          const event=part.split("\n").find(line=>line.startsWith("event: "))?.slice(7);
+          const line=part.split("\n").find(line=>line.startsWith("data: "));
+          if(!event || !line) return;
+          const data=JSON.parse(line.slice(6));
+          if(event==="delta")setMessages(prev=>prev.map(m=>m.id===answerId?{...m,content:m.content+data.text}:m));
+          if(event==="failure")failure=data.message;
+          if(event==="done")done=true;
+        }
+        while (true) {
+          const part=await reader.read();
+          if (part.done) break;
+          buffer+=decoder.decode(part.value,{stream:true});
+          let idx;
+          while((idx=buffer.indexOf("\n\n"))!==-1){const event=buffer.slice(0,idx);buffer=buffer.slice(idx+2);consume(event);}
+        }
+        if(buffer.trim())consume(buffer);
+        if(failure || !done) {
+          setMessages(prev=>prev.filter(m=>m.id!==answerId));
+          throw new Error(failure||"Resposta interrompida, confira seu histórico.");
+        }
+      } finally { await reader.cancel().catch(()=>{});reader.releaseLock(); }
       await refreshChats();
     }catch(err){
       setError(err instanceof Error?err.message:"Ocorreu um erro.");
-      // A questão já pode ter sido salva no banco; recarregue a conversa para confirmar.
-    }finally{setBusy(false);}
+      setInput(question);
+      // Consulte o banco sem reenviar a pergunta, pois ela pode ter sido salva.
+      if (id) {
+        try {
+          const data = await requestJson(`/api/conversations/${id}/messages`);
+          setMessages(data.messages.map((m:Message)=>({...m,id:String(m.id)})));
+        } catch { setMessages(prev=>prev.filter(m=>!m.id.startsWith("local-"))); }
+      }
+      await refreshChats();
+    }finally{sending.current=false;setBusy(false);}
   }
   const currentTitle=chats.find(c=>c.id===activeId)?.title || "Nova conversa";
   return <div className="app-shell">
@@ -165,7 +178,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
     <main className="main-chat">
       <header className="chat-topbar">
         <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/> Assistente inteligente</span></div></div>
-        <div className="model-chip"><Sparkles size={14}/> A3X AI <ChevronDown size={13}/></div>
+        <ModeSwitch mode="chat" disabled={busy}/>
       </header>
       <div className="conversation-scroll">
         <div className="conversation-content">
@@ -187,9 +200,9 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
         </div>
       </div>
       <div className="chat-composer-area">
-        {error&&<div className="chat-error" role="alert">{error}<button onClick={()=>{setError("");if(activeId){const id=activeId;setActiveId(null);setTimeout(()=>setActiveId(id),0);}}} aria-label="Fechar erro"><X size={15}/></button></div>}
-        <div className="composer"><textarea ref={textarea} rows={1} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();void send();}}} placeholder="Pergunte o que quiser..." disabled={busy} maxLength={4000}/>
-          <div className="composer-actions"><div className="composer-label"><Bot size={16}/> Pense além do óbvio</div><button className="send-btn" disabled={!input.trim()||busy} title="Enviar mensagem" aria-label="Enviar mensagem" onClick={()=>void send()}>{busy?<span className="mini-spinner"/>:<ArrowUp size={20}/>}</button></div>
+        {error&&<div className="chat-error" role="alert">{error}<button onClick={()=>setError("")} aria-label="Fechar erro"><X size={15}/></button></div>}
+        <div className="composer"><textarea ref={textarea} rows={1} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void send();}}} placeholder="Pergunte o que quiser..." disabled={busy||loading} aria-label="Mensagem" maxLength={4000}/>
+          <div className="composer-actions"><div className="composer-label"><Bot size={16}/> Pense além do óbvio</div><button className="send-btn" disabled={!input.trim()||busy||loading} title="Enviar mensagem" aria-label="Enviar mensagem" onClick={()=>void send()}>{busy?<span className="mini-spinner"/>:<ArrowUp size={20}/>}</button></div>
         </div><p className="disclaimer">A IA pode cometer erros. Confira informações importantes antes de utilizá-las.</p>
       </div>
     </main>

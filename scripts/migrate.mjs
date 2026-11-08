@@ -10,7 +10,7 @@ if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL ausente. Configure a variável antes de rodar as migrações.');
   process.exit(1);
 }
-const client = new pg.Client({connectionString: process.env.DATABASE_URL});
+const client = new pg.Client({connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 8_000});
 try {
   await client.connect();
   await client.query('SELECT pg_advisory_lock(90428100)');
@@ -31,7 +31,7 @@ try {
   }
   console.log('Banco atualizado.');
 } catch (error) {
-  console.error('Falha na migração:', error);
+  console.error('Falha na migração:');
   process.exitCode = 1;
 } finally {
   try {await client.query('SELECT pg_advisory_unlock(90428100)');} catch {}
