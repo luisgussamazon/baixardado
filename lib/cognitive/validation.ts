@@ -1,4 +1,5 @@
 import type { MemoryKind } from "./types";
+import { CREATOR_LABEL,isCreatorLabel,validCreatorName } from "./creator";
 const kinds:MemoryKind[]=["fact","preference","correction","feedback"];
 export function validateRecord(body:Record<string,unknown>|null){
   if(!body||Object.keys(body).some(k=>!["kind","label","value","question"].includes(k)))return null;
@@ -9,7 +10,8 @@ export function validateRecord(body:Record<string,unknown>|null){
   const question=body.question==null||body.question===""?null:body.question;
   if(question!==null&&(typeof question!=="string"||!question.trim()||question.length>500||/[\x00-\x1f]/.test(question)))return null;
   if(kind==="correction"&&!question)return null;
+  if(isCreatorLabel(label)&&(kind!=="fact"||question!==null||!validCreatorName(value.trim())))return null;
   // Reduz persistência acidental de credenciais; não substitui revisão do usuário.
   if(/(?:sk-[a-z0-9_-]{15,}|postgres(?:ql)?:\/\/|-----BEGIN .*PRIVATE KEY|\b(?:senha|password|api_key|token)\s*[:=])/i.test(label+" "+value))return null;
-  return {kind:kind as MemoryKind,label:label.trim(),value:value.trim(),question:typeof question==="string"?question.trim():null};
+  return {kind:kind as MemoryKind,label:isCreatorLabel(label)?CREATOR_LABEL:label.trim(),value:value.trim(),question:typeof question==="string"?question.trim():null};
 }

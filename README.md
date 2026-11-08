@@ -2,6 +2,8 @@
 
 ## Conversa com modelo aberto na sua máquina
 
+O reconhecimento privado do criador pode ser definido e aprovado em `/memoria`, na seção **Identidade do criador**. Ele recebe prioridade no contexto e não concede privilégios. Veja [detalhes e próximas melhorias](docs/IDENTIDADE-CRIADOR.md).
+
 O Chat pode conversar com **Qwen3 4B Instruct** executado no computador autorizado da conta, sem OpenAI ou API paga de IA. A ponte faz somente conexões HTTPS de saída; o Ollama fica em localhost. Autorize o código em `/conectar`. O computador precisa continuar ligado e com a ponte em execução. Sem modelo online, permanece o motor por regras, identificado na interface. Veja [instalação, limites e privacidade](docs/MODELO-LOCAL.md).
 
 O [Laboratório de Autonomia Científica](docs/AUTONOMIA-CIENTIFICA.md) compara políticas de roteamento em um benchmark sintético offline. `/laboratorio` mostra resultados com login. `npm run research:study` gera relatório e proposta sem aplicar mudanças; `research:branch` requer confirmação para criar um worktree de revisão, sem commit, push ou deploy. O holdout ficou em 20/24 antes e depois: não houve demonstração de ganho generalizável.
