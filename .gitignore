@@ -1,3 +1,9 @@
-__pycache__/
+node_modules/
+.next/
 .env
-server.*.log
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+.DS_Store
+coverage/

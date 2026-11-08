@@ -1,0 +1,197 @@
+"use client";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import {
+  ArrowUp, Bot, Check, ChevronDown, Copy, FileText, Lightbulb, Menu,
+  MessageSquare, PanelLeftClose, Plus, ShieldCheck,
+  Sparkles, Trash2, X, LogOut, Code2, Zap
+} from "lucide-react";
+
+type ChatSummary = {id:string;title:string;updated_at:string};
+type Message = {id:string;role:"user"|"assistant";content:string};
+const suggestions = [
+  {icon:Lightbulb, title:"Explorar ideias",text:"Me ajude a desenvolver uma ideia inovadora de aplicativo."},
+  {icon:FileText, title:"Criar conteúdo",text:"Crie um texto profissional e envolvente sobre um novo projeto."},
+  {icon:Code2, title:"Programar",text:"Me explique como organizar um projeto moderno em TypeScript."},
+  {icon:Zap, title:"Aumentar produtividade",text:"Monte um plano simples para organizar minhas prioridades da semana."},
+];
+
+async function requestJson(url:string, init?:RequestInit) {
+  const res = await fetch(url,{cache:"no-store",...init});
+  const payload = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(payload.error || "Falha na comunicação.");
+  return payload;
+}
+
+export default function ChatApp({email,appName}:{email:string;appName:string}) {
+  const router = useRouter();
+  const [chats,setChats] = useState<ChatSummary[]>([]);
+  const [activeId,setActiveId] = useState<string|null>(null);
+  const [messages,setMessages] = useState<Message[]>([]);
+  const [input,setInput] = useState("");
+  const [busy,setBusy] = useState(false);
+  const [loading,setLoading] = useState(false);
+  const [error,setError] = useState("");
+  const [sidebar,setSidebar] = useState(false);
+  const [collapsed,setCollapsed] = useState(false);
+  const [copied,setCopied] = useState<string|null>(null);
+  const skipNextLoad = useRef<string|null>(null);
+  const chatEnd = useRef<HTMLDivElement|null>(null);
+  const textarea = useRef<HTMLTextAreaElement|null>(null);
+
+  const refreshChats = useCallback(async()=>{
+    try {const data=await requestJson("/api/conversations");setChats(data.conversations);}catch(err){setError(err instanceof Error?err.message:"Erro de conexão.");}
+  },[]);
+  useEffect(()=>{void refreshChats();},[refreshChats]);
+  useEffect(()=>{
+    if (!activeId) {setMessages([]);return;}
+    if (skipNextLoad.current===activeId) {skipNextLoad.current=null;return;}
+    let cancelled=false;
+    setLoading(true);setError("");
+    requestJson(`/api/conversations/${activeId}/messages`)
+      .then(data=>{if(!cancelled)setMessages(data.messages.map((m:{id:number;role:"user"|"assistant";content:string})=>({...m,id:String(m.id)})));})
+      .catch(err=>{if(!cancelled)setError(err.message);})
+      .finally(()=>{if(!cancelled)setLoading(false);});
+    return ()=>{cancelled=true;};
+  },[activeId]);
+  useEffect(()=>{chatEnd.current?.scrollIntoView({behavior:"smooth",block:"end"});},[messages,busy]);
+
+  function newChat() {
+    if (busy) return;
+    setActiveId(null);setMessages([]);setError("");setInput("");setSidebar(false);
+    textarea.current?.focus();
+  }
+  function selectChat(id:string) {
+    if (busy || activeId===id) return;
+    setActiveId(id);setSidebar(false);setError("");
+  }
+  async function deleteChat(id:string) {
+    if(busy || !window.confirm("Excluir esta conversa e todas as mensagens?"))return;
+    try {
+      await requestJson(`/api/conversations/${id}`,{method:"DELETE"});
+      setChats(ch=>ch.filter(x=>x.id!==id));
+      if(activeId===id){setActiveId(null);setMessages([]);}
+    }catch(err){setError(err instanceof Error?err.message:"Não foi possível excluir.");}
+  }
+  async function signOut() {
+    if (busy) return;
+    try {await requestJson("/api/logout",{method:"POST"});router.replace("/login");router.refresh();}
+    catch(err){setError(err instanceof Error?err.message:"Falha ao sair.");}
+  }
+  async function copyMessage(id:string,value:string) {
+    try {await navigator.clipboard.writeText(value);setCopied(id);setTimeout(()=>setCopied(null),1500);} catch {setError("Não foi possível copiar.");}
+  }
+  async function send(override?:string) {
+    const question=(override??input).trim();
+    if (!question || busy || question.length>4000) return;
+    setBusy(true);setError("");setInput("");
+    let id=activeId;
+    try {
+      if (!id) {
+        const created = await requestJson("/api/conversations",{method:"POST"});
+        id=created.id;
+        skipNextLoad.current=id;
+        setActiveId(id);
+      }
+      const humanId=`local-u-${Date.now()}`;
+      const answerId=`local-a-${Date.now()}`;
+      setMessages(prev=>[...prev,{id:humanId,role:"user",content:question},{id:answerId,role:"assistant",content:""}]);
+      const res=await fetch("/api/chat",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({conversationId:id,message:question}),
+      });
+      if (!res.ok) {
+        const data=await res.json().catch(()=>({}));
+        throw new Error(data.error||"Não foi possível enviar a pergunta.");
+      }
+      if (!res.body) throw new Error("Servidor não enviou uma resposta.");
+      const reader=res.body.getReader();
+      const decoder=new TextDecoder();
+      let buffer="", done=false, failure="";
+      function consume(part:string) {
+        const event=part.split("\n").find(line=>line.startsWith("event: "))?.slice(7);
+        const line=part.split("\n").find(line=>line.startsWith("data: "));
+        if(!event || !line) return;
+        const data=JSON.parse(line.slice(6));
+        if(event==="delta")setMessages(prev=>prev.map(m=>m.id===answerId?{...m,content:m.content+data.text}:m));
+        if(event==="failure")failure=data.message;
+        if(event==="done")done=true;
+      }
+      while (true) {
+        const part=await reader.read();
+        if (part.done) break;
+        buffer+=decoder.decode(part.value,{stream:true});
+        let idx;
+        while((idx=buffer.indexOf("\n\n"))!==-1){const event=buffer.slice(0,idx);buffer=buffer.slice(idx+2);consume(event);}
+      }
+      if(buffer.trim())consume(buffer);
+      if(failure || !done) {
+        setMessages(prev=>prev.filter(m=>m.id!==answerId));
+        throw new Error(failure||"Resposta interrompida, confira seu histórico.");
+      }
+      await refreshChats();
+    }catch(err){
+      setError(err instanceof Error?err.message:"Ocorreu um erro.");
+      // A questão já pode ter sido salva no banco; recarregue a conversa para confirmar.
+    }finally{setBusy(false);}
+  }
+  const currentTitle=chats.find(c=>c.id===activeId)?.title || "Nova conversa";
+  return <div className="app-shell">
+    {sidebar && <button className="mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>}
+    <aside className={`sidebar ${sidebar?"sidebar-open":""} ${collapsed?"sidebar-collapsed":""}`}>
+      <div className="sidebar-header">
+        <div className="brand"><div className="brand-icon"><Sparkles size={18}/></div>{!collapsed&&<span>{appName}</span>}</div>
+        {!collapsed&&<button className="icon-button desktop-only" title="Recolher menu" onClick={()=>setCollapsed(true)}><PanelLeftClose size={18}/></button>}
+        {collapsed&&<button className="icon-button expand-button" title="Expandir menu" onClick={()=>setCollapsed(false)}><Menu size={18}/></button>}
+        <button className="icon-button mobile-only" aria-label="Fechar menu" onClick={()=>setSidebar(false)}><X size={20}/></button>
+      </div>
+      <div className="sidebar-body">
+        <button className="new-chat" onClick={newChat} disabled={busy}><Plus size={19}/>{!collapsed&&"Nova conversa"}</button>
+        {!collapsed && <><div className="section-heading">RECENTES</div><div className="chat-list">
+          {chats.length===0 && <p className="empty-side">Suas conversas aparecerão aqui.</p>}
+          {chats.map(c=><div className={`chat-nav ${activeId===c.id?"selected":""}`} key={c.id}>
+            <button className="chat-nav-main" title={c.title} onClick={()=>selectChat(c.id)}><MessageSquare size={16}/><span>{c.title}</span></button>
+            <button className="chat-delete" onClick={()=>deleteChat(c.id)} aria-label={`Excluir: ${c.title}`} title="Excluir conversa"><Trash2 size={15}/></button>
+          </div>)}
+        </div></>}
+      </div>
+      <div className="sidebar-bottom">
+        {!collapsed&&<div className="privacy-note"><ShieldCheck size={16}/><span>Conversas privadas e salvas</span></div>}
+        <div className="profile"><div className="avatar">{email.slice(0,1).toUpperCase()}</div>{!collapsed&&<div className="profile-meta"><strong>Minha conta</strong><span title={email}>{email}</span></div>}<button className="icon-button logout" title="Sair" aria-label="Sair" onClick={signOut}><LogOut size={17}/></button></div>
+      </div>
+    </aside>
+    <main className="main-chat">
+      <header className="chat-topbar">
+        <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/> Assistente inteligente</span></div></div>
+        <div className="model-chip"><Sparkles size={14}/> A3X AI <ChevronDown size={13}/></div>
+      </header>
+      <div className="conversation-scroll">
+        <div className="conversation-content">
+          {loading ? <div className="loading-chat"><span className="spinner"/> Carregando conversa...</div> : messages.length===0 ?
+          <div className="welcome">
+            <div className="welcome-symbol"><Sparkles size={28}/></div>
+            <div className="eyebrow">SUA MENTE. NOVAS POSSIBILIDADES.</div>
+            <h1>O que vamos <span>criar hoje?</span></h1>
+            <p>Uma pergunta pode ser o começo de algo incrível.<br/>Estou aqui para ajudar você a ir mais longe.</p>
+            <div className="suggestion-grid">{suggestions.map(item=><button className="suggestion" key={item.title} onClick={()=>{void send(item.text);}} disabled={busy}><item.icon size={21}/><strong>{item.title}</strong><span>{item.text}</span><span className="suggestion-arrow">↗</span></button>)}</div>
+          </div> : <div className="messages">
+            {messages.map(m=><div key={m.id} className={`message-row ${m.role}`}>
+              <div className={`message-avatar ${m.role}`}>{m.role==="assistant"?<Sparkles size={18}/>:email.charAt(0).toUpperCase()}</div>
+              <div className="message-main"><div className="message-author">{m.role==="user"?"Você":appName}</div>
+                {m.content ? <div className="message-content">{m.role==="assistant"?<ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>:<p>{m.content}</p>}</div> : <div className="thinking"><span/><span/><span/></div>}
+                {m.role==="assistant"&&!!m.content&&<button className="copy-btn" onClick={()=>void copyMessage(m.id,m.content)} title="Copiar resposta">{copied===m.id?<Check size={14}/>:<Copy size={14}/>} {copied===m.id?"Copiado":"Copiar"}</button>}
+              </div>
+            </div>)}<div ref={chatEnd}/></div>}
+        </div>
+      </div>
+      <div className="chat-composer-area">
+        {error&&<div className="chat-error" role="alert">{error}<button onClick={()=>{setError("");if(activeId){const id=activeId;setActiveId(null);setTimeout(()=>setActiveId(id),0);}}} aria-label="Fechar erro"><X size={15}/></button></div>}
+        <div className="composer"><textarea ref={textarea} rows={1} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();void send();}}} placeholder="Pergunte o que quiser..." disabled={busy} maxLength={4000}/>
+          <div className="composer-actions"><div className="composer-label"><Bot size={16}/> Pense além do óbvio</div><button className="send-btn" disabled={!input.trim()||busy} title="Enviar mensagem" aria-label="Enviar mensagem" onClick={()=>void send()}>{busy?<span className="mini-spinner"/>:<ArrowUp size={20}/>}</button></div>
+        </div><p className="disclaimer">A IA pode cometer erros. Confira informações importantes antes de utilizá-las.</p>
+      </div>
+    </main>
+  </div>;
+}
