@@ -1,4 +1,4 @@
-import { searchWeb, researchMarkdown } from "@/lib/web-search";
+import { searchMany, researchMarkdown } from "@/lib/web-search";
 import { db } from "@/lib/db";
 import { apiError, isJson, isUuid, parseJson } from "@/lib/http";
 import { getUser, validOrigin } from "@/lib/security";
@@ -7,6 +7,7 @@ import { shouldLookupPersonalKnowledge } from "@/lib/dialogue-knowledge";
 import { searchKnowledge, knowledgeMarkdown } from "@/lib/knowledge-search";
 import { decide, confidenceNote } from "@/lib/cognitive/engine";
 import { loadCognitiveContext, persistDialogueReply } from "@/lib/cognitive/store";
+import { connectedModelReply,modelMessages } from "@/lib/local-model";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -75,9 +76,10 @@ export async function POST(req: Request) {
               if (cancelled) return;
               controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
             };
+            const heartbeat=setInterval(()=>{try{send("heartbeat",{});}catch{/* Transporte encerrado. */}},15000);
             let full = "";
             try {
-              const research = decision.kind==="search" ? await searchWeb(decision.query,abort.signal) : null;
+              const research = decision.kind==="search" ? await searchMany(decision.query,abort.signal) : null;
               abort.signal.throwIfAborted();
               let unavailable=false;
               const hits=decision.kind==="reply"&&!cognitive.protected&&(decision.knowledgeQuery||shouldLookupPersonalKnowledge(message))?
@@ -85,9 +87,19 @@ export async function POST(req: Request) {
               const relevantHits=decision.kind==="reply"&&!decision.knowledgeQuery?hits.filter(hit=>hit.scope==="private"):hits;
               full = decision.kind==="reply" ? (relevantHits.length?knowledgeMarkdown(relevantHits):
                 (unavailable?"A base local está temporariamente indisponível.\n\n":"")+decision.text) : researchMarkdown(research!);
+              let generated:string|null=null,modelFailed=false;
+              if((!cognitive.protected||decision.kind==="search")&&(!research||research.results.length>0)){
+                generated=await connectedModelReply(user.id,id,modelMessages(message,dialogueHistory,context.records,hits,research),abort.signal).catch(()=>{modelFailed=true;return null;});
+              }
+              abort.signal.throwIfAborted();
+              if(generated){
+                full=generated+"\n\n_Gerado pelo modelo aberto Qwen3 4B no seu computador. Pode conter erros; confira informações importantes._";
+                if(research?.results.length)full+="\n\n**Fontes recuperadas (trechos de busca, sem leitura integral das páginas):**\n"+research.results.slice(0,6).map((item,i)=>`- [W${i+1}: ${new URL(item.url).hostname}](${item.url})`).join("\n");
+                if(hits.length)full+="\n\n**Conhecimento fornecido ao modelo:** "+hits.slice(0,2).map((item,i)=>`[K${i+1}] ${item.id}`).join(" · ");
+              }else if(modelFailed)full="Não consegui usar o modelo do seu computador nesta tentativa. Segue a resposta disponível pelo motor local:\n\n"+full;
               const confidence=relevantHits.length?"moderada":cognitive.confidence;
               const reason=relevantHits.length?"recuperação textual; confira a fonte":cognitive.reason;
-              full+=confidenceNote(confidence,reason);
+              if(!generated)full+=confidenceNote(confidence,reason);
               await persistDialogueReply(user.id,id,cognitive.state,full);
               send("delta",{text:full});
               send("done",{ok:true});
@@ -95,6 +107,7 @@ export async function POST(req: Request) {
               console.error("Falha ao responder à conversa.");
               send("failure",{message:"Não foi possível concluir a resposta. Sua pergunta ficou salva; tente novamente."});
             } finally {
+              clearInterval(heartbeat);
               clearTimeout(timeout);
               req.signal.removeEventListener("abort", onAbort);
               try {await unlock();}

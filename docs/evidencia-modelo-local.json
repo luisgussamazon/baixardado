@@ -1,0 +1,29 @@
+{
+  "model": "qwen3:4b-instruct",
+  "localOnly": true,
+  "results": [
+    {
+      "question": "Olá! Podemos conversar? Quero organizar meu dia e não sei por onde começar.",
+      "answer": "Claro! Comece definindo seus objetivos do dia: o que você quer concluir ou alcançar? Depois, liste as tarefas principais, priorizando as mais importantes. Divida o tempo em blocos curtos — 25 minutos de trabalho, 5 de pausa. Use uma agenda ou app para marcar os momentos. Lembre-se: comece com uma coisa, faça bem, depois avance. Isso ajuda a manter foco e evitar o cansaço.",
+      "seconds": 28.55
+    },
+    {
+      "question": "Tenho duas tarefas: estudar TypeScript e responder e-mails. Tenho duas horas disponíveis.",
+      "answer": "Divida as duas horas em blocos: 1h para estudar TypeScript (aprenda um conceito por vez, com pausa de 5 min). A outra hora para responder e-mails (priorize os mais urgentes). Use um cronômetro. Após cada bloco, faça uma pausa rápida. Isso mantém foco e evita estresse. Se precisar, posso ajudar a planejar o conteúdo do estudo.",
+      "seconds": 18.31
+    },
+    {
+      "question": "Quais eram as duas tarefas que eu mencionei?",
+      "answer": "As duas tarefas que você mencionou foram: estudar TypeScript e responder e-mails.",
+      "seconds": 4.77
+    }
+  ],
+  "testType": "synthetic local three-turn conversation, not production user data",
+  "date": "2026-11-08",
+  "hardware": {
+    "ramGB": 15.4,
+    "cpu": "Intel Core Ultra 5 135U",
+    "execution": "CPU",
+    "loopbackOnly": true
+  }
+}

@@ -18,7 +18,7 @@ export function decide(message:string,history:ConversationTurn[],previous:Dialog
   }
   // Consentimento vale apenas para a pesquisa imediatamente pendente, não para futuras consultas.
   state.pendingWeb=null;
-  if(interpretation.intent==="identity")return done("Sou o A3X, um assistente tecnológico executivo feito de software. Organizo informações com regras, memória autorizada e pesquisa sob pedido. Não sou humano, consciente nem um modelo generativo. Qual prioridade você quer organizar?");
+  if(interpretation.intent==="identity")return done("Sou o A3X, um assistente tecnológico executivo feito de software. Uso um modelo aberto quando seu computador está conectado, além de memória autorizada e pesquisa sob pedido. Não sou humano nem consciente. Sem computador conectado, respondo por regras. Qual prioridade você quer organizar?");
   if(interpretation.intent==="memory"){
     if(/^(?:minhas preferencias|minha memoria|o que)/.test(text)){
       const facts=approved.filter(r=>r.kind==="fact"||r.kind==="preference");
@@ -49,7 +49,12 @@ export function decide(message:string,history:ConversationTurn[],previous:Dialog
   if(interpretation.intent==="followup"&&state.goal?.phase==="active")return done(`Seu plano **${escape(state.goal.title)}** está na etapa ${state.goal.step+1}: ${state.goal.steps[state.goal.step]}. Qual resultado você já conseguiu? Use **concluir etapa** apenas quando tiver terminado.`);
   const correction=interpretation.intent!=="web"&&approved.find(r=>r.kind==="correction"&&r.question&&normalize(r.question)===text);
   if(correction)return done(`**Correção aprovada por você**\n\n${correction.value.split("\n").map(line=>"> "+escape(line)).join("\n")}\n\nFonte: seu registro privado ${escape(correction.id)}.`,"moderada","correspondência exata com correção aprovada");
+  if(interpretation.intent!=="web"&&/^(qual|quais|quem|o que|quanto|como (esta|ficou)|me (diga|mostre)|quero saber)\b/.test(text)&&/\b(hoje|agora|atual|atuais|atualmente|ultimas noticias|cotacao|preco atual)\b/.test(text)){
+    state.pendingWeb={query:message,expires:now+10*60_000};
+    return done("Esta pergunta pede informações recentes. Para consultar fontes públicas sem inventar uma resposta, confirme o envio da sua pergunta ao buscador com **confirmo envio à web**. Revise e remova dados pessoais antes de confirmar.","baixa","precisa de fontes recentes");
+  }
   const base=converse(message,history.map(turn=>({...turn,content:turn.content.replace(/\n\n_Confiança de correspondência:[\s\S]*$/,"")})));
+  if(base.kind==="reply"&&/^(O resultado é|Não consegui calcular)/.test(base.text))return done(base.text,"alta","cálculo determinístico");
   if(base.kind==="search"){
     const warning=containsPersonalData(base.query,approved)?"Esta consulta pode conter dados pessoais. ":"";
     state.pendingWeb={query:base.query,expires:now+10*60_000};

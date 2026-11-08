@@ -38,6 +38,7 @@ before(async()=>{
   const migration=await readFile("sql/002_programmer_projects.sql","utf8");
   await pg.exec(migration);await pg.exec(migration);
   await pg.exec(await readFile("sql/006_cognitive_engine.sql","utf8"));
+  await pg.exec(await readFile("sql/007_local_model_bridge.sql","utf8"));
   assert.equal((await pg.query<{content:string}>("SELECT content FROM messages")).rows[0].content,"histórico anterior preservado");
 });
 after(async()=>{await pg.close();});

@@ -71,6 +71,10 @@ test("busca pública continua explícita e desconhecimento traz confiança baixa
   const yes=decide("sim",[{role:"user",content:"xenotopologia zircaliana"},{role:"assistant",content:unknown.text+confidenceNote("baixa","sem correspondência")}],unknown.state);
   assert.equal(yes.route,"local");assert.ok(yes.state.pendingWeb);
 });
+test("perguntas recentes oferecem busca antes de inventar informação e preservam conversa cotidiana",()=>{
+  const current=decide("Quais são as últimas notícias de hoje?",[]);assert.ok(current.state.pendingWeb);assert.equal(current.protected,true);assert.equal(current.route,"local");
+  assert.equal(decide("confirmo envio à web",[],current.state).route,"web");assert.equal(decide("Estou feliz hoje",[]).state.pendingWeb,null);
+});
 test("validação rejeita proprietário, aprovação embutida, controles, excesso e credenciais",()=>{
   const valid={kind:"fact",label:"Preferência",value:"Texto próprio"};
   assert.ok(validateRecord(valid));
