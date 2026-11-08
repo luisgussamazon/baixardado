@@ -9,6 +9,8 @@
     "start": "node scripts/start.mjs",
     "typecheck": "tsc --noEmit",
     "db:migrate": "node scripts/migrate.mjs",
+    "knowledge:validate": "node scripts/import-knowledge.mjs",
+    "knowledge:import": "node scripts/import-knowledge.mjs",
     "test": "tsx --tsconfig tests/tsconfig.json --test tests/*.test.ts tests/*.test.tsx"
   },
   "engines": {

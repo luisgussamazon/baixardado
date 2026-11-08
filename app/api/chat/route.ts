@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { apiError, isJson, isUuid, parseJson } from "@/lib/http";
 import { getUser, validOrigin } from "@/lib/security";
 import { converse, type ConversationTurn } from "@/lib/local-conversation";
+import { searchKnowledge, knowledgeMarkdown } from "@/lib/knowledge-search";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,11 @@ export async function POST(req: Request) {
             try {
               const research = decision.kind==="search" ? await searchWeb(decision.query,abort.signal) : null;
               abort.signal.throwIfAborted();
-              full = decision.kind==="reply" ? decision.text : researchMarkdown(research!);
+              let unavailable=false;
+              const hits=decision.kind==="reply"&&decision.knowledgeQuery?
+                await searchKnowledge(decision.knowledgeQuery,user.id).catch(()=>{unavailable=true;return [];}):[];
+              full = decision.kind==="reply" ? (hits.length?knowledgeMarkdown(hits):
+                (unavailable?"A base local está temporariamente indisponível.\n\n":"")+decision.text) : researchMarkdown(research!);
               send("delta",{text:full});
               await db.query("INSERT INTO messages(conversation_id,role,content) VALUES($1,'assistant',$2)",[id,full]);
               await db.query("UPDATE conversations SET updated_at=NOW() WHERE id=$1 AND user_id=$2",[id,user.id]);

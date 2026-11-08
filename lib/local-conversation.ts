@@ -1,5 +1,5 @@
 export type ConversationTurn = {role:"user"|"assistant";content:string};
-export type ConversationDecision = {kind:"reply";text:string}|{kind:"search";query:string};
+export type ConversationDecision = {kind:"reply";text:string;knowledgeQuery?:string}|{kind:"search";query:string};
 const normalize=(value:string)=>value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();
 const quote=(value:string)=>value.slice(0,120).replace(/[\\`*_{}\[\]<>#!|]/g,"\\$&");
 
@@ -89,5 +89,5 @@ export function converse(message:string,history:ConversationTurn[]=[]):Conversat
     return reply("Me conte o que já está pronto e qual é o principal obstáculo. Podemos separar o próximo passo do que pode ficar para depois.");
   if(/^(sim|nao|talvez|pode ser)[.!]?$/.test(text))return reply("Me dê um pouco mais de contexto: a qual parte da nossa conversa você está se referindo?");
   if(text.length<3)return reply("Pode me contar um pouco mais? Uma frase já ajuda a escolher como continuar.");
-  return reply(`Posso ajudar a organizar esse assunto${named}, mas meu motor local ainda não tem uma resposta específica para ele. Você quer explicar melhor o que precisa ou consultar informações externas?\n\nQuer que eu pesquise fontes sobre isso?`);
+  return {kind:"reply",knowledgeQuery:message,text:`Posso ajudar a organizar esse assunto${named}, mas meu motor local ainda não tem uma resposta específica para ele. Você quer explicar melhor o que precisa ou consultar informações externas?\n\nQuer que eu pesquise fontes sobre isso?`};
 }

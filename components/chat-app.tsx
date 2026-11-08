@@ -14,7 +14,7 @@ type ChatSummary = {id:string;title:string;updated_at:string};
 type Message = {id:string;role:"user"|"assistant";content:string};
 const suggestions = [
   {icon:Lightbulb, title:"Conversar",text:"Fala comigo"},
-  {icon:FileText, title:"Organizar uma ideia",text:"Quero planejar um novo projeto"},
+  {icon:FileText, title:"Base de conhecimento",text:"Como evitar SQL injection?"},
   {icon:Code2, title:"Pesquisar programação",text:"Pesquise documentação de TypeScript"},
   {icon:Zap, title:"Planejar meu dia",text:"Quero organizar minhas prioridades de hoje"},
 ];
@@ -187,7 +187,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
             <div className="welcome-symbol"><Sparkles size={28}/></div>
             <div className="eyebrow">SUA MENTE. NOVAS POSSIBILIDADES.</div>
             <h1>Vamos <span>conversar?</span></h1>
-            <p>Conte uma ideia, organize um objetivo ou peça uma pesquisa.<br/>Motor local por regras e contexto, sem API de IA ou modelo baixado.</p>
+            <p>Converse, consulte a base de programação ou peça uma pesquisa.<br/>Respostas locais com fontes, sem modelo generativo.</p>
             <div className="suggestion-grid">{suggestions.map(item=><button className="suggestion" key={item.title} onClick={()=>{void send(item.text);}} disabled={busy}><item.icon size={21}/><strong>{item.title}</strong><span>{item.text}</span><span className="suggestion-arrow">↗</span></button>)}</div>
           </div> : <div className="messages">
             {messages.map(m=><div key={m.id} className={`message-row ${m.role}`}>

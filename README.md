@@ -4,6 +4,14 @@ Aplicação independente em Next.js 15, React 19, TypeScript e PostgreSQL. A ver
 
 O Chat também possui [conversa local por intenções e contexto](docs/CONVERSA-LOCAL.md): cumprimentos, nome no contexto recente, perguntas de continuidade, planejamento inicial e contas simples. Não envia essas mensagens à web. Escreva **pesquise** seguido do assunto para consultar fontes, ou confirme uma oferta de pesquisa. Não equivale a um modelo de linguagem e não compreende assuntos arbitrários.
 
+## Base de Conhecimento A3X AI v1
+
+O pacote fornecido está em `knowledge/a3x-v1/`: 58 registros de programação e 18 casos de avaliação. A integração adiciona pesquisa textual PostgreSQL e mostra título, resposta cadastrada, ID, escopo e referência. Respostas privadas são recuperadas apenas para seu proprietário. Pedidos explícitos de busca web e conversa local continuam preservados; o Programador pode incluir referências locais em um documento privado do projeto.
+
+`npm run knowledge:validate` e `npm run knowledge:import` fazem apenas simulação, **sem acessar banco**. As migrações 003 (esquema) e 004 (carga inicial dos 58 registros fornecidos) foram testadas em banco descartável. Após autorização para publicar, o migrador carrega os IDs ausentes no deploy, sem atualizar registros existentes ou privados. Reimportações/atualizações manuais continuam exigindo `--apply` e confirmação do banco. A interface **Ensinar minha IA fica para a próxima etapa**; não há upload ou cadastro de conteúdo próprio na interface atual.
+
+Veja [BASE-CONHECIMENTO.md](docs/BASE-CONHECIMENTO.md) para comandos, segurança, fontes, resultados e limitações. Recuperar texto não treina uma IA nem gera respostas inéditas.
+
 ## Funcionalidades
 
 - Login com scrypt, sessão HttpOnly e histórico privado por usuário.
