@@ -6,7 +6,7 @@ Este repositório contém apenas o projeto independente A3X AI. **Não modificar
 ## Stack e estrutura
 - Next.js 15 App Router, React 19, TypeScript.
 - PostgreSQL via `pg`; migrações `sql/` e `scripts/migrate.mjs`.
-- Pesquisa pública na web, sem OpenAI e sem download de modelos, nas rotas do servidor em `app/api`.
+- Conversa local por intenções/contexto e pesquisa pública sob pedido, sem OpenAI ou download de modelos, nas rotas do servidor em `app/api`.
 - Autenticação, sessões, histórico de conversas e isolamento de dados por usuário.
 - Hospedagem alvo: Railway; configuração em `railway.json`.
 

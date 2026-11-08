@@ -164,6 +164,23 @@ test("cota é compartilhada com Chat e reserva negada não deixa projeto pendent
   assert.equal((await pg.query("SELECT * FROM messages")).rows.length,0);
 });
 
+test("conversa local não acessa rede e contexto não atravessa conversas ou usuários",async()=>{
+  const network=mock.method(globalThis,"fetch",async()=>{throw new Error("A conversa local não deve pesquisar");});
+  async function send(owner:number,conversationId:string,message:string){
+    const res=await session(owner,()=>chat.POST(request({conversationId,message})));
+    assert.equal(res.status,200);return res.text();
+  }
+  const a=(await pg.query<{id:string}>("INSERT INTO conversations(user_id) VALUES($1) RETURNING id",[users[0]])).rows[0].id;
+  const b=(await pg.query<{id:string}>("INSERT INTO conversations(user_id) VALUES($1) RETURNING id",[users[1]])).rows[0].id;
+  assert.match(await send(0,a,"fala comigo"),/Vamos conversar/);
+  await send(0,a,"Meu nome é Leonardo");
+  assert.match(await send(0,a,"qual meu nome?"),/Leonardo/);
+  assert.doesNotMatch(await send(1,b,"qual meu nome?"),/Leonardo/);
+  assert.equal(network.mock.calls.length,0);
+  await send(0,a,"esqueça meu nome");
+  assert.doesNotMatch(await send(0,a,"qual meu nome?"),/Leonardo/);
+});
+
 test("reserva impede geração simultânea; cancelamento aborta provedor e registra falha",async()=>{
   let fetched!:()=>void,aborted=false;
   const started=new Promise<void>(resolve=>{fetched=resolve;});

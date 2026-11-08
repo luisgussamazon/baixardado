@@ -2,6 +2,7 @@ import { searchWeb, researchMarkdown } from "@/lib/web-search";
 import { db } from "@/lib/db";
 import { apiError, isJson, isUuid, parseJson } from "@/lib/http";
 import { getUser, validOrigin } from "@/lib/security";
+import { converse, type ConversationTurn } from "@/lib/local-conversation";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,12 @@ export async function POST(req: Request) {
         await client.query("ROLLBACK").catch(() => {});
         throw error;
       } finally { client.release(); }
+      const history=await db.query<ConversationTurn>(`SELECT role,content FROM (
+        SELECT m.id,m.role,m.content FROM messages m JOIN conversations c ON c.id=m.conversation_id
+        WHERE c.id=$1 AND c.user_id=$2 ORDER BY m.id DESC LIMIT 25
+      ) recent ORDER BY id ASC`,[id,user.id]);
+      // A pergunta atual já está salva e é passada separadamente ao motor.
+      const decision=converse(message,history.rows.slice(0,-1));
       const encoder = new TextEncoder();
       const abort = new AbortController();
       let cancelled = false;
@@ -62,15 +69,15 @@ export async function POST(req: Request) {
             };
             let full = "";
             try {
-              const research = await searchWeb(message,abort.signal);
+              const research = decision.kind==="search" ? await searchWeb(decision.query,abort.signal) : null;
               abort.signal.throwIfAborted();
-              full = researchMarkdown(research);
+              full = decision.kind==="reply" ? decision.text : researchMarkdown(research!);
               send("delta",{text:full});
               await db.query("INSERT INTO messages(conversation_id,role,content) VALUES($1,'assistant',$2)",[id,full]);
               await db.query("UPDATE conversations SET updated_at=NOW() WHERE id=$1 AND user_id=$2",[id,user.id]);
               send("done",{ok:true});
             } catch (error) {
-              console.error("Erro durante resposta da IA:");
+              console.error("Falha ao responder à conversa.");
               send("failure",{message:"Não foi possível concluir a resposta. Sua pergunta ficou salva; tente novamente."});
             } finally {
               clearTimeout(timeout);
