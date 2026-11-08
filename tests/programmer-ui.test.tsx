@@ -55,7 +55,7 @@ test("interface apresenta modos, árvore, código seguro, cópia e ZIP",async()=
   assert.equal(view.getByRole("link",{name:"Chat"}).getAttribute("href"),"/chat");
   assert.equal(view.getByRole("link",{name:"Programador"}).getAttribute("aria-current"),"page");
   assert.equal(view.getByLabelText("O que você quer construir?").getAttribute("maxlength"),"4000");
-  assert.equal((view.getByRole("button",{name:/Gerar projeto/}) as HTMLButtonElement).disabled,true);
+  assert.equal((view.getByRole("button",{name:/Pesquisar e criar base/}) as HTMLButtonElement).disabled,true);
   ui.fireEvent.click(await view.findByRole("button",{name:"Abrir projeto Projeto local"}));
   await view.findByRole("heading",{name:"Projeto local"});
   ui.fireEvent.click(view.getByRole("button",{name:"app.ts"}));
@@ -78,7 +78,7 @@ test("interface apresenta modos, árvore, código seguro, cópia e ZIP",async()=
 test("interface gera projeto e abre arquivos somente depois de receber done",async()=>{
   transport({empty:true});const view=render();
   ui.fireEvent.change(view.getByLabelText("O que você quer construir?"),{target:{value:"Meu sistema de tarefas"}});
-  ui.fireEvent.click(view.getByRole("button",{name:/Gerar projeto/}));
+  ui.fireEvent.click(view.getByRole("button",{name:/Pesquisar e criar base/}));
   await view.findByRole("heading",{name:"Projeto local"});
   assert.equal((view.getByLabelText("O que você quer construir?") as HTMLTextAreaElement).value,"");
   assert(view.getByRole("button",{name:/Baixar ZIP/}));
@@ -87,10 +87,10 @@ test("interface gera projeto e abre arquivos somente depois de receber done",asy
 test("interface mostra erro, mantém descrição e permite nova tentativa sem código parcial",async()=>{
   transport({failure:true,empty:true});const view=render();
   ui.fireEvent.change(view.getByLabelText("O que você quer construir?"),{target:{value:"Meu sistema de tarefas"}});
-  ui.fireEvent.click(view.getByRole("button",{name:/Gerar projeto/}));
+  ui.fireEvent.click(view.getByRole("button",{name:/Pesquisar e criar base/}));
   await view.findByRole("alert");
   assert.match(view.getByRole("alert").textContent!,/Cota local atingida/);
   assert.equal((view.getByLabelText("O que você quer construir?") as HTMLTextAreaElement).value,"Meu sistema de tarefas");
-  await ui.waitFor(()=>assert.equal((view.getByRole("button",{name:/Gerar projeto/}) as HTMLButtonElement).disabled,false));
+  await ui.waitFor(()=>assert.equal((view.getByRole("button",{name:/Pesquisar e criar base/}) as HTMLButtonElement).disabled,false));
   assert.equal(view.queryByRole("button",{name:/Baixar ZIP/}),null);
 });

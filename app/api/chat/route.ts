@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { searchWeb, researchMarkdown } from "@/lib/web-search";
 import { db } from "@/lib/db";
 import { apiError, isJson, isUuid, parseJson } from "@/lib/http";
 import { getUser, validOrigin } from "@/lib/security";
@@ -14,7 +14,6 @@ export async function POST(req: Request) {
     if (!body || typeof body.conversationId !== "string" || !isUuid(body.conversationId) ||
         typeof body.message !== "string" || !body.message.trim() || body.message.length > 4_000)
       return apiError("Mensagem inválida ou acima do limite de 4.000 caracteres.");
-    if (!process.env.OPENAI_API_KEY) return apiError("Chave da OpenAI não configurada no servidor.", 503);
     const id = body.conversationId;
     const message = body.message.trim();
     const locked = await db.query<{busy_until: string}>(`UPDATE conversations SET busy_until=NOW()+INTERVAL '5 minutes'
@@ -45,10 +44,6 @@ export async function POST(req: Request) {
         await client.query("ROLLBACK").catch(() => {});
         throw error;
       } finally { client.release(); }
-      const history = await db.query<{role:"user"|"assistant";content:string}>(`SELECT role,content
-        FROM (SELECT id,role,content FROM messages WHERE conversation_id=$1 ORDER BY id DESC LIMIT 24) h
-        ORDER BY id ASC`,[id]);
-
       const encoder = new TextEncoder();
       const abort = new AbortController();
       let cancelled = false;
@@ -66,31 +61,11 @@ export async function POST(req: Request) {
               controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
             };
             let full = "";
-            let complete = false;
             try {
-              const openai = new OpenAI({apiKey:process.env.OPENAI_API_KEY, timeout:90_000, maxRetries:0});
-              const response = await openai.responses.create({
-                model: process.env.AI_MODEL || "gpt-5.4-mini",
-                instructions: "Você é um assistente prestativo, claro e seguro. Converse em português brasileiro, salvo solicitação em contrário. Não alegue ter acessado informações externas quando não tiver acesso. Respeite a privacidade do usuário.",
-                input: history.rows.map(item => ({role:item.role,content:item.content})),
-                max_output_tokens: 1600,
-                stream: true,
-                store: false,
-              }, {signal:abort.signal});
-              for await (const chunk of response) {
-                if (chunk.type === "response.output_text.delta") {
-                  full += chunk.delta;
-                  send("delta", {text: chunk.delta});
-                }
-                if (chunk.type === "response.completed") complete = true;
-                if (chunk.type === "response.refusal.delta") {
-                  full += chunk.delta;
-                  send("delta", {text:chunk.delta});
-                }
-                if (chunk.type === "response.failed" || chunk.type === "response.incomplete" || chunk.type === "error")
-                  throw new Error("Resposta não concluída pelo provedor.");
-              }
-              if (!complete || !full.trim()) throw new Error("Resposta interrompida ou vazia.");
+              const research = await searchWeb(message,abort.signal);
+              abort.signal.throwIfAborted();
+              full = researchMarkdown(research);
+              send("delta",{text:full});
               await db.query("INSERT INTO messages(conversation_id,role,content) VALUES($1,'assistant',$2)",[id,full]);
               await db.query("UPDATE conversations SET updated_at=NOW() WHERE id=$1 AND user_id=$2",[id,user.id]);
               send("done",{ok:true});

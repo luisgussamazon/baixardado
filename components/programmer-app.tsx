@@ -163,7 +163,7 @@ export default function ProgrammerApp({email,appName}:{email:string;appName:stri
     </aside>
     <main className="programmer-main">
       <div className="programmer-content">
-        <div className="programmer-heading"><span className="eyebrow">DO CONCEITO AO CÓDIGO</span><h1>Modo Programador</h1><p>Descreva seu sistema. Receba os arquivos organizados para revisar e continuar no seu editor.</p></div>
+        <div className="programmer-heading"><span className="eyebrow">PESQUISA TÉCNICA E BASE INICIAL</span><h1>Modo Programador</h1><p>Pesquise referências e baixe um template de arquivos. Sem modelo de IA: a lógica do sistema descrito precisa ser implementada por você.</p></div>
         {error&&<div className="chat-error" role="alert">{error}<button onClick={()=>setError("")} aria-label="Fechar erro"><X size={16}/></button></div>}
         <form className="project-prompt" onSubmit={event=>void generate(event)}>
           <label htmlFor="project-description">O que você quer construir?</label>
@@ -171,7 +171,7 @@ export default function ProgrammerApp({email,appName}:{email:string;appName:stri
             placeholder="Ex.: um sistema de tarefas em React e TypeScript, com filtros por status, dados locais e instruções para rodar." rows={4} required/>
           <div className="project-prompt-footer"><span>{description.length.toLocaleString("pt-BR")} / 4.000 · Cota compartilhada com o Chat</span>
             {busy?<button className="project-secondary" type="button" onClick={()=>{setProgress("Cancelando...");request.current?.abort();}}><Square size={14}/> Cancelar</button>:
-            <button className="primary-btn" type="submit" disabled={!description.trim()||loading}><Code2 size={17}/> Gerar projeto</button>}
+            <button className="primary-btn" type="submit" disabled={!description.trim()||loading}><Code2 size={17}/> Pesquisar e criar base</button>}
           </div>
         </form>
         {busy?<div className="project-progress" role="status"><span className="spinner"/>{progress}</div>:loading?<div className="project-progress" role="status"><span className="spinner"/> Carregando projeto...</div>:null}
@@ -188,7 +188,7 @@ export default function ProgrammerApp({email,appName}:{email:string;appName:stri
           </div>
         </section>}
         {!busy&&!loading&&!project&&<div className="project-empty"><FolderCode size={36}/><h2>Seu próximo projeto começa aqui</h2><p>Arquivos de texto, estrutura de pastas e código com destaque de sintaxe. Tudo reunido em um ZIP.</p><div className="project-limit-chips"><span>Até 20 arquivos</span><span>32 KiB por arquivo</span><span>128 KiB no total</span></div></div>}
-        <p className="project-disclaimer">O código gerado não é executado nem testado pelo A3X AI. Revise os arquivos e as dependências antes de executar no seu computador. Não inclua senhas ou chaves na descrição.</p>
+        <p className="project-disclaimer">A base é um template estático, não um sistema completo gerado por IA. Nenhum código é executado no servidor. A descrição é enviada ao buscador; não inclua senhas ou dados privados.</p>
       </div>
     </main>
   </div>;

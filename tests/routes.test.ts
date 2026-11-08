@@ -76,19 +76,10 @@ test("stream completo persiste resposta; incompleto não persiste resposta parci
     };
     mock.method(db,"query",query);
     mock.method(db,"connect",async()=>({query,release(){}}));
-    mock.method(globalThis,"fetch",async (_url:unknown,init:RequestInit) => {
-      const body=JSON.parse(String(init.body));
-      assert.equal(body.store,false);
-      assert.equal(body.stream,true);
-      const events=[{type:"response.output_text.delta",delta:"Resposta local"},
-        {type:complete?"response.completed":"response.incomplete"}];
-      return new Response(events.map(event=>`data: ${JSON.stringify(event)}\n\n`).join(""),{
-        headers:{"content-type":"text/event-stream"},
-      });
+    mock.method(globalThis,"fetch",async (url:unknown) => {
+      assert(!String(url).includes("openai"));
+      return complete ? new Response('<rss><channel><item><title>Fonte de teste</title><link>https://example.com/doc</link><description>Trecho de pesquisa teste</description></item></channel></rss>') : new Response('unavailable',{status:503});
     });
-    // Apenas ativa o construtor; a chamada ao provedor é inteiramente substituída.
-    const previous=process.env.OPENAI_API_KEY;
-    process.env.OPENAI_API_KEY="local-test-placeholder";
     try {
       const res=await session(true,()=>chat.POST(request("chat",{conversationId:id,message:"teste"})));
       assert.equal(res.status,200);
@@ -98,7 +89,6 @@ test("stream completo persiste resposta; incompleto não persiste resposta parci
       assert(queries.includes("COMMIT"));
       assert(queries.some(sql=>sql.includes("busy_until=$3")));
     } finally {
-      if(previous===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=previous;
       mock.restoreAll();
     }
   }
@@ -111,7 +101,7 @@ test("indisponibilidade do banco retorna JSON genérico sem detalhes privados", 
   assert.doesNotMatch(await res.text(),/detalhe privado/);
 });
 
-test("cancelar leitura interrompe transporte OpenAI e libera a conversa", async () => {
+test("cancelar leitura interrompe transporte da busca e libera a conversa", async () => {
   let unlocked=false, aborted=false;
   const query=async(sql:string)=>{
     if(sql.includes("JOIN users"))return result([{id,email:"local@example.test"}]);
@@ -131,8 +121,6 @@ test("cancelar leitura interrompe transporte OpenAI e libera a conversa", async 
       init.signal!.addEventListener("abort",()=>{aborted=true;reject(new Error("cancelamento local"));},{once:true});
     });
   });
-  const previous=process.env.OPENAI_API_KEY;
-  process.env.OPENAI_API_KEY="local-test-placeholder";
   try {
     const res=await session(true,()=>chat.POST(request("chat",{conversationId:id,message:"teste"})));
     await started;
@@ -141,18 +129,15 @@ test("cancelar leitura interrompe transporte OpenAI e libera a conversa", async 
     assert.equal(aborted,true);
     assert.equal(unlocked,true);
   } finally {
-    if(previous===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=previous;
   }
 });
 
 test("health retorna 503 quando o esquema necessário não está disponível", async () => {
   const health=await import("../app/api/health/route");
-  const prevDb=process.env.DATABASE_URL, prevKey=process.env.OPENAI_API_KEY;
+  const prevDb=process.env.DATABASE_URL;
   process.env.DATABASE_URL="postgresql://localhost/local-test";
-  process.env.OPENAI_API_KEY="local-test-placeholder";
   mock.method(db,"query",async()=>result([{ready:false}]));
   try {assert.equal((await health.GET()).status,503);} finally {
     if(prevDb===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=prevDb;
-    if(prevKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=prevKey;
   }
 });
