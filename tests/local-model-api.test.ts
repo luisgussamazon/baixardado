@@ -16,7 +16,7 @@ before(async()=>{
   Object.assign(globalThis,{AsyncLocalStorage});({db}=await import("../lib/db"));api=await import("../app/api/local-model/route");pair=await import("../app/api/local-model/pair/route");jobs=await import("../app/api/local-model/jobs/route");model=await import("../lib/local-model");chat=await import("../app/api/chat/route");
   ({workUnitAsyncStorage:storage}=await import("next/dist/server/app-render/work-unit-async-storage.external"));({workAsyncStorage:work}=await import("next/dist/server/app-render/work-async-storage.external"));({ResponseCookies:CookieStore}=await import("next/dist/server/web/spec-extension/cookies"));
   pg=new PGlite();await pg.exec((await readFile("sql/001_initial.sql","utf8")).replace("CREATE EXTENSION IF NOT EXISTS pgcrypto;",""));
-  for(const name of ["002_programmer_projects.sql","003_knowledge_entries.sql","006_cognitive_engine.sql","007_local_model_bridge.sql","007_local_model_bridge.sql"])await pg.exec(await readFile("sql/"+name,"utf8"));
+  for(const name of ["002_programmer_projects.sql","003_knowledge_entries.sql","006_cognitive_engine.sql","007_local_model_bridge.sql","007_local_model_bridge.sql","009_remember_local_computer.sql","009_remember_local_computer.sql"])await pg.exec(await readFile("sql/"+name,"utf8"));
   for(const [i,user] of users.entries()){
     await pg.query("INSERT INTO users(id,email,password_hash) VALUES($1,$2,'local')",[user,`bridge-${i}@example.test`]);
     await pg.query("INSERT INTO sessions(token_hash,user_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '1 day')",[createHash("sha256").update("bridge-"+i).digest("hex"),user]);
@@ -78,4 +78,29 @@ test("sem computador ou ponte desativada não há chamada externa; limites são 
   assert.equal((await jobs.POST(req({action:"complete",id:conversations[0],result:"x".repeat(12001)},a.token))).status,400);
   const controller=new AbortController();controller.abort();await assert.rejects(()=>model.connectedModelReply(users[0],conversations[0],[{role:"user",content:"Cancelar"}],controller.signal));
   assert.equal((await pg.query("SELECT * FROM local_model_jobs")).rows.length,0);
+});
+
+test("lembrar computador sobrevive à expiração temporal, mantém isolamento e permite revogar",async()=>{
+  const resume=await import("../app/api/local-model/session/route");
+  const link=await (await pair.POST(req({model:"qwen3:4b-instruct"}))).json();
+  const approval={action:"approve",code:link.code,confirmed:true,remember:true};
+  assert.equal((await session(0,()=>api.POST(req(approval)))).status,200);
+  assert.equal((await session(0,()=>api.POST(req(approval)))).status,200);
+  assert.equal((await session(1,()=>api.POST(req(approval)))).status,404);
+  await pg.query("UPDATE local_model_devices SET expires_at=NOW()-INTERVAL '1 day' WHERE user_id=$1",[users[0]]);
+  assert.deepEqual(await (await resume.POST(req({action:"resume"},link.token))).json(),{ok:true,remembered:true});
+  assert.equal((await jobs.POST(req({action:"poll"},link.token))).status,200);
+  const mine=await (await session(0,()=>api.GET())).json(),other=await (await session(1,()=>api.GET())).json();
+  assert.equal(mine.devices.length,1);assert.equal(mine.devices[0].remembered,true);assert.equal(other.devices.length,0);
+  assert.equal((await resume.POST(req({action:"resume"},link.token,"https://evil.example"))).status,403);
+  assert.equal((await resume.POST(req({action:"resume",user_id:users[1]},link.token))).status,400);
+  assert.equal((await resume.POST(req({action:"resume"},"f".repeat(64)))).status,401);
+  assert.equal((await session(0,()=>api.POST(req({action:"revoke",id:mine.devices[0].id})))).status,200);
+  assert.equal((await resume.POST(req({action:"resume"},link.token))).status,401);
+});
+
+test("conexão temporária expirada não é recuperada pela rota automática",async()=>{
+  const resume=await import("../app/api/local-model/session/route"),link=await connect(0);
+  await pg.query("UPDATE local_model_devices SET expires_at=NOW()-INTERVAL '1 day'");
+  assert.equal((await resume.POST(req({action:"resume"},link.token))).status,401);
 });

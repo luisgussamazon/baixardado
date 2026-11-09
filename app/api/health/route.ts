@@ -14,7 +14,8 @@ export async function GET() {
         to_regclass('knowledge_entries') IS NOT NULL AND
         to_regclass('cognitive_records') IS NOT NULL AND
         to_regclass('cognitive_dialogue_states') IS NOT NULL AND
-        to_regclass('autonomous_study_notes') IS NOT NULL AND to_regclass('autonomous_study_state') IS NOT NULL AND to_regclass('autonomous_study_runs') IS NOT NULL AND to_regclass('local_model_devices') IS NOT NULL AND to_regclass('local_model_jobs') IS NOT NULL AS ready`);
+        to_regclass('autonomous_study_notes') IS NOT NULL AND to_regclass('autonomous_study_state') IS NOT NULL AND to_regclass('autonomous_study_runs') IS NOT NULL AND to_regclass('local_model_devices') IS NOT NULL AND to_regclass('local_model_jobs') IS NOT NULL AND
+        EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=current_schema() AND table_name='local_model_devices' AND column_name='remembered') AS ready`);
       ready = result.rows[0]?.ready === true;
     } catch { /* Não expor configuração ou detalhes de conexão no endpoint público. */ }
   }
