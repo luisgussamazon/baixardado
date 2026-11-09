@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="none" fill="none">
+ <defs><linearGradient id="blue" x1="600" y1="0" x2="400" y2="280" gradientUnits="userSpaceOnUse"><stop stop-color="#082668"/><stop offset=".8" stop-color="#005cd5" stop-opacity=".15"/><stop offset="1" stop-color="#00294c" stop-opacity="0"/></linearGradient><linearGradient id="bottom" x1="1100" y1="900" x2="1200" y2="1050" gradientUnits="userSpaceOnUse"><stop stop-color="#087aff" stop-opacity=".45"/><stop offset="1" stop-color="#001b5b"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="7"/></filter></defs>
+ <path d="M0 230C170-20 260 110 570-80L0-100Z" fill="url(#blue)"/><path d="M0 230C170-20 260 110 570-80" stroke="#00cbff" stroke-width="5" filter="url(#glow)"/><path d="M0 230C170-20 260 110 570-80" stroke="#00d5ff" stroke-width="1.6"/>
+ <path d="M0 260C145 75 193 117 285 65" stroke="#ff8e00" stroke-width="5" filter="url(#glow)"/><path d="M0 260C145 75 193 117 285 65" stroke="#ffa000" stroke-width="1.8"/>
+ <path d="M580 1020C850 800 1100 950 1270 906C1400 875 1525 820 1600 770V1000Z" fill="url(#bottom)"/><path d="M580 1020C850 800 1100 950 1270 906C1400 875 1525 820 1600 770" stroke="#00bfff" stroke-width="6" filter="url(#glow)"/><path d="M580 1020C850 800 1100 950 1270 906C1400 875 1525 820 1600 770" stroke="#00d5ff" stroke-width="1.8"/>
+ <path d="M1210 927C1400 892 1510 835 1600 725" stroke="#ff8700" stroke-width="7" filter="url(#glow)"/><path d="M1210 927C1400 892 1510 835 1600 725" stroke="#ffae00" stroke-width="2"/>
+</svg>
