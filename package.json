@@ -16,7 +16,9 @@
     "research:plan": "tsx scripts/research-plan.ts",
     "research:branch": "tsx scripts/research-branch.ts",
     "model:connect": "tsx scripts/model-worker.ts",
-    "agent:develop": "tsx scripts/agent-develop.ts"
+    "agent:develop": "tsx scripts/agent-develop.ts",
+    "learning:import": "tsx scripts/import-inventory-learning.ts",
+    "learning:observe": "tsx scripts/observe-inventory-front.ts"
   },
   "engines": {
     "node": ">=22.0.0"

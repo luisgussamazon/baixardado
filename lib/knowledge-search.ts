@@ -5,13 +5,8 @@ export type KnowledgeHit = {
   id:string;topic:string;title:string;question:string;answer:string;source_url:string|null;
   scope:"global"|"private";score:number;matched:number;covered:number;
 };
-const stop = new Set("como faco fazer faz uso usar significa criar escrever armazeno armazenar posso consegue pode somente qual que uma para com sem por meu minha meus minhas voce sobre entre outros outro segura seguro proteger diferenca sao esta tem foi agora cidade".split(" "));
-export function knowledgeTerms(query:string):string[]{
-  const text=query.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()
-    .replace(/next\.js/g,"nextjs").replace(/postgresql/g,"postgres");
-  const aliases:Record<string,string>={promises:"promise",funcoes:"funcao",indices:"indice",aprender:"treinar",aprende:"treinar",js:"javascript"};
-  return [...new Set((text.match(/[a-z0-9_]{2,}/g)??[]).filter(term=>!stop.has(term)).map(term=>aliases[term]??term))].slice(0,24);
-}
+import {knowledgeTerms} from "./knowledge-terms";
+export {knowledgeTerms} from "./knowledge-terms";
 
 export async function searchKnowledge(query:string,userId:string,limit=3):Promise<KnowledgeHit[]>{
   if(!query.trim()||query.length>4000||query.includes("\0"))return [];

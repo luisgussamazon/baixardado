@@ -5,7 +5,7 @@ import { getUser, validOrigin } from "@/lib/security";
 import type { ConversationTurn } from "@/lib/local-conversation";
 import { shouldLookupPersonalKnowledge } from "@/lib/dialogue-knowledge";
 import { searchKnowledge, knowledgeMarkdown } from "@/lib/knowledge-search";
-import { decide, confidenceNote } from "@/lib/cognitive/engine";
+import { decide } from "@/lib/cognitive/engine";
 import { loadCognitiveContext, persistDialogueReply } from "@/lib/cognitive/store";
 import { connectedModelReply,modelMessages } from "@/lib/local-model";
 import { studyReferences } from "@/lib/autonomous-study";
@@ -79,21 +79,18 @@ export async function POST(req: Request) {
               const relevantHits=decision.kind==="reply"&&!decision.knowledgeQuery?hits.filter(hit=>hit.scope==="private"):hits;
               full = decision.kind==="reply" ? (relevantHits.length?knowledgeMarkdown(relevantHits):
                 (unavailable?"A base local está temporariamente indisponível.\n\n":"")+decision.text) : researchMarkdown(research!);
-              let generated:string|null=null,modelFailed=false;
+              let generated:string|null=null;
               const studies=!cognitive.protected&&!research?await studyReferences(message).catch(()=>[]):[];
               if((!cognitive.protected||decision.kind==="search")&&(!research||research.results.length>0)){
-                generated=await connectedModelReply(user.id,id,modelMessages(message,dialogueHistory,context.records,hits,research,studies),abort.signal).catch(()=>{modelFailed=true;return null;});
+                generated=await connectedModelReply(user.id,id,modelMessages(message,dialogueHistory,context.records,hits,research,studies),abort.signal).catch(()=>null);
               }
               abort.signal.throwIfAborted();
               if(generated){
-                full=generated+"\n\n_Gerado pelo modelo aberto Qwen3 4B no seu computador. Pode conter erros; confira informações importantes._";
-                if(research?.results.length)full+="\n\n**Fontes recuperadas (trechos de busca, sem leitura integral das páginas):**\n"+research.results.slice(0,6).map((item,i)=>`- [W${i+1}: ${new URL(item.url).hostname}](${item.url})`).join("\n");
-                if(hits.length)full+="\n\n**Conhecimento fornecido ao modelo:** "+hits.slice(0,2).map((item,i)=>`[K${i+1}] ${item.id}`).join(" · ");
-                if(studies.length)full+="\n\n**Estudos públicos automáticos, não revisados:**\n"+studies.map(note=>`- ${note.title} · coleta: ${note.collected_at.slice(0,10)}\n`+note.sources.slice(0,2).map(source=>`  - [${new URL(source.url).hostname}](${source.url})`).join("\n")).join("\n");
-              }else if(modelFailed)full="Não consegui usar o modelo do seu computador nesta tentativa. Segue a resposta disponível pelo motor local:\n\n"+full;
-              const confidence=relevantHits.length?"moderada":cognitive.confidence;
-              const reason=relevantHits.length?"recuperação textual; confira a fonte":cognitive.reason;
-              if(!generated)full+=confidenceNote(confidence,reason);
+                full=generated;
+                if(research?.results.length)full+="\n\n**Fontes:**\n"+research.results.slice(0,6).map((item,i)=>`- [W${i+1}: ${new URL(item.url).hostname}](${item.url})`).join("\n");
+                if(hits.length)full+="\n\n**Fontes:**\n- "+hits.slice(0,2).map((item,i)=>`[K${i+1}] ${item.id}`).join(" · ");
+                if(studies.length)full+="\n\n**Fontes:**\n"+studies.map(note=>`- ${note.title} · ${note.collected_at.slice(0,10)}\n`+note.sources.slice(0,2).map(source=>`  - [${new URL(source.url).hostname}](${source.url})`).join("\n")).join("\n");
+              }
               await persistDialogueReply(user.id,id,cognitive.state,full);
               send("delta",{text:full});
               send("done",{ok:true});

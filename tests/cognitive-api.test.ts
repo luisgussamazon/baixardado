@@ -70,7 +70,7 @@ test("Chat só envia consulta pessoal depois de confirmação e informa confian�
   };
   assert.match(await send("pesquise meu email pessoa@example.com"),/confirmo envio/);assert.equal(network.mock.calls.length,0);
   assert.match(await send("confirmo envio à web"),/event: done/);assert.ok(network.mock.calls.length>0);
-  assert.match(await send("minha memória"),/Confiança de correspondência/);
+  assert.doesNotMatch(await send("minha memória"),/Confiança de correspondência/);
 });
 test("cota de memória é aplicada no banco e exclusão da conversa limpa seu estado",async()=>{
   await pg.query(`INSERT INTO cognitive_records(user_id,kind,label,value) SELECT $1,'fact','Cota','Teste' FROM generate_series(1,200)`,[users[1]]);

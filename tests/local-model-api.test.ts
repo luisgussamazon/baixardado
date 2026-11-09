@@ -60,7 +60,7 @@ test("Chat usa resposta generativa e somente memória aprovada do dono",async()=
   const reading=response.text(),job=await claim(a.token),payload=JSON.stringify(job.payload);
   assert.match(payload,/Autorizado dono/);assert.doesNotMatch(payload,/Privado outro|Pendente dono/);
   assert.equal((await jobs.POST(req({action:"complete",id:job.id,result:"Podemos escolher uma ideia e definir o primeiro passo. Qual delas é prioridade?"},a.token))).status,200);
-  const body=await reading;assert.match(body,/Qwen3 4B/);assert.match(body,/event: done/);
+  const body=await reading;assert.match(body,/Qual delas é prioridade/);assert.doesNotMatch(body,/Gerado pelo modelo|confira informações importantes/);assert.match(body,/event: done/);
   const saved=await pg.query<{content:string}>("SELECT content FROM messages WHERE role='assistant'");assert.match(saved.rows[0].content,/Qual delas é prioridade/);
 });
 test("revogar e expirar conexões bloqueia acesso e preserva isolamento",async()=>{
