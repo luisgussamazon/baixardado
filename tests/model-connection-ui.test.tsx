@@ -13,17 +13,23 @@ afterEach(()=>{ui.cleanup();mock.restoreAll();});after(()=>dom.window.close());
 test("autorizar computador exige marcar consentimento e envia só o código da conexão",async()=>{
   let posts=0;
   mock.method(globalThis,"fetch",async(_url:unknown,init?:RequestInit)=>{
-    if(init?.method==="POST"){posts++;assert.deepEqual(JSON.parse(String(init.body)),{action:"approve",code:"123456ABCDEF",confirmed:true});return Response.json({ok:true});}
+    if(init?.method==="POST"){posts++;assert.deepEqual(JSON.parse(String(init.body)),{action:"approve",code:"123456ABCDEF",confirmed:true,remember:true});return Response.json({ok:true});}
     return Response.json({devices:[],enabled:true});
   });
   ui.render(<Component initialCode="123456ABCDEF"/>);
   const button=ui.screen.getByRole("button",{name:"Autorizar meu computador"}) as HTMLButtonElement;
   assert.equal(button.disabled,true);assert.equal(posts,0);
-  ui.fireEvent.click(ui.screen.getByRole("checkbox"));assert.equal(button.disabled,false);ui.fireEvent.click(button);
+  ui.fireEvent.click(ui.screen.getAllByRole("checkbox")[0]);assert.equal(button.disabled,false);ui.fireEvent.click(button);
   await ui.screen.findByText("Autorizado. O computador deve ficar online em alguns segundos.");assert.equal(posts,1);
 });
 test("erro de sessão é mostrado sem conectar automaticamente",async()=>{
   mock.method(globalThis,"fetch",async()=>Response.json({error:"Faça login."},{status:401}));
   ui.render(<Component initialCode=""/>);assert.match((await ui.screen.findByRole("alert")).textContent!,/Faça login/);
   assert.equal((ui.screen.getByRole("button",{name:"Autorizar meu computador"}) as HTMLButtonElement).disabled,true);
+});
+test("computador lembrado dispensa formulário de código e não aprova outra conexão",async()=>{
+  mock.method(globalThis,"fetch",async(_url:unknown,init?:RequestInit)=>{assert.notEqual(init?.method,"POST");return Response.json({devices:[{id:"local",model:"qwen3:4b-instruct",online:false,remembered:true}],enabled:true});});
+  ui.render(<Component initialCode="123456ABCDEF"/>);
+  await ui.screen.findByText("Reconexão automática configurada");
+  assert.equal(ui.screen.queryByRole("textbox"),null);
 });

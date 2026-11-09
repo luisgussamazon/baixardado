@@ -25,7 +25,7 @@ export function modelMessages(message:string,history:ConversationTurn[],memories
 }
 export async function connectedModelReply(userId:string,conversationId:string,messages:ModelMessage[],signal:AbortSignal):Promise<string|null>{
   if(process.env.LOCAL_MODEL_BRIDGE==="0")return null;
-  const device=await db.query<{id:string}>(`SELECT id FROM local_model_devices WHERE user_id=$1 AND expires_at>NOW() AND last_seen>NOW()-INTERVAL '30 seconds' ORDER BY last_seen DESC LIMIT 1`,[userId]);
+  const device=await db.query<{id:string}>(`SELECT id FROM local_model_devices WHERE user_id=$1 AND (remembered OR expires_at>NOW()) AND last_seen>NOW()-INTERVAL '30 seconds' ORDER BY last_seen DESC LIMIT 1`,[userId]);
   if(!device.rows[0])return null;
   const client=await db.connect();let id:string|undefined;
   try{

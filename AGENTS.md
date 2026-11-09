@@ -14,7 +14,7 @@ Este repositório contém apenas o projeto independente A3X AI. **Não modificar
 1. Ler código relevante e identificar causa raiz antes de alterar; preservar módulos não relacionados.
 2. Preservar proteção de login, sessões, privacidade do histórico, streaming e limites de uso.
 3. Não criar dados fictícios em produção nem executar migrações destrutivas sem autorização explícita.
-4. Não armazenar, imprimir ou versionar valores reais de `.env*`, senhas, tokens e chaves. O usuário autorizou Qwen3 4B em sua máquina; não reconectar OpenAI, usar inferência de nuvem ou baixar outros modelos sem nova autorização. Tokens da ponte ficam somente em memória no computador e como hash no banco.
+4. Não armazenar em claro, imprimir ou versionar valores reais de `.env*`, senhas, tokens e chaves. O usuário autorizou Qwen3 4B em sua máquina; não reconectar OpenAI, usar inferência de nuvem ou baixar outros modelos sem nova autorização. Exceção expressamente autorizada em 09/11/2026: a credencial da ponte pode ficar criptografada pelo Windows DPAPI CurrentUser em `.tools/`, para reconexão automática. No banco permanece somente o hash; nunca persistir o token em claro, argumentos, logs ou variáveis de ambiente. Outros segredos continuam sem autorização de armazenamento.
 5. Validar autorização por usuário em todas as rotas novas e validar entradas de API.
 6. Usar alterações de esquema em migrações incrementais e compatíveis com dados existentes.
 7. Construir interface responsiva em português brasileiro, com bom feedback para erros e estados de carregamento.

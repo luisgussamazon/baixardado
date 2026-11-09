@@ -1,3 +1,4 @@
+param([switch]$Quiet)
 $ErrorActionPreference='Stop'
 $projectRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $ollamaExe=Join-Path $projectRoot '.tools\ollama\ollama.exe'
@@ -6,7 +7,7 @@ if(!(Test-Path -LiteralPath $ollamaExe)){throw 'Ollama portátil não encontrado
 if(!(Test-Path -LiteralPath $nodeExe)){$nodeExe=(Get-Command node -ErrorAction Stop).Source}
 $worker=Join-Path $projectRoot 'scripts\model-worker.ts'
 $alreadyRunning=Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object {$_.CommandLine -and $_.CommandLine.Contains($worker)}
-if($alreadyRunning){Write-Output 'A ponte já está em execução. Consulte .tools/model-worker.log para o endereço de autorização.';exit 0}
+if($alreadyRunning){if(!$Quiet){Write-Output 'A ponte já está em execução. A reconexão usa a credencial protegida quando disponível.'};return}
 $env:OLLAMA_HOST='127.0.0.1:11434'
 $env:OLLAMA_MODELS=Join-Path $projectRoot '.tools\ollama\models'
 $env:OLLAMA_NO_CLOUD='1'
@@ -22,4 +23,4 @@ if(!($models.models | Where-Object {$_.name -eq 'qwen3:4b-instruct'})){throw 'Mo
 $loader=Join-Path $projectRoot 'node_modules\tsx\dist\cli.mjs'
 if(!(Test-Path -LiteralPath $loader)){throw 'Dependências ausentes: execute npm ci na pasta do projeto.'}
 Start-Process -FilePath $nodeExe -ArgumentList @(('"'+$loader+'"'),('"'+$worker+'"')) -WorkingDirectory $projectRoot -WindowStyle Hidden -RedirectStandardOutput (Join-Path $projectRoot '.tools\model-worker.log') -RedirectStandardError (Join-Path $projectRoot '.tools\model-worker-error.log')
-Write-Output 'Ponte iniciada. Abra .tools/model-worker.log e aprove o endereço de conexão na sua conta A3X AI.'
+Write-Output 'Ponte iniciada. Ela reconecta automaticamente se já estiver vinculada; na primeira vez, consulte .tools/model-worker.log.'
