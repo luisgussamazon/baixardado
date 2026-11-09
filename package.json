@@ -11,7 +11,7 @@
     "db:migrate": "node scripts/migrate.mjs",
     "knowledge:validate": "node scripts/import-knowledge.mjs",
     "knowledge:import": "node scripts/import-knowledge.mjs",
-    "test": "tsx --tsconfig tests/tsconfig.json --test tests/*.test.ts tests/*.test.tsx",
+    "test": "tsx --tsconfig tests/tsconfig.json --test --test-concurrency=1 tests/*.test.ts tests/*.test.tsx",
     "research:study": "tsx scripts/research-study.ts",
     "research:plan": "tsx scripts/research-plan.ts",
     "research:branch": "tsx scripts/research-branch.ts",
