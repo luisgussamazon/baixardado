@@ -42,7 +42,12 @@ test("contexto mantém identidade e mensagem, limita tamanho e identifica fontes
 test("consulta documental não publica interpretações ou comandos inventados pelo modelo",()=>{
   const sources=fixture().slice(0,1).map(chunk=>({...chunk,id:"L1"}));
   const result=localDocumentReply(sources,"L1: FOUND significa recuperação de LOST; execute um ajuste agora.");
-  assert.match(result,/FOUND representa sobra/);assert.doesNotMatch(result,/recuperação de LOST|execute um ajuste agora/);assert.match(result,/trechos literais/);
+  assert.match(result,/FOUND representa sobra/);assert.doesNotMatch(result,/recuperação de LOST|execute um ajuste agora|Consulta documental|A documentação pode/);assert.match(result,/Fontes/);
+});
+test("resposta documental fica focada na pergunta e sem apresentação técnica",()=>{
+  const sources=[{id:"L1",document:"cronograma.md",section:"Cronograma",text:"A rota usa tabelas de compatibilidade.\n- **Abrir inventário** no cronograma exige alcançar a data planejada.\nNotificações por e-mail têm antecedência configurável."}];
+  const reply=localDocumentReply(sources,"L1","Como abrir inventário pelo cronograma?");
+  assert.match(reply,/Abrir inventário no cronograma exige alcançar a data planejada/);assert.doesNotMatch(reply,/compatibilidade|Notificações|Consulta documental|Gerado pelo/);
 });
 test("base local preserva pesquisas web explícitas e fontes web já recuperadas",()=>{
   for(const query of ["pesquise FOUND GAIN mapa","confirmo envio à web"]){const payload={messages:[{role:"system" as const,content:"A3X"},{role:"user" as const,content:query}]};assert.equal(addLearningContext(payload,fixture()).payload,payload);}

@@ -101,3 +101,5 @@ Veja [estudos e código experimental](docs/AUTONOMIA-CONTROLADA.md). O Chat não
 ## Conhecimento privado de inventário
 
 A ponte pode consultar documentos Markdown do pacote fornecido em uma base local criptografada e vinculada à conexão autorizada, com arquivo e seção nas fontes das respostas. Os documentos originais não são publicados nem enviados à busca web. A observação do ICQA é limitada ao HTML público do login, sem operar estoque ou navegar por telas autenticadas. Veja [instalação, privacidade e limitações](docs/CONHECIMENTO-INVENTARIO-LOCAL.md).
+
+O Chat exibe respostas diretas, sem rodapés técnicos repetitivos. Referências ficam recolhidas em **Fontes**; o histórico original é preservado. Veja [comportamento e verificações](docs/RESPOSTAS-DIRETAS.md).

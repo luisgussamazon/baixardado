@@ -1,5 +1,6 @@
 import {knowledgeTerms} from "./knowledge-terms";
 import {validateInference,type InferenceMessage} from "./local-inference";
+import {documentLine} from "./answer-presentation";
 export type LearningChunk={id:string;document:string;section:string;text:string};
 export type LearningDocument={name:string;text:string};
 const learningTerms=(value:string)=>knowledgeTerms(value).filter(term=>term.length>2||term==="cc");
@@ -76,11 +77,29 @@ export function learningSelectionPayload(payload:{messages:InferenceMessage[]}){
   if(messages[0].content.length+instruction.length<=8000&&messages.reduce((n,m)=>n+m.content.length,0)+instruction.length<=8500)messages[0].content+=instruction;
   return {messages};
 }
-export function localDocumentReply(sources:LearningChunk[],selection:string):string{
+export function localDocumentReply(sources:LearningChunk[],selection:string,question=""):string{
   const safe=(value:string)=>value.replace(/[\\`*_{}\[\]<>#!|]/g,"\\$&");
   const chosen=selection.match(/\bL[12]\b/)?.[0];
   const ordered=[...sources].sort((a,b)=>Number(b.id===chosen)-Number(a.id===chosen));
-  return "**Consulta documental privada — trechos literais**\n\nO modelo auxilia a priorizar fontes; a resposta abaixo preserva o texto fornecido, sem acrescentar interpretações operacionais.\n\n"+ordered.map(source=>`### [${source.id}] ${safe(source.document)} · ${safe(source.section)}\n\n`+source.text.split("\n").map(line=>"> "+safe(line)).join("\n")).join("\n\n")+"\n\nA documentação pode estar desatualizada ou contraditória. Nenhuma tela autenticada foi verificada e nenhuma ação de estoque foi executada.";
+  const important=learningTerms(question).filter(term=>! /^(icqa|tool|sistema|inventarios?|mapa|site)$/.test(term));
+  const normalized=(value:string)=>value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+  const seen=new Set<string>(),lines:string[]=[],used:LearningChunk[]=[];
+  for(const source of ordered){
+    let added=false;
+    const candidates=source.text.split("\n").map(documentLine).filter(Boolean);
+    const matches=candidates.map(line=>({line,score:important.filter(term=>normalized(line).includes(term)).length}));
+    const best=Math.max(0,...matches.map(item=>item.score));
+    for(const {line,score} of matches){
+      if(best>0&&score<best)continue;
+      const key=line.toLowerCase().replace(/\W/g,"");if(seen.has(key)||lines.length>=4)continue;
+      seen.add(key);lines.push(safe(line));added=true;
+    }
+    if(added)used.push(source);
+    // Uma fonte suficiente evita repetir a mesma explicação em documentos diferentes.
+    if(lines.length)break;
+  }
+  const answer=lines.length>1?lines.map(line=>"- "+line).join("\n"):lines[0]||"Não encontrei um trecho suficiente para responder a essa pergunta.";
+  return answer+(used.length?"\n\n**Fontes:**\n"+used.map(source=>`- [${source.id}] ${safe(source.document)} · ${safe(source.section)}`).join("\n"):"");
 }
 export function learningSources(sources:LearningChunk[]){
   const safe=(value:string)=>value.replace(/[\\`*_{}\[\]<>#!|]/g,"\\$&");

@@ -1,7 +1,8 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import SafeMarkdown from "@/components/safe-markdown";
+import AssistantAnswer from "@/components/assistant-answer";
+import {assistantPresentation} from "@/lib/answer-presentation";
 import ModeSwitch from "@/components/mode-switch";
 import Link from "next/link";
 import {
@@ -201,8 +202,8 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
             {messages.map(m=><div key={m.id} className={`message-row ${m.role}`}>
               <div className={`message-avatar ${m.role}`}>{m.role==="assistant"?<Sparkles size={18}/>:email.charAt(0).toUpperCase()}</div>
               <div className="message-main"><div className="message-author">{m.role==="user"?"Você":appName}</div>
-                {m.content ? <div className="message-content">{m.role==="assistant"?<SafeMarkdown>{m.content}</SafeMarkdown>:<p>{m.content}</p>}</div> : <div className="thinking"><span/><span/><span/></div>}
-                {m.role==="assistant"&&!!m.content&&<button className="copy-btn" onClick={()=>void copyMessage(m.id,m.content)} title="Copiar resposta">{copied===m.id?<Check size={14}/>:<Copy size={14}/>} {copied===m.id?"Copiado":"Copiar"}</button>}
+                {m.content ? <div className="message-content">{m.role==="assistant"?<AssistantAnswer>{m.content}</AssistantAnswer>:<p>{m.content}</p>}</div> : <div className="thinking"><span/><span/><span/></div>}
+                {m.role==="assistant"&&!!m.content&&<button className="copy-btn" onClick={()=>void copyMessage(m.id,assistantPresentation(m.content).text)} title="Copiar resposta">{copied===m.id?<Check size={14}/>:<Copy size={14}/>} {copied===m.id?"Copiado":"Copiar"}</button>}
               </div>
             </div>)}<div ref={chatEnd}/></div>}
         </div>

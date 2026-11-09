@@ -31,7 +31,7 @@ async function main(){
       const heartbeat=setInterval(()=>{void json("/api/local-model/jobs",{action:"heartbeat",id:job.id},connection!.token).then(state=>{if(state.active!==true)jobAbort.abort();}).catch(error=>{if(error instanceof Unauthorized){store?.clear();jobAbort.abort();abort.abort();}});},10000);
       try{
         const enriched=addLearningContext(job.payload,localChunks),signal=AbortSignal.any([abort.signal,jobAbort.signal]);
-        const result=enriched.sources.length?localDocumentReply(enriched.sources,await inferOnComputer(learningSelectionPayload(enriched.payload),signal,16)):await inferOnComputer(enriched.payload,signal);
+        const result=enriched.sources.length?localDocumentReply(enriched.sources,await inferOnComputer(learningSelectionPayload(enriched.payload),signal,16),enriched.payload.messages.at(-1)?.content):await inferOnComputer(enriched.payload,signal);
         await json("/api/local-model/jobs",{action:"complete",id:job.id,result:result.slice(0,12000)},connection.token);
       }
       catch{if(!abort.signal.aborted)await json("/api/local-model/jobs",{action:"complete",id:job.id,failed:true},connection.token).catch(()=>{});}
