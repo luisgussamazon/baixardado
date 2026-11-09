@@ -1,5 +1,7 @@
 # A3X AI — pesquisa na web com histórico privado
 
+GPT-6 Luna agora pode ser selecionado no Chat, com chave exclusivamente no servidor e teto interno de US$5/mês. O modo local continua disponível. Veja [configuração e limitações](docs/OPENAI-LUNA.md).
+
 ## Conversa com modelo aberto na sua máquina
 
 O reconhecimento privado do criador pode ser definido e aprovado em `/memoria`, na seção **Identidade do criador**. Ele recebe prioridade no contexto e não concede privilégios. Veja [detalhes e próximas melhorias](docs/IDENTIDADE-CRIADOR.md).
@@ -12,7 +14,7 @@ O [A3X Cognitive Engine](docs/A3X-COGNITIVE-ENGINE.md) mantém interpretação p
 
 No Chat, `pesquise ...` prepara a consulta; confirme com `confirmo envio à web` para autorizar seu envio. A confirmação vale apenas para aquela consulta, por até dez minutos.
 
-Aplicação independente em Next.js 15, React 19, TypeScript e PostgreSQL. **Não usa OpenAI nem APIs pagas de IA.** O modelo aberto é baixado e executado exclusivamente na máquina autorizada, não no Railway. Pode sintetizar trechos recuperados com fontes, mas também pode cometer erros. A3X AI é a marca do aplicativo; não é um modelo treinado do zero.
+Aplicação independente em Next.js 15, React 19, TypeScript e PostgreSQL. **OpenAI opcional com consentimento por conta.** O modelo aberto é baixado e executado exclusivamente na máquina autorizada, não no Railway. Pode sintetizar trechos recuperados com fontes, mas também pode cometer erros. A3X AI é a marca do aplicativo; não é um modelo treinado do zero.
 
 O Chat também possui [conversa local por intenções e contexto](docs/CONVERSA-LOCAL.md): cumprimentos, nome no contexto recente, perguntas de continuidade, planejamento inicial e contas simples. Não envia essas mensagens à web. Escreva **pesquise** seguido do assunto para consultar fontes, ou confirme uma oferta de pesquisa. Não equivale a um modelo de linguagem e não compreende assuntos arbitrários.
 

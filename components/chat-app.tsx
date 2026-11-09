@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import AssistantAnswer from "@/components/assistant-answer";
 import {assistantPresentation} from "@/lib/answer-presentation";
 import ModeSwitch from "@/components/mode-switch";
+import ModelProviderSwitch from "@/components/model-provider-switch";
 import Link from "next/link";
 import {
   ArrowUp, Bot, Check, Copy, FileText, Lightbulb, Menu,
@@ -40,6 +41,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
   const [collapsed,setCollapsed] = useState(false);
   const [copied,setCopied] = useState<string|null>(null);
   const [modelOnline,setModelOnline]=useState(false);
+  const [provider,setProvider]=useState<"local"|"openai">("local");
   const skipNextLoad = useRef<string|null>(null);
   const sending = useRef(false);
   const chatEnd = useRef<HTMLDivElement|null>(null);
@@ -186,8 +188,8 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
     </aside>
     <main className="main-chat">
       <header className="chat-topbar">
-        <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/>{modelOnline?" Qwen3 4B · no seu computador":" Modelo offline · respostas por regras"}</span></div></div>
-        <div className="cognitive-nav"><ModeSwitch mode="chat" disabled={busy}/><Link href="/memoria" aria-disabled={busy} onClick={event=>{if(busy)event.preventDefault();}}>Minha memória</Link></div>
+        <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/>{provider==="openai"?" GPT-6 Luna - OpenAI":modelOnline?" Qwen3 4B · no seu computador":" Modelo offline · respostas por regras"}</span></div></div>
+        <div className="cognitive-nav"><ModelProviderSwitch disabled={busy} onChange={setProvider}/><ModeSwitch mode="chat" disabled={busy}/><Link href="/memoria" aria-disabled={busy} onClick={event=>{if(busy)event.preventDefault();}}>Minha memória</Link></div>
       </header>
       <div className="conversation-scroll">
         <div className="conversation-content">
@@ -196,7 +198,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
             <div className="welcome-symbol"><Sparkles size={28}/></div>
             <div className="eyebrow">SUA MENTE. NOVAS POSSIBILIDADES.</div>
             <h1>Vamos <span>conversar?</span></h1>
-            <p>Converse, consulte a base de programação ou peça uma pesquisa.<br/>Respostas locais com fontes, sem modelo generativo.</p>
+            <p>Converse, consulte a base de programação ou peça uma pesquisa.<br/>Escolha o modelo de IA para suas conversas.</p>
             <div className="suggestion-grid">{suggestions.map(item=><button className="suggestion" key={item.title} onClick={()=>{void send(item.text);}} disabled={busy}><item.icon size={21}/><strong>{item.title}</strong><span>{item.text}</span><span className="suggestion-arrow">↗</span></button>)}</div>
           </div> : <div className="messages">
             {messages.map(m=><div key={m.id} className={`message-row ${m.role}`}>

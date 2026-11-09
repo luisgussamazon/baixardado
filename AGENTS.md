@@ -6,7 +6,7 @@ Este repositório contém apenas o projeto independente A3X AI. **Não modificar
 ## Stack e estrutura
 - Next.js 15 App Router, React 19, TypeScript.
 - PostgreSQL via `pg`; migrações `sql/` e `scripts/migrate.mjs`.
-- Conversa por regras ou Qwen3 4B na máquina autorizada do usuário, via ponte autenticada de saída; pesquisa pública sob pedido. Sem OpenAI ou API paga de IA.
+- Conversa por regras ou Qwen3 4B na máquina autorizada do usuário, via ponte autenticada de saída; pesquisa pública sob pedido. GPT-6 Luna opcional, autorizado pelo usuário em 09/11/2026, com consentimento por conta e teto interno de US$5/mês.
 - Autenticação, sessões, histórico de conversas e isolamento de dados por usuário.
 - Hospedagem alvo: Railway; configuração em `railway.json`.
 
@@ -14,7 +14,7 @@ Este repositório contém apenas o projeto independente A3X AI. **Não modificar
 1. Ler código relevante e identificar causa raiz antes de alterar; preservar módulos não relacionados.
 2. Preservar proteção de login, sessões, privacidade do histórico, streaming e limites de uso.
 3. Não criar dados fictícios em produção nem executar migrações destrutivas sem autorização explícita.
-4. Não armazenar em claro, imprimir ou versionar valores reais de `.env*`, senhas, tokens e chaves. O usuário autorizou Qwen3 4B em sua máquina; não reconectar OpenAI, usar inferência de nuvem ou baixar outros modelos sem nova autorização. Exceção expressamente autorizada em 09/11/2026: a credencial da ponte pode ficar criptografada pelo Windows DPAPI CurrentUser em `.tools/`, para reconexão automática. No banco permanece somente o hash; nunca persistir o token em claro, argumentos, logs ou variáveis de ambiente. Outros segredos continuam sem autorização de armazenamento.
+4. Não armazenar em claro, imprimir ou versionar valores reais de `.env*`, senhas, tokens e chaves. O usuário autorizou Qwen3 4B em sua máquina; outros modelos ou serviços exigem nova autorização. Exceções expressamente autorizadas em 09/11/2026: a credencial da ponte pode ficar criptografada pelo Windows DPAPI CurrentUser em `.tools/`, para reconexão automática. No banco permanece somente o hash; nunca persistir o token em claro, argumentos, logs ou variáveis de ambiente. GPT-6 Luna pode usar OPENAI_API_KEY somente no cofre do servidor Railway, nunca no cliente ou repositório, após consentimento por conta; não enviar automaticamente documentos privados do computador. Outros segredos continuam sem autorização de armazenamento.
 5. Validar autorização por usuário em todas as rotas novas e validar entradas de API.
 6. Usar alterações de esquema em migrações incrementais e compatíveis com dados existentes.
 7. Construir interface responsiva em português brasileiro, com bom feedback para erros e estados de carregamento.
