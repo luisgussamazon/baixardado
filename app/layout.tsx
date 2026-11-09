@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./a3x-theme.css";
+import "./workspace-theme.css";
 export const metadata: Metadata = {
   title: "A3X AI | Seu espaço para pensar",
   description: "Conversa local por regras e contexto, pesquisa com fontes e histórico privado.",

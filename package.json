@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
-    "prebuild": "node scripts/package-browser-extension.mjs",
+    "prebuild": "node scripts/package-browser-extension.mjs && node scripts/package-source-context.mjs",
     "build": "next build",
     "postbuild": "node scripts/prepare-standalone.mjs",
     "start": "node scripts/start.mjs",
@@ -17,6 +17,7 @@
     "research:plan": "tsx scripts/research-plan.ts",
     "research:branch": "tsx scripts/research-branch.ts",
     "model:connect": "tsx scripts/model-worker.ts",
+    "source:apply": "tsx scripts/apply-source-proposal.ts",
     "agent:develop": "tsx scripts/agent-develop.ts",
     "learning:import": "tsx scripts/import-inventory-learning.ts",
     "learning:observe": "tsx scripts/observe-inventory-front.ts"

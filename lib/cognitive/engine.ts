@@ -2,7 +2,8 @@ import { converse, type ConversationTurn } from "../local-conversation";
 import { enhanceA3XReply } from "../a3x-personality";
 import { interpret, normalize, containsPersonalData } from "./interpret";
 import { initialState, type CognitiveDecision, type DialogueState, type MemoryRecord } from "./types";
-import { creatorProfile,creatorQuestion } from "./creator";
+import { creatorProfile,creatorQuestion,institutionQuestion } from "./creator";
+import {A3X_ORIGIN} from "../brand";
 const escape=(text:string)=>text.replace(/[\\`*_{}\[\]<>#!|]/g,"\\$&");
 export function decide(message:string,history:ConversationTurn[],previous:DialogueState=initialState(),records:MemoryRecord[]=[],now=Date.now()):CognitiveDecision {
   const interpretation=interpret(message),text=normalize(message);
@@ -20,10 +21,11 @@ export function decide(message:string,history:ConversationTurn[],previous:Dialog
   // Consentimento vale apenas para a pesquisa imediatamente pendente, não para futuras consultas.
   state.pendingWeb=null;
   const creator=creatorProfile(approved);
+  if(institutionQuestion(message))return done(A3X_ORIGIN,"alta","identidade institucional definida pelos responsáveis pelo aplicativo");
   if(creatorQuestion(message))return done(creator?
-    `Sim, **${escape(creator.name)}**. Nesta conta, reconheço você como criador e responsável pelo projeto A3X AI. O modelo de linguagem utilizado é um componente aberto de terceiros.\n\nPerfil privado aprovado por você · Registro: ${escape(creator.sourceId)}.`:
+    `Reconheço o perfil privado aprovado desta conta: **${escape(creator.name)}**. ${A3X_ORIGIN} O modelo de linguagem utilizado é um componente de terceiros.\n\nPerfil privado aprovado por você · Registro: ${escape(creator.sourceId)}.`:
     "Ainda não há um perfil de criador aprovado e sem conflitos nesta conta. Em [Minha memória](/memoria), defina seu nome na seção Identidade do criador e aprove o perfil. Essa identificação não altera permissões.",creator?"alta":"baixa","perfil privado de criador, sem alteração de privilégios");
-  if(interpretation.intent==="identity")return done("Sou o A3X, um assistente tecnológico executivo feito de software. Uso um modelo aberto quando seu computador está conectado, além de memória autorizada e pesquisa sob pedido. Não sou humano nem consciente. Sem computador conectado, respondo por regras. Qual prioridade você quer organizar?");
+  if(interpretation.intent==="identity")return done("Sou a A3X IA, assistente tecnológico da A3X TECH. "+A3X_ORIGIN+" Uso o modelo configurado, memória autorizada e pesquisa sob pedido. Não sou humano nem consciente.");
   if(interpretation.intent==="memory"){
     if(/^(?:minhas preferencias|minha memoria|o que)/.test(text)){
       const facts=approved.filter(r=>r.kind==="fact"||r.kind==="preference");

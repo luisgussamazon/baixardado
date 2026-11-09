@@ -10,15 +10,15 @@ import Link from "next/link";
 import {
   Check, Copy, FileText, Menu,
   MessageSquare, PanelLeftClose, Plus, ShieldCheck,
-  Sparkles, Trash2, X, LogOut, Home, BarChart3, Layers, Rocket, Settings2, HelpCircle, ChevronDown, Send
+  Sparkles, Trash2, X, LogOut, Home, BarChart3, Layers, Settings2, HelpCircle, ChevronDown, ArrowRight
 } from "lucide-react";
 
 type ChatSummary = {id:string;title:string;updated_at:string};
 type Message = {id:string;role:"user"|"assistant";content:string};
 const suggestions = [
-  {icon:FileText, title:"Gerar relatório",text:"Quero preparar um relatório. Ajude-me a definir o objetivo e os dados necessários."},
-  {icon:BarChart3, title:"Analisar dados",text:"Quero analisar dados. Vou fornecer os dados e explicar o que preciso descobrir."},
-  {icon:Layers, title:"Resumo operacional",text:"Ajude-me a criar um resumo operacional com as informações que vou fornecer."},
+  {icon:FileText, title:"Gerar relatório",description:"Crie um relatório completo e estruturado.",text:"Quero preparar um relatório. Ajude-me a definir o objetivo e os dados necessários."},
+  {icon:BarChart3, title:"Analisar dados",description:"Explore, interprete e extraia informações.",text:"Quero analisar dados. Vou fornecer os dados e explicar o que preciso descobrir."},
+  {icon:Layers, title:"Resumo operacional",description:"Obtenha um panorama claro da operação.",text:"Ajude-me a criar um resumo operacional com as informações que vou fornecer."},
 ];
 
 async function requestJson(url:string, init?:RequestInit) {
@@ -172,7 +172,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
     {sidebar && <button className="mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>}
     <aside className={`sidebar ${sidebar?"sidebar-open":""} ${collapsed?"sidebar-collapsed":""}`}>
       <div className="sidebar-header">
-        <div className="brand orbit-brand">{collapsed?<span>A<span className="orbit-accent">3</span>X</span>:<img src="/a3x-orbit.svg" alt={appName} width={190} height={71}/>}</div>
+        <div className="brand workspace-brand" aria-label={appName}>A3X{!collapsed&&<span> IA</span>}</div>
         {!collapsed&&<button className="icon-button desktop-only" title="Recolher menu" onClick={()=>setCollapsed(true)}><PanelLeftClose size={18}/></button>}
         {collapsed&&<button className="icon-button expand-button" title="Expandir menu" onClick={()=>setCollapsed(false)}><Menu size={18}/></button>}
         <button className="icon-button mobile-only" aria-label="Fechar menu" onClick={()=>setSidebar(false)}><X size={20}/></button>
@@ -196,6 +196,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
         </div></>}
       </div>
       <div className="sidebar-bottom">
+        {!collapsed&&<Link href="/desenvolver" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Desenvolver A3X · código fonte</Link>}
         {!collapsed&&<Link href="/conectar" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Conectar modelo do meu computador</Link>}
         {!collapsed&&<Link href="/estudos" className="privacy-note">Estudos automáticos</Link>}
         {!collapsed&&<Link href="/laboratorio" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Laboratório científico · experimental</Link>}
@@ -206,7 +207,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
     <main className="main-chat neon-workspace">
       <header className="chat-topbar">
         <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/>{provider==="openai"?" GPT-6 Luna - OpenAI":modelOnline?" Qwen3 4B · no seu computador":" Modelo offline · respostas por regras"}</span></div></div>
-        <div className="topbar-controls"><div className="cognitive-nav"><ModelProviderSwitch disabled={busy} onChange={setProvider}/><ModeSwitch mode="chat" disabled={busy}/></div><details className="help-menu"><summary aria-label="Ajuda"><HelpCircle size={23}/></summary><div className="header-popover"><strong>Como posso ajudar?</strong><p>Converse, prepare um relatório ou organize seus projetos. Os cartões preparam sua solicitação para você completar.</p><Link href="/navegador">Conectar uma página do ICQA</Link></div></details><details className="account-menu"><summary><span className="avatar">{email.charAt(0).toUpperCase()}</span><span className="account-name">{email.split("@")[0]}</span><ChevronDown size={16}/></summary><div className="header-popover"><span>{email}</span><Link href="/memoria">Minha memória</Link><Link href="/conectar">Modelo do computador</Link><button onClick={signOut} disabled={busy}>Sair da conta</button></div></details></div>
+        <div className="topbar-controls"><div className="cognitive-nav"><ModelProviderSwitch disabled={busy} onChange={setProvider}/><ModeSwitch mode="chat" disabled={busy}/></div><details className="help-menu"><summary aria-label="Ajuda"><HelpCircle size={23}/></summary><div className="header-popover"><strong>Como posso ajudar?</strong><p>Converse, prepare um relatório ou organize seus projetos. Os cartões preparam sua solicitação para você completar.</p><Link href="/navegador">Conectar uma página do ICQA</Link></div></details><details className="account-menu"><summary><span className="avatar">{email.charAt(0).toUpperCase()}</span><span className="account-name">Minha conta</span><ChevronDown size={16}/></summary><div className="header-popover"><span>{email}</span><Link href="/memoria">Minha memória</Link><Link href="/conectar">Modelo do computador</Link><button onClick={signOut} disabled={busy}>Sair da conta</button></div></details></div>
       </header>
       <div className="conversation-scroll">
         <details className="browser-tools"><summary>Navegador assistido{browserDeviceId?" · tela selecionada":""}</summary><BrowserContextSelect disabled={busy} value={browserDeviceId} onChange={setBrowserDeviceId}/></details>
@@ -214,9 +215,9 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
         <div className="conversation-content">
           {loading ? <div className="loading-chat"><span className="spinner"/> Carregando conversa...</div> : messages.length===0 ?
           <div className="welcome">
-            <h1 className="hero-wordmark"><img src="/a3x-orbit.svg" alt="A3X IA" width={620} height={230}/></h1>
-            <p className="hero-tagline">Seu Assistente Inteligente de<br/>Relatórios e Análises</p>
-            <div className="suggestion-grid">{suggestions.map(item=><button className="suggestion" key={item.title} onClick={()=>prepareRequest(item.text)} disabled={busy}><item.icon size={42} strokeWidth={1.6}/><strong>{item.title}</strong></button>)}<Link className="suggestion" href="/programador" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}}><Rocket size={42} strokeWidth={1.6}/><strong>Apoio em projetos</strong></Link></div>
+            <div className="workspace-eyebrow">ESPAÇO DE TRABALHO</div><h1>Como posso ajudar?</h1>
+            <p className="hero-tagline">Crie relatórios, analise dados e acompanhe seus projetos.</p>
+            <div className="suggestion-grid">{suggestions.map(item=><button className="suggestion" aria-label={item.title} key={item.title} onClick={()=>prepareRequest(item.text)} disabled={busy}><item.icon size={36} strokeWidth={1.6}/><div><strong>{item.title}</strong><span>{item.description}</span></div><ArrowRight className="card-arrow" size={21}/></button>)}<Link className="suggestion" aria-label="Apoio em projetos" href="/programador" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}}><Layers size={36} strokeWidth={1.6}/><div><strong>Apoio em projetos</strong><span>Planeje, acompanhe e organize entregas.</span></div><ArrowRight className="card-arrow" size={21}/></Link></div>
           </div> : <div className="messages">
             {messages.map(m=><div key={m.id} className={`message-row ${m.role}`}>
               <div className={`message-avatar ${m.role}`}>{m.role==="assistant"?<Sparkles size={18}/>:email.charAt(0).toUpperCase()}</div>
@@ -229,8 +230,8 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
       </div>
       <div className="chat-composer-area">
         {error&&<div className="chat-error" role="alert">{error}<button onClick={()=>setError("")} aria-label="Fechar erro"><X size={15}/></button></div>}
-        <div className="composer"><MessageSquare className="composer-leading-icon" size={25}/><textarea ref={textarea} rows={1} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void send();}}} placeholder="Digite sua solicitação..." disabled={busy||loading} aria-label="Mensagem" maxLength={4000}/>
-          <div className="composer-actions"><button className="send-btn" disabled={!input.trim()||busy||loading} title="Enviar mensagem" aria-label="Enviar mensagem" onClick={()=>void send()}>{busy?<span className="mini-spinner"/>:<Send size={24}/>}</button></div>
+        <div className="composer"><textarea ref={textarea} rows={1} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void send();}}} placeholder="Descreva o que você precisa..." disabled={busy||loading} aria-label="Mensagem" maxLength={4000}/>
+          <div className="composer-actions"><button className="send-btn" disabled={!input.trim()||busy||loading} title="Enviar mensagem" aria-label="Enviar mensagem" onClick={()=>void send()}>{busy?<span className="mini-spinner"/>:<ArrowRight size={24}/>}</button></div>
         </div>
       </div>
     </main>

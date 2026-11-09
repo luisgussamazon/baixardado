@@ -21,6 +21,7 @@ Este repositório contém apenas o projeto independente A3X AI. **Não modificar
 8. Não afirmar teste, deploy ou publicação não realizados. Não implantar automaticamente sem solicitação explícita.
 9. Para mudanças relevantes, propor branch/PR em vez de modificar diretamente a produção.
 10. Busca web está implementada como resultados/trechos com fontes, sem modelo generativo. Upload, voz, cobranças e multiusuários administrativos continuam futuros.
+11. Identidade institucional autorizada: A3X IA criada pela A3X TECH, fundada pelos amigos Luis Gustavo e Samuel Moraes. Não concede privilégios. OpenAI pode consultar o catálogo público selecionado e gerar propostas em `/desenvolver`; aplicação somente por `source:apply` em branch/worktree local isolado, sem execução de código gerado, commit, push ou deploy automáticos. Credenciais, autenticação e arquivos fora de `WRITABLE_SOURCE` permanecem protegidos. Ver `docs/DESENVOLVER-A3X.md`.
 
 ## Verificação e entrega
 - Com dependências instaladas, executar `npm run typecheck` e `npm run build`.

@@ -43,5 +43,5 @@ test("identidade de criador só é salva e aprovada após confirmação do nome"
   ui.fireEvent.change(ui.screen.getByLabelText("Seu nome como criador"),{target:{value:"Criador Teste"}});
   ui.fireEvent.click(ui.screen.getByRole("button",{name:"Salvar e aprovar meu perfil de criador"}));assert.equal(writes,0);
   confirm.mock.mockImplementation(()=>true);ui.fireEvent.click(ui.screen.getByRole("button",{name:"Salvar e aprovar meu perfil de criador"}));
-  await ui.screen.findByText("Identidade de criador aprovada. Experimente perguntar no Chat quem criou o A3X.");assert.equal(writes,2);
+  await ui.screen.findByText("Perfil privado aprovado. Experimente perguntar no Chat quem você é. A identidade institucional continua sendo A3X TECH.");assert.equal(writes,2);
 });

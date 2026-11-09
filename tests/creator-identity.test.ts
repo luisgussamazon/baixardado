@@ -7,13 +7,17 @@ import { modelMessages } from "../lib/local-model";
 import { validateRecord } from "../lib/cognitive/validation";
 const creator:MemoryRecord={id:"test-creator",kind:"fact",label:CREATOR_LABEL,value:"Criador Teste",question:null,status:"approved"};
 test("criador aprovado é reconhecido sem modelo; pendente e ausência não presumem autoria",()=>{
-  for(const question of ["Quem te criou?","Quem é seu criador?","Você sabe quem sou?","Quem sou eu?"]){
-    const answer=decide(question,[],initialState(),[creator]);assert.equal(answer.protected,true);assert.match(answer.text,/Criador Teste/);assert.match(answer.text,/componente aberto de terceiros/);
+  for(const question of ["Você sabe quem sou?","Quem sou eu?"]){
+    const answer=decide(question,[],initialState(),[creator]);assert.equal(answer.protected,true);assert.match(answer.text,/Criador Teste/);assert.match(answer.text,/componente de terceiros/);
     assert.doesNotMatch(decide(question,[],initialState(),[{...creator,status:"pending"}]).text,/Criador Teste/);
     assert.doesNotMatch(decide(question,[]).text,/Criador Teste/);
   }
   assert.equal(creatorQuestion("pesquise quem criou o A3X"),false);assert.equal(creatorQuestion("quero um criador de conteúdo"),false);
   assert.match(decide("Olá",[],initialState(),[creator]).text,/Criador Teste/);
+});
+test("identidade institucional independe de memória privada e não atribui privilégios",()=>{
+ for(const question of ["Quem te criou?","Quem é seu criador?","Quem criou a A3X IA?","Quem fundou a A3X TECH?","Quem são os fundadores da A3X TECH?"]){for(const records of [[],[creator],[{...creator,status:"pending" as const}]]){const answer=decide(question,[],initialState(),records);assert.equal(answer.protected,true);assert.match(answer.text,/A3X TECH/);assert.match(answer.text,/Luis Gustavo e Samuel Moraes/);assert.doesNotMatch(answer.text,/Criador Teste|administrador/);}}
+ for(const provider of ["local","openai"] as const)assert.match(modelMessages("Olá",[],[],[],null,[],provider)[0].content,/A3X TECH.*Luis Gustavo e Samuel Moraes/);
 });
 test("identidade tem prioridade mesmo após muitas memórias novas e não muda estado ou privilégios",()=>{
   const recent:MemoryRecord[]=Array.from({length:40},(_,i)=>({...creator,id:"fact-"+i,label:"Assunto "+i,value:"Texto genérico"}));
