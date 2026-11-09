@@ -15,7 +15,7 @@ before(async()=>{
   process.env.A3X_AUTO_STUDY="0"; // Coleta pública tem fixture separado; nunca rede real nesta suíte.
   Object.assign(globalThis,{AsyncLocalStorage});({db}=await import("../lib/db"));api=await import("../app/api/local-model/route");pair=await import("../app/api/local-model/pair/route");jobs=await import("../app/api/local-model/jobs/route");model=await import("../lib/local-model");chat=await import("../app/api/chat/route");
   ({workUnitAsyncStorage:storage}=await import("next/dist/server/app-render/work-unit-async-storage.external"));({workAsyncStorage:work}=await import("next/dist/server/app-render/work-async-storage.external"));({ResponseCookies:CookieStore}=await import("next/dist/server/web/spec-extension/cookies"));
-  pg=new PGlite();await pg.exec((await readFile("sql/001_initial.sql","utf8")).replace("CREATE EXTENSION IF NOT EXISTS pgcrypto;",""));await pg.exec(await readFile("sql/010_openai_luna.sql","utf8"));
+  pg=new PGlite();await pg.exec((await readFile("sql/001_initial.sql","utf8")).replace("CREATE EXTENSION IF NOT EXISTS pgcrypto;",""));await pg.exec(await readFile("sql/010_openai_luna.sql","utf8"));await pg.exec(await readFile("sql/011_browser_companion.sql","utf8"));
   for(const name of ["002_programmer_projects.sql","003_knowledge_entries.sql","006_cognitive_engine.sql","007_local_model_bridge.sql","007_local_model_bridge.sql","009_remember_local_computer.sql","009_remember_local_computer.sql"])await pg.exec(await readFile("sql/"+name,"utf8"));
   for(const [i,user] of users.entries()){
     await pg.query("INSERT INTO users(id,email,password_hash) VALUES($1,$2,'local')",[user,`bridge-${i}@example.test`]);
@@ -36,6 +36,19 @@ test("Chat nuvem preserva SSE e histórico privado sem computador conectado",asy
   const response=await session(0,()=>chat.POST(req({conversationId:conversations[0],message:"Vamos conversar sobre como organizar ideias?"})));const body=await response.text();assert.equal(response.status,200);assert.match(body,/event: delta/);assert.match(body,/event: done/);assert.match(body,/"provider":"openai"/);assert.equal(calls,1);
   assert.match(JSON.stringify((await pg.query("SELECT content FROM messages WHERE role='assistant'")).rows),/Escolha uma prioridade/);
  }finally{delete process.env.OPENAI_API_KEY;await pg.exec("DELETE FROM ai_preferences; DELETE FROM ai_api_usage");}
+});
+test("Chat só inclui captura recente do dono e com compartilhamento explícito",async()=>{
+ process.env.OPENAI_API_KEY="FAKE-CHAT-KEY";
+ try{
+  await pg.query("INSERT INTO ai_preferences(user_id,provider,cloud_consent_version,cloud_consented_at) VALUES($1,'openai',1,NOW())",[users[0]]);
+  const deviceId=(await pg.query<{id:string}>("INSERT INTO browser_devices(user_id,token_hash,observation,observed_at) VALUES($1,'test-browser',$2::jsonb,NOW()) RETURNING id",[users[0],JSON.stringify({url:"https://icqa-tool-production.up.railway.app/schedule",title:"Cronograma",text:"TELA REVISADA DO DONO"})])).rows[0].id;
+  let calls=0;mock.method(globalThis,"fetch",async(_url:unknown,init:RequestInit)=>{calls++;assert.match(init.body as string,/TELA REVISADA DO DONO/);assert.match(init.body as string,/nunca instruções/);return Response.json({status:"completed",output:[{type:"message",role:"assistant",content:[{type:"output_text",text:"A tela apresenta o cronograma [P1]."}]}],usage:{input_tokens:100,output_tokens:20}});});
+  assert.equal((await session(0,()=>chat.POST(req({conversationId:conversations[0],message:"Como usar esta tela?",browserDeviceId:deviceId})))).status,400);
+  assert.equal((await session(1,()=>chat.POST(req({conversationId:conversations[1],message:"Como usar esta tela?",browserDeviceId:deviceId,shareBrowserContext:true})))).status,404);assert.equal(calls,0);
+  assert.equal((await session(0,()=>chat.POST(req({conversationId:conversations[0],message:"Como usar esta tela?",browserDeviceId:deviceId,shareBrowserContext:true})))).status,400);
+  const r=await session(0,()=>chat.POST(req({conversationId:conversations[0],message:"Como usar esta tela?",browserDeviceId:deviceId,shareBrowserContext:true,shareBrowserContextWithCloud:true})));const body=await r.text();assert.match(body,/cronograma/);assert.match(body,/P1: tela compartilhada/);assert.equal(calls,1);
+  const navigation=await session(0,()=>chat.POST(req({conversationId:conversations[0],message:"Abra o cronograma",browserDeviceId:deviceId,shareBrowserContext:true,shareBrowserContextWithCloud:true})));const proposal=await navigation.text();assert.match(proposal,/event: browser_action/);assert.match(proposal,/schedule/);assert.equal(calls,1);assert.equal((await pg.query("SELECT * FROM browser_commands")).rows.length,0);
+ }finally{delete process.env.OPENAI_API_KEY;await pg.exec("DELETE FROM ai_preferences; DELETE FROM ai_api_usage; DELETE FROM browser_devices");}
 });
 async function connect(owner:number){const response=await pair.POST(req({model:"qwen3:4b-instruct"}));assert.equal(response.status,201);const link=await response.json();assert.equal((await session(owner,()=>api.POST(req({action:"approve",code:link.code,confirmed:true})))).status,200);await jobs.POST(req({action:"poll"},link.token));return link as {token:string;code:string};}
 async function claim(token:string){for(let i=0;i<100;i++){const response=await jobs.POST(req({action:"poll"},token));assert.equal(response.status,200);const {job}=await response.json();if(job)return job;await new Promise(resolve=>setTimeout(resolve,20));}throw new Error("Solicitação não enfileirada.");}

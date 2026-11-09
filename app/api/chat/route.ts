@@ -11,6 +11,8 @@ import { connectedModelReply,modelMessages } from "@/lib/local-model";
 import { studyReferences } from "@/lib/autonomous-study";
 import {selectedProvider,CloudAIError} from "@/lib/ai-provider";
 import {openAILunaReply} from "@/lib/openai-luna";
+import {browserContext} from "@/lib/browser-device";
+import {browserNavigationRequest} from "@/lib/browser-policy";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -26,6 +28,11 @@ export async function POST(req: Request) {
     const id = body.conversationId;
     const message = body.message.trim();
     const provider=await selectedProvider(user.id);
+    if(body.browserDeviceId!==undefined&&(typeof body.browserDeviceId!=="string"||!isUuid(body.browserDeviceId)||body.shareBrowserContext!==true))return apiError("Confirme o compartilhamento da tela selecionada.");
+    if(body.browserDeviceId&&provider==="openai"&&body.shareBrowserContextWithCloud!==true)return apiError("Confirme o envio da captura à OpenAI para esta pergunta.");
+    const pageContext=typeof body.browserDeviceId==="string"?await browserContext(user.id,body.browserDeviceId):null;
+    if(body.browserDeviceId&&!pageContext)return apiError("Tela expirada ou indisponível. Compartilhe uma nova captura pela extensão.",404);
+    const browserNavigation=pageContext?browserNavigationRequest(message):null;
     const locked = await db.query<{busy_until: string}>(`UPDATE conversations SET busy_until=NOW()+INTERVAL '5 minutes'
       WHERE id=$1 AND user_id=$2 AND (busy_until IS NULL OR busy_until<NOW()) RETURNING busy_until::text`, [id,user.id]);
     if (!locked.rowCount) return apiError("Conversa inexistente ou resposta anterior ainda em andamento.", 409);
@@ -74,6 +81,11 @@ export async function POST(req: Request) {
             const heartbeat=setInterval(()=>{try{send("heartbeat",{});}catch{/* Transporte encerrado. */}},15000);
             let full = "";
             try {
+              if(browserNavigation){
+                full="Posso solicitar a abertura de "+browserNavigation.label+" na aba do ICQA vinculada. Confirme no botão abaixo; depois revise e compartilhe a nova tela pela extensão.";
+                await persistDialogueReply(user.id,id,cognitive.state,full);
+                send("delta",{text:full});send("browser_action",{deviceId:body.browserDeviceId,...browserNavigation});send("done",{ok:true,provider:"rules"});return;
+              }
               const research = decision.kind==="search" ? await searchMany(decision.query,abort.signal) : null;
               abort.signal.throwIfAborted();
               let unavailable=false;
@@ -85,12 +97,13 @@ export async function POST(req: Request) {
               let generated:string|null=null;
               const studies=!cognitive.protected&&!research?await studyReferences(message).catch(()=>[]):[];
               if((!cognitive.protected||decision.kind==="search")&&(!research||research.results.length>0)){
-                const messages=modelMessages(message,dialogueHistory,context.records,hits,research,studies,provider);
+                const messages=modelMessages(message,dialogueHistory,context.records,hits,research,studies,provider,pageContext);
                 generated=provider==="openai"?await openAILunaReply(user.id,messages,abort.signal):await connectedModelReply(user.id,id,messages,abort.signal).catch(()=>null);
               }
               abort.signal.throwIfAborted();
               if(generated){
                 full=generated;
+                if(pageContext)full+="\n\n**Fontes:**\n- [P1: tela compartilhada pelo usuário]("+pageContext.url+")";
                 if(research?.results.length)full+="\n\n**Fontes:**\n"+research.results.slice(0,6).map((item,i)=>`- [W${i+1}: ${new URL(item.url).hostname}](${item.url})`).join("\n");
                 if(hits.length)full+="\n\n**Fontes:**\n- "+hits.slice(0,2).map((item,i)=>`[K${i+1}] ${item.id}`).join(" · ");
                 if(studies.length)full+="\n\n**Fontes:**\n"+studies.map(note=>`- ${note.title} · ${note.collected_at.slice(0,10)}\n`+note.sources.slice(0,2).map(source=>`  - [${new URL(source.url).hostname}](${source.url})`).join("\n")).join("\n");

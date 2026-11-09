@@ -1,0 +1,6 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>A3X Navegador</title><link rel="stylesheet" href="popup.css"><body>
+<h1>A3X Navegador</h1><p>Faça login no ICQA diretamente na aba. Sua senha não é enviada ao A3X.</p>
+<button id="connect">Conectar à minha conta A3X</button><p id="code"></p><a id="authorize" target="_blank" rel="noopener" hidden>Autorizar no A3X</a>
+<button id="bind">Usar esta aba do ICQA</button><button id="capture">Revisar tela atual</button>
+<section id="preview" hidden><p>Revise e remova dados pessoais ou segredos antes de compartilhar. O texto ficará disponível à sua conta no A3X por até 30 minutos.</p><p id="source"></p><label>Título<input id="title" maxlength="180"></label><label>Texto da tela<textarea id="text" maxlength="6000" rows="12"></textarea></label><button id="send">Enviar trecho revisado ao A3X</button></section>
+<button id="disconnect">Desconectar</button><p id="status" role="status"></p><script type="module" src="popup.js"></script></body></html>
