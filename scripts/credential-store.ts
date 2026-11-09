@@ -25,7 +25,8 @@ try {
 } catch {exit 1}`;
 export function windowsProtect(action:"protect"|"unprotect",data:string):string{
   if(process.platform!=="win32")throw new Error("Proteção disponível somente no Windows.");
-  try{return execFileSync("powershell.exe",["-NoProfile","-NonInteractive","-Command",protector],{input:JSON.stringify({action,data}),encoding:"utf8",windowsHide:true,timeout:15000,maxBuffer:32000,stdio:["pipe","pipe","ignore"]}).trim();}
+  if(Buffer.byteLength(data)>2_000_000)throw new Error("Conteúdo protegido acima do limite.");
+  try{return execFileSync("powershell.exe",["-NoProfile","-NonInteractive","-Command",protector],{input:JSON.stringify({action,data}),encoding:"utf8",windowsHide:true,timeout:15000,maxBuffer:3_000_000,stdio:["pipe","pipe","ignore"]}).trim();}
   catch{throw new Error("Não foi possível acessar a credencial protegida pelo Windows.");}
 }
 export function credentialStore(server:string,root=process.cwd(),protect=windowsProtect){

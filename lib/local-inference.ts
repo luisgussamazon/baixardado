@@ -6,10 +6,11 @@ export function validateInference(payload:unknown):payload is {messages:Inferenc
     data.messages.every(item=>item&&typeof item==="object"&&Object.keys(item).every(key=>["role","content"].includes(key))&&["system","user","assistant"].includes(item.role)&&typeof item.content==="string"&&item.content.length<=8000)&&
     data.messages.reduce((total,item)=>total+item.content.length,0)<=8500;
 }
-export async function inferOnComputer(payload:unknown,signal:AbortSignal){
+export async function inferOnComputer(payload:unknown,signal:AbortSignal,maxOutputTokens=384){
   if(!validateInference(payload))throw new Error("Solicitação de modelo inválida.");
+  if(!Number.isInteger(maxOutputTokens)||maxOutputTokens<1||maxOutputTokens>384)throw new Error("Limite de saída inválido.");
   const messages=payload.messages;
-  const response=await fetch("http://127.0.0.1:11434/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},redirect:"error",signal:AbortSignal.any([signal,AbortSignal.timeout(95000)]),body:JSON.stringify({model:"qwen3:4b-instruct",messages,stream:false,think:false,keep_alive:"5m",options:{num_ctx:4096,num_predict:384,temperature:.6}})});
+  const response=await fetch("http://127.0.0.1:11434/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},redirect:"error",signal:AbortSignal.any([signal,AbortSignal.timeout(95000)]),body:JSON.stringify({model:"qwen3:4b-instruct",messages,stream:false,think:false,keep_alive:"5m",options:{num_ctx:4096,num_predict:maxOutputTokens,temperature:.6}})});
   if(!response.ok||!response.body)throw new Error("Modelo local indisponível.");
   const reader=response.body.getReader(),decoder=new TextDecoder("utf-8",{fatal:true});let raw="",size=0;
   try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>64000){await reader.cancel();throw new Error("Resposta do modelo excede limite.");}raw+=decoder.decode(part.value,{stream:true});}raw+=decoder.decode();}finally{reader.releaseLock();}

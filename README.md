@@ -97,3 +97,7 @@ CI em `.github/workflows/ci.yml`, sem deploy. Testes usam PostgreSQL descartáve
 ## Autonomia controlada
 
 Veja [estudos e código experimental](docs/AUTONOMIA-CONTROLADA.md). O Chat não tem cota diária de perguntas. Recursos físicos, concorrência e tempo de resposta continuam finitos.
+
+## Conhecimento privado de inventário
+
+A ponte pode consultar documentos Markdown do pacote fornecido em uma base local criptografada e vinculada à conexão autorizada, com arquivo e seção nas fontes das respostas. Os documentos originais não são publicados nem enviados à busca web. A observação do ICQA é limitada ao HTML público do login, sem operar estoque ou navegar por telas autenticadas. Veja [instalação, privacidade e limitações](docs/CONHECIMENTO-INVENTARIO-LOCAL.md).
