@@ -1,5 +1,6 @@
 const generatedFooter="_Gerado pelo modelo aberto Qwen3 4B no seu computador. Pode conter erros; confira informações importantes._";
 const documentFooter="A documentação pode estar desatualizada ou contraditória. Nenhuma tela autenticada foi verificada e nenhuma ação de estoque foi executada.";
+export function isPrivateLocalAnswer(text:string){return text.startsWith("**Consulta documental privada")||text.includes("**Trechos privados fornecidos ao modelo:**")||/\*\*Fontes:\*\*\s*\n- \[L\d+\]/.test(text);}
 export function documentLine(value:string){
   return value.replace(/^\s*>\s?/g,"").replace(/\\([\\`*_{}\[\]<>#!|])/g,"$1")
     .replace(/^\s*[-*]\s+/,"").replace(/\[([^\]]+)\]\([^)]*\)/g,"$1")

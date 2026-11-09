@@ -18,7 +18,7 @@ test("criador aprovado é reconhecido sem modelo; pendente e ausência não pres
 test("identidade tem prioridade mesmo após muitas memórias novas e não muda estado ou privilégios",()=>{
   const recent:MemoryRecord[]=Array.from({length:40},(_,i)=>({...creator,id:"fact-"+i,label:"Assunto "+i,value:"Texto genérico"}));
   const messages=modelMessages("Oi",[],[...recent,creator],[]);
-  assert.match(messages[0].content,/Criador Teste/);assert.match(messages[0].content,/não é autoria dos pesos Qwen nem autorização/);
+  assert.match(messages[0].content,/Criador Teste/);assert.match(messages[0].content,/não é autoria dos pesos do modelo nem autorização/);
   assert(messages.reduce((total,message)=>total+message.content.length,0)<=8500);
   assert.equal(decide("Quem te criou?",[],initialState(),[creator]).state.goal,null);
 });

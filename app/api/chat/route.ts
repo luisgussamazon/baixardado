@@ -9,6 +9,8 @@ import { decide } from "@/lib/cognitive/engine";
 import { loadCognitiveContext, persistDialogueReply } from "@/lib/cognitive/store";
 import { connectedModelReply,modelMessages } from "@/lib/local-model";
 import { studyReferences } from "@/lib/autonomous-study";
+import {selectedProvider,CloudAIError} from "@/lib/ai-provider";
+import {openAILunaReply} from "@/lib/openai-luna";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,7 @@ export async function POST(req: Request) {
       return apiError("Mensagem inválida ou acima do limite de 4.000 caracteres.");
     const id = body.conversationId;
     const message = body.message.trim();
+    const provider=await selectedProvider(user.id);
     const locked = await db.query<{busy_until: string}>(`UPDATE conversations SET busy_until=NOW()+INTERVAL '5 minutes'
       WHERE id=$1 AND user_id=$2 AND (busy_until IS NULL OR busy_until<NOW()) RETURNING busy_until::text`, [id,user.id]);
     if (!locked.rowCount) return apiError("Conversa inexistente ou resposta anterior ainda em andamento.", 409);
@@ -82,7 +85,8 @@ export async function POST(req: Request) {
               let generated:string|null=null;
               const studies=!cognitive.protected&&!research?await studyReferences(message).catch(()=>[]):[];
               if((!cognitive.protected||decision.kind==="search")&&(!research||research.results.length>0)){
-                generated=await connectedModelReply(user.id,id,modelMessages(message,dialogueHistory,context.records,hits,research,studies),abort.signal).catch(()=>null);
+                const messages=modelMessages(message,dialogueHistory,context.records,hits,research,studies,provider);
+                generated=provider==="openai"?await openAILunaReply(user.id,messages,abort.signal):await connectedModelReply(user.id,id,messages,abort.signal).catch(()=>null);
               }
               abort.signal.throwIfAborted();
               if(generated){
@@ -93,10 +97,10 @@ export async function POST(req: Request) {
               }
               await persistDialogueReply(user.id,id,cognitive.state,full);
               send("delta",{text:full});
-              send("done",{ok:true});
+              send("done",{ok:true,provider:generated?provider:"rules"});
             } catch (error) {
               console.error("Falha ao responder à conversa.");
-              send("failure",{message:"Não foi possível concluir a resposta. Sua pergunta ficou salva; tente novamente."});
+              send("failure",{message:error instanceof CloudAIError?error.message:"Não foi possível concluir a resposta. Sua pergunta ficou salva; tente novamente."});
             } finally {
               clearInterval(heartbeat);
               clearTimeout(timeout);
