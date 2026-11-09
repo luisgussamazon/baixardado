@@ -35,14 +35,14 @@ export default function CognitiveMemory(){
     try{
       const data=await request("/api/cognitive/records",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind:"fact",label:CREATOR_LABEL,value:name,question:null})});
       await request(`/api/cognitive/records/${data.record.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"approve"})});
-      await load();setCreatorName("");setNotice("Identidade de criador aprovada. Experimente perguntar no Chat quem criou o A3X.");
+      await load();setCreatorName("");setNotice("Perfil privado aprovado. Experimente perguntar no Chat quem você é. A identidade institucional continua sendo A3X TECH.");
     }catch(e){setError(e instanceof Error?e.message:"Falha ao definir identidade.");await load().catch(()=>{});}finally{setBusy(false);}
   }
   const creator=creatorProfile(records),hasCreator=records.some(record=>isCreatorLabel(record.label));
   return <main className={styles.page}><div className={styles.shell}>
     <header className={styles.top}><div><div className={styles.eyebrow}>A3X COGNITIVE ENGINE</div><h1>Minha memória</h1><p>Você decide o que autoriza. Propostas não são usadas até sua aprovação.</p></div><nav className={styles.nav}><Link href="/chat">Chat</Link><Link href="/programador">Programador</Link><Link href="/ensinar">Ensinar</Link><Link href="/laboratorio">Laboratório</Link></nav></header>
     {error&&<p role="alert" className={styles.error}>{error}</p>}{notice&&<p role="status" className={styles.success}>{notice}</p>}
-    <section className={styles.panel} aria-label="Identidade do criador"><h2>Identidade do criador</h2><p className={styles.hint}>Perfil privado de reconhecimento do criador do aplicativo. Não concede acesso administrativo nem afirma autoria do modelo Qwen. Para alterar, exclua o registro anterior no acervo abaixo.</p>
+    <section className={styles.panel} aria-label="Identidade do criador"><h2>Identidade do criador</h2><p className={styles.hint}>A A3X IA foi criada pela A3X TECH, fundada por Luis Gustavo e Samuel Moraes. O perfil abaixo é privado desta conta; não substitui a identidade institucional nem concede acesso administrativo ou autoria dos modelos. Para alterar, exclua o registro anterior no acervo abaixo.</p>
       {creator?<p role="status">Criador reconhecido nesta conta: <strong>{creator.name}</strong>.</p>:hasCreator?<p>Existe um perfil pendente ou conflitante. Revise e aprove ou exclua o registro abaixo.</p>:<form className={styles.form} onSubmit={saveCreator}><label>Seu nome como criador <input required maxLength={80} value={creatorName} disabled={busy||loading} onChange={e=>setCreatorName(e.target.value)}/></label><div className={styles.actions}><button className={styles.primary} disabled={busy||loading||!validCreatorName(creatorName.trim())} type="submit">Salvar e aprovar meu perfil de criador</button></div></form>}
     </section>
     <div className={styles.layout}><section className={styles.panel}><h2>Propor registro</h2>

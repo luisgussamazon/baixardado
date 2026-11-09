@@ -1,5 +1,9 @@
 # A3X AI — pesquisa na web com histórico privado
 
+A A3X IA é criada pela **A3X TECH**, fundada pelos amigos **Luis Gustavo e Samuel Moraes**. Essa identidade institucional não concede privilégios nem representa autoria de modelos de terceiros.
+
+Em [Desenvolver A3X](docs/DESENVOLVER-A3X.md), o modo OpenAI consulta fontes públicos selecionados e propõe melhorias. O usuário revisa o diff e pode aplicar a proposta em branch local isolada com `npm run source:apply -- --file proposta.json`. Nenhum código gerado é executado ou publicado automaticamente.
+
 GPT-6 Luna agora pode ser selecionado no Chat, com chave exclusivamente no servidor e teto interno de US$5/mês. O modo local continua disponível. Veja [configuração e limitações](docs/OPENAI-LUNA.md).
 
 O [Navegador assistido](docs/NAVEGADOR-ASSISTIDO.md), em `/navegador`, oferece uma extensão local para compartilhar capturas revisadas do ICQA, navegar por rotas limitadas e aprovar conhecimento privado. Você faz login diretamente no site. Esta versão não preenche formulários nem altera estoque; o Chat interpreta as capturas compartilhadas, sem controle autônomo de cliques.
