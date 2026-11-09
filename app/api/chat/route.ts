@@ -8,6 +8,7 @@ import { searchKnowledge, knowledgeMarkdown } from "@/lib/knowledge-search";
 import { decide, confidenceNote } from "@/lib/cognitive/engine";
 import { loadCognitiveContext, persistDialogueReply } from "@/lib/cognitive/store";
 import { connectedModelReply,modelMessages } from "@/lib/local-model";
+import { studyReferences } from "@/lib/autonomous-study";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -30,18 +31,9 @@ export async function POST(req: Request) {
     const lease = locked.rows[0].busy_until;
     const unlock = () => db.query("UPDATE conversations SET busy_until=NULL WHERE id=$1 AND user_id=$2 AND busy_until=$3", [id,user.id,lease]);
     try {
-      const limit = Math.floor(Math.max(1, Math.min(1000, Number(process.env.DAILY_MESSAGE_LIMIT || "50") || 50)));
       const client = await db.connect();
       try {
         await client.query("BEGIN");
-        const usage = await client.query<{requests: number}>(`INSERT INTO daily_usage(user_id,day,requests)
-          VALUES($1,CURRENT_DATE,1)
-          ON CONFLICT(user_id,day) DO UPDATE SET requests=daily_usage.requests+1
-          WHERE daily_usage.requests < $2 RETURNING requests`, [user.id, limit]);
-        if (!usage.rowCount) {
-          await client.query("ROLLBACK");
-          return apiError(`Limite diário de ${limit} mensagens atingido.`,429);
-        }
         await client.query("INSERT INTO messages(conversation_id,role,content) VALUES($1,'user',$2)",[id,message]);
         await client.query(`UPDATE conversations SET title=CASE WHEN title='Nova conversa'
           THEN $2 ELSE title END,updated_at=NOW() WHERE id=$1 AND user_id=$3`,[id,message.slice(0,60),user.id]);
@@ -88,14 +80,16 @@ export async function POST(req: Request) {
               full = decision.kind==="reply" ? (relevantHits.length?knowledgeMarkdown(relevantHits):
                 (unavailable?"A base local está temporariamente indisponível.\n\n":"")+decision.text) : researchMarkdown(research!);
               let generated:string|null=null,modelFailed=false;
+              const studies=!cognitive.protected&&!research?await studyReferences(message).catch(()=>[]):[];
               if((!cognitive.protected||decision.kind==="search")&&(!research||research.results.length>0)){
-                generated=await connectedModelReply(user.id,id,modelMessages(message,dialogueHistory,context.records,hits,research),abort.signal).catch(()=>{modelFailed=true;return null;});
+                generated=await connectedModelReply(user.id,id,modelMessages(message,dialogueHistory,context.records,hits,research,studies),abort.signal).catch(()=>{modelFailed=true;return null;});
               }
               abort.signal.throwIfAborted();
               if(generated){
                 full=generated+"\n\n_Gerado pelo modelo aberto Qwen3 4B no seu computador. Pode conter erros; confira informações importantes._";
                 if(research?.results.length)full+="\n\n**Fontes recuperadas (trechos de busca, sem leitura integral das páginas):**\n"+research.results.slice(0,6).map((item,i)=>`- [W${i+1}: ${new URL(item.url).hostname}](${item.url})`).join("\n");
                 if(hits.length)full+="\n\n**Conhecimento fornecido ao modelo:** "+hits.slice(0,2).map((item,i)=>`[K${i+1}] ${item.id}`).join(" · ");
+                if(studies.length)full+="\n\n**Estudos públicos automáticos, não revisados:**\n"+studies.map(note=>`- ${note.title} · coleta: ${note.collected_at.slice(0,10)}\n`+note.sources.slice(0,2).map(source=>`  - [${new URL(source.url).hostname}](${source.url})`).join("\n")).join("\n");
               }else if(modelFailed)full="Não consegui usar o modelo do seu computador nesta tentativa. Segue a resposta disponível pelo motor local:\n\n"+full;
               const confidence=relevantHits.length?"moderada":cognitive.confidence;
               const reason=relevantHits.length?"recuperação textual; confira a fonte":cognitive.reason;
@@ -125,7 +119,7 @@ export async function POST(req: Request) {
       console.error("Erro ao iniciar a resposta:");
       return apiError("Erro no processamento da mensagem.",500);
     } finally {
-      // Se falhar antes de transmitir (incluindo limite diário), libere o bloqueio.
+      // Se falhar antes de transmitir, libere o bloqueio.
       if (!handedOff) {
         try {await unlock();}
         catch (unlockError) {console.error("Falha ao liberar conversa");}

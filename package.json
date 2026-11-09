@@ -15,7 +15,8 @@
     "research:study": "tsx scripts/research-study.ts",
     "research:plan": "tsx scripts/research-plan.ts",
     "research:branch": "tsx scripts/research-branch.ts",
-    "model:connect": "tsx scripts/model-worker.ts"
+    "model:connect": "tsx scripts/model-worker.ts",
+    "agent:develop": "tsx scripts/agent-develop.ts"
   },
   "engines": {
     "node": ">=22.0.0"

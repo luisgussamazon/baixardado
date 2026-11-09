@@ -65,7 +65,7 @@ Markdown bloqueia imagens remotas e HTML. Links externos exigem confirmação co
 - Não é consciente, ilimitado ou um substituto garantido de modelos maiores. Pode errar, inventar fatos ou não seguir instruções.
 - Máquina medida: aproximadamente 15,4 GB de RAM, Core Ultra 5 135U, GPU Intel integrada. Inferência usa CPU nesta instalação. Suspender ou desligar o computador interrompe respostas generativas.
 - Uma inferência por dispositivo; fila de até três solicitações por conta; saída de até 384 tokens, 12.000 caracteres máximos na validação, timeout local de 95 segundos e espera da aplicação de até 105 segundos, além do timeout global do Chat.
-- A cota diária existente continua configurável por `DAILY_MESSAGE_LIMIT` (padrão 50; intervalo 1–1.000). Não removemos proteção de recursos para prometer capacidade infinita.
+- O Chat não tem cota diária de perguntas. Projetos mantêm cota própria (`DAILY_PROJECT_LIMIT`, padrão 50); concorrência, tamanho e tempo de resposta continuam limitados pela infraestrutura.
 - API de IA paga: nenhuma. Energia, máquina, internet, Railway, PostgreSQL e armazenamento têm custos e capacidade finita.
 - A inferência não é token a token nesta versão: o transporte SSE mantém heartbeat e entrega o texto completo após validação. A resposta completa e o estado são gravados juntos.
 - A fila contém contexto privado temporário no mesmo PostgreSQL do histórico; não há criptografia adicional por campo. Payload é apagado ao concluir; solicitações são removidas após consumo. Expiradas são limpas no próximo acesso da conta, não por garantia de apagamento físico no instante do relógio.
