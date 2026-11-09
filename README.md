@@ -2,6 +2,8 @@
 
 GPT-6 Luna agora pode ser selecionado no Chat, com chave exclusivamente no servidor e teto interno de US$5/mês. O modo local continua disponível. Veja [configuração e limitações](docs/OPENAI-LUNA.md).
 
+O [Navegador assistido](docs/NAVEGADOR-ASSISTIDO.md), em `/navegador`, oferece uma extensão local para compartilhar capturas revisadas do ICQA, navegar por rotas limitadas e aprovar conhecimento privado. Você faz login diretamente no site. Esta versão não preenche formulários nem altera estoque; o Chat interpreta as capturas compartilhadas, sem controle autônomo de cliques.
+
 ## Conversa com modelo aberto na sua máquina
 
 O reconhecimento privado do criador pode ser definido e aprovado em `/memoria`, na seção **Identidade do criador**. Ele recebe prioridade no contexto e não concede privilégios. Veja [detalhes e próximas melhorias](docs/IDENTIDADE-CRIADOR.md).

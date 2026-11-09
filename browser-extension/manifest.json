@@ -1,0 +1,12 @@
+{
+ "manifest_version":3,
+ "name":"A3X Navegador Assistido",
+ "version":"1.0.0",
+ "minimum_chrome_version":"120",
+ "description":"Compartilhe telas revisadas do ICQA com sua conta A3X e autorize navegação limitada.",
+ "permissions":["activeTab","scripting","storage","alarms"],
+ "host_permissions":["https://icqa-tool-production.up.railway.app/*","https://baixardado-production.up.railway.app/*"],
+ "background":{"service_worker":"background.js","type":"module"},
+ "action":{"default_popup":"popup.html","default_title":"A3X Navegador Assistido"},
+ "content_security_policy":{"extension_pages":"script-src 'self'; object-src 'none'"}
+}

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
+    "prebuild": "node scripts/package-browser-extension.mjs",
     "build": "next build",
     "postbuild": "node scripts/prepare-standalone.mjs",
     "start": "node scripts/start.mjs",

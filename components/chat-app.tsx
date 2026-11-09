@@ -5,6 +5,7 @@ import AssistantAnswer from "@/components/assistant-answer";
 import {assistantPresentation} from "@/lib/answer-presentation";
 import ModeSwitch from "@/components/mode-switch";
 import ModelProviderSwitch from "@/components/model-provider-switch";
+import BrowserContextSelect from "@/components/browser-context-select";
 import Link from "next/link";
 import {
   ArrowUp, Bot, Check, Copy, FileText, Lightbulb, Menu,
@@ -42,6 +43,9 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
   const [copied,setCopied] = useState<string|null>(null);
   const [modelOnline,setModelOnline]=useState(false);
   const [provider,setProvider]=useState<"local"|"openai">("local");
+  const [browserDeviceId,setBrowserDeviceId]=useState("");
+  const [browserAction,setBrowserAction]=useState<{deviceId:string;url:string;label:string}|null>(null);
+  const [browserStatus,setBrowserStatus]=useState("");
   const skipNextLoad = useRef<string|null>(null);
   const sending = useRef(false);
   const chatEnd = useRef<HTMLDivElement|null>(null);
@@ -70,11 +74,13 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
 
   function newChat() {
     if (busy) return;
+    setBrowserAction(null);setBrowserStatus("");
     setActiveId(null);setMessages([]);setError("");setInput("");setSidebar(false);
     textarea.current?.focus();
   }
   function selectChat(id:string) {
     if (busy || activeId===id) return;
+    setBrowserAction(null);setBrowserStatus("");
     setActiveId(id);setSidebar(false);setError("");
   }
   async function deleteChat(id:string) {
@@ -95,8 +101,10 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
   }
   async function send(override?:string) {
     const question=(override??input).trim();
-    if (!question || sending.current || loading || question.length>4000) return;
+    if (!question || busy || sending.current || loading || question.length>4000) return;
+    if(browserDeviceId&&provider==="openai"&&!window.confirm("Enviar o trecho revisado da tela selecionada à OpenAI junto com esta pergunta? Remova dados pessoais e segredos antes de compartilhar."))return;
     sending.current=true;
+    setBrowserAction(null);setBrowserStatus("");
     setBusy(true);setError("");setInput("");
     let id=activeId;
     try {
@@ -111,7 +119,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
       setMessages(prev=>[...prev,{id:humanId,role:"user",content:question},{id:answerId,role:"assistant",content:""}]);
       const res=await fetch("/api/chat",{
         method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({conversationId:id,message:question}),
+        body:JSON.stringify({conversationId:id,message:question,...(browserDeviceId?{browserDeviceId,shareBrowserContext:true,shareBrowserContextWithCloud:provider==="openai"}:{})}),
       });
       if (!res.ok) {
         const data=await res.json().catch(()=>({}));
@@ -130,6 +138,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
           if(event==="delta")setMessages(prev=>prev.map(m=>m.id===answerId?{...m,content:m.content+data.text}:m));
           if(event==="failure")failure=data.message;
           if(event==="done")done=true;
+          if(event==="browser_action")setBrowserAction(data);
         }
         while (true) {
           const part=await reader.read();
@@ -192,6 +201,8 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
         <div className="cognitive-nav"><ModelProviderSwitch disabled={busy} onChange={setProvider}/><ModeSwitch mode="chat" disabled={busy}/><Link href="/memoria" aria-disabled={busy} onClick={event=>{if(busy)event.preventDefault();}}>Minha memória</Link></div>
       </header>
       <div className="conversation-scroll">
+        <BrowserContextSelect disabled={busy} value={browserDeviceId} onChange={setBrowserDeviceId}/>
+        {(browserAction||browserStatus)&&<div className="browser-context">{browserAction&&<button disabled={busy} onClick={()=>{const action=browserAction;if(!window.confirm("Autorizar abertura de "+action.url+" na aba vinculada do ICQA?"))return;setBusy(true);void requestJson("/api/browser",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"navigate",id:action.deviceId,url:action.url,confirmed:true})}).then(()=>{setBrowserAction(null);setBrowserStatus("Navegação solicitada. Aguarde até 30 segundos e compartilhe a nova tela pela extensão.");}).catch(e=>setError(e.message)).finally(()=>setBusy(false));}}>Confirmar navegação: {browserAction.label}</button>}<span role="status">{browserStatus}</span></div>}
         <div className="conversation-content">
           {loading ? <div className="loading-chat"><span className="spinner"/> Carregando conversa...</div> : messages.length===0 ?
           <div className="welcome">
