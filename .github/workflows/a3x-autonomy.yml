@@ -42,7 +42,12 @@ jobs:
             const server='https://baixardado-production.up.railway.app';
             let ready=false;
             for(let n=0;n<30;n++){
-              try {const r=await fetch(server+'/api/autonomy',{redirect:'error',signal:AbortSignal.timeout(10000)});if(r.status===401){ready=true;break;}}catch{}
+              try {
+                const deployments=await github.rest.repos.listDeployments({owner:context.repo.owner,repo:context.repo.repo,sha:context.sha,environment:'considerate-caring / production',per_page:3});
+                let deployed=false;
+                for(const deployment of deployments.data){const statuses=await github.rest.repos.listDeploymentStatuses({owner:context.repo.owner,repo:context.repo.repo,deployment_id:deployment.id,per_page:1});if(statuses.data[0]?.state==='success')deployed=true;}
+                const r=await fetch(server+'/api/autonomy',{redirect:'error',signal:AbortSignal.timeout(10000)});if(deployed&&r.status===401){ready=true;break;}
+              }catch{}
               await new Promise(resolve=>setTimeout(resolve,15000));
             }
             if(!ready)throw Error('Servidor ainda não disponibilizou o ciclo.');

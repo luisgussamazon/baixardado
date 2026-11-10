@@ -10,7 +10,13 @@ export function applyLocalSourceProposal(root:string,proposal:SourceProposal){
  const plain=(...args:string[])=>execFileSync("git",["-c","core.fsmonitor=false",...args],{cwd:root,env,windowsHide:true,timeout:15000,maxBuffer:1000000,encoding:"utf8",stdio:["ignore","pipe","pipe"]}).trim();
  if(realpathSync(plain("rev-parse","--show-toplevel"))!==root||! /^(?:https:\/\/github\.com\/|git@github\.com:)luisgussamazon\/baixardado(?:\.git)?$/.test(plain("remote","get-url","origin")))throw Error("Use somente o repositório "+SOURCE_REPOSITORY+".");
  if(plain("status","--porcelain"))throw Error("Revise e salve o checkout antes de aplicar a proposta.");
- if(plain("ls-tree","-r","--name-only","HEAD").split(/\r?\n/).some(p=>p.split("/").at(-1)===".gitattributes"))throw Error("Revise atributos e filtros Git antes de usar este aplicador.");
+ const attributes=plain("ls-tree","-r","--name-only","HEAD").split(/\r?\n/).filter(p=>p.split("/").at(-1)===".gitattributes");
+ if(attributes.length){
+  const reviewed=["knowledge/a3x-v1/* -text","research/autonomia-v1/*.json -text","research/autonomia-v1/*.md -text"];
+  if(attributes.length!==1||attributes[0]!==".gitattributes"||!/^100644 blob /.test(plain("ls-tree","HEAD","--",".gitattributes")))throw Error("Revise atributos e filtros Git antes de usar este aplicador.");
+  const rules=plain("show","HEAD:.gitattributes").split(/\r?\n/).map(line=>line.trim()).filter(line=>line&&!line.startsWith("#"));
+  if(JSON.stringify(rules)!==JSON.stringify(reviewed))throw Error("Revise atributos e filtros Git antes de usar este aplicador.");
+ }
  if(!proposal||!Array.isArray(proposal.files)||proposal.files.length<1||proposal.files.length>3||!proposal.files.every(f=>WRITABLE_SOURCE.includes(f.path)&&/^[a-f0-9]{40}$/.test(f.sha)))throw Error("Manifesto inválido.");
  const files:SourceFile[]=proposal.files.map(f=>{if(!/^100(?:644|755) blob /.test(plain("ls-tree","HEAD","--",f.path)))throw Error("Somente arquivos regulares rastreados.");const sha=plain("rev-parse","HEAD:"+f.path);const content=execFileSync("git",["-c","core.fsmonitor=false","show","HEAD:"+f.path],{cwd:root,env,windowsHide:true,timeout:15000,maxBuffer:60000,encoding:"utf8",stdio:["ignore","pipe","pipe"]});return {path:f.path,sha,content};});
  const changes=applySourceEdits(proposal,files);
