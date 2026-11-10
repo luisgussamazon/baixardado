@@ -2,7 +2,7 @@
 
 A A3X IA é criada pela **A3X TECH**, fundada pelos amigos **Luis Gustavo e Samuel Moraes**. Essa identidade institucional não concede privilégios nem representa autoria de modelos de terceiros.
 
-Em [Desenvolver A3X](docs/DESENVOLVER-A3X.md), o modo OpenAI consulta fontes públicos selecionados e propõe melhorias. O usuário revisa o diff e pode aplicar a proposta em branch local isolada com `npm run source:apply -- --file proposta.json`. Nenhum código gerado é executado ou publicado automaticamente.
+Na [Autonomia A3X](docs/AUTONOMIA-CONTINUA.md), um workflow diário analisa fontes públicos, prepara uma melhoria em branch e publica após testes/typecheck/build isolados. O mantenedor autorizou esse fluxo automático, mantendo credenciais, autenticação e banco protegidos. O estado real aparece em `/autonomia`; não há download de JSON nem aplicação manual a cada ciclo. A ativação inicial depende do workflow instalado e do primeiro ciclo autenticado.
 
 GPT-6 Luna agora pode ser selecionado no Chat, com chave exclusivamente no servidor e teto interno de US$5/mês. O modo local continua disponível. Veja [configuração e limitações](docs/OPENAI-LUNA.md).
 

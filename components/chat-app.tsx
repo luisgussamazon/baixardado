@@ -196,7 +196,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
         </div></>}
       </div>
       <div className="sidebar-bottom">
-        {!collapsed&&<Link href="/desenvolver" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Desenvolver A3X · código fonte</Link>}
+        {!collapsed&&<Link href="/autonomia" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Autonomia A3X · melhorias contínuas</Link>}
         {!collapsed&&<Link href="/conectar" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Conectar modelo do meu computador</Link>}
         {!collapsed&&<Link href="/estudos" className="privacy-note">Estudos automáticos</Link>}
         {!collapsed&&<Link href="/laboratorio" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Laboratório científico · experimental</Link>}
