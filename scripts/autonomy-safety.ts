@@ -12,7 +12,7 @@ function shape(source:ts.SourceFile){
 export function validateAutonomousChanges(proposal:SourceProposal,files:SourceFile[]){
  const changes=applySourceEdits(proposal,files);
  for(const file of changes){
-  if(file.path.endsWith(".css")){for(const edit of proposal.edits.filter(e=>e.path===file.path))if(/url\s*\(|@import|@font-face|expression\s*\(|behavior\s*:|-moz-binding|\\/.test(edit.newText))throw Error("CSS autônomo não pode acrescentar carregamento externo.");continue;}
+  if(file.path.endsWith(".css")){for(const edit of proposal.edits.filter(e=>e.path===file.path))if(/url\s*\(|@import|@font-face|image(?:-set)?\s*\(|expression\s*\(|behavior\s*:|-moz-binding|\\|\/\//i.test(edit.newText))throw Error("CSS autônomo não pode acrescentar carregamento externo.");continue;}
   const parse=(content:string)=>ts.createSourceFile(file.path,content,ts.ScriptTarget.ES2022,true,file.path.endsWith(".tsx")?ts.ScriptKind.TSX:ts.ScriptKind.TS),before=parse(files.find(f=>f.path===file.path)!.content),after=parse(file.content);
   if(COPY_ONLY.has(file.path)){if(shape(before)!==shape(after))throw Error("Fluxos de consentimento, chamadas e lógica da interface são imutáveis na autonomia.");continue;}
   const imports=(source:ts.SourceFile)=>source.statements.filter(ts.isImportDeclaration).map(n=>n.getText(source));if(JSON.stringify(imports(before))!==JSON.stringify(imports(after)))throw Error("Novas importações exigem revisão do mantenedor.");
