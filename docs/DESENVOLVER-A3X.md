@@ -1,5 +1,7 @@
 # Desenvolvimento assistido do A3X
 
+**Fluxo anterior, substituído pela [Autonomia A3X](AUTONOMIA-CONTINUA.md).** A interface manual não é mais o caminho normal. `/desenvolver` redireciona para `/autonomia`. APIs e arquivos de propostas anteriores continuam disponíveis por compatibilidade e privacidade; o ciclo autônomo não exige esses passos manuais.
+
 ## Identidade e interface
 
 Identidade institucional definida pelo responsável: **A A3X IA foi criada pela A3X TECH, fundada pelos amigos Luis Gustavo e Samuel Moraes.** Respostas diretas usam essa identidade sem consumir API; o contexto dos modelos local e OpenAI também recebe a informação. Não representa autoria dos pesos de modelos de terceiros e não cria papéis administrativos. Perfis pessoais aprovados em Minha memória continuam privados por usuário e separados dessa identidade.

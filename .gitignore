@@ -10,3 +10,4 @@ coverage/
 .tools/
 public/a3x-navegador.zip
 .generated/
+.autonomy/

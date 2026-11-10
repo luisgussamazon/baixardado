@@ -1,0 +1,79 @@
+name: Autonomia A3X
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  push:
+    branches: [main]
+    paths: ['.github/workflows/a3x-autonomy.yml']
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Executar, ativar ou pausar
+        type: choice
+        options: [run, enable, pause]
+        default: run
+concurrency:
+  group: a3x-autonomy
+  cancel-in-progress: false
+permissions:
+  contents: write
+  id-token: write
+  deployments: read
+jobs:
+  cycle:
+    if: github.repository == 'luisgussamazon/baixardado' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Planejar e preparar melhoria
+        id: cycle
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs/promises');
+            const server='https://baixardado-production.up.railway.app';
+            let ready=false;
+            for(let n=0;n<30;n++){
+              try {const r=await fetch(server+'/api/autonomy',{redirect:'error',signal:AbortSignal.timeout(10000)});if(r.status===401){ready=true;break;}}catch{}
+              await new Promise(resolve=>setTimeout(resolve,15000));
+            }
+            if(!ready)throw Error('Servidor ainda não disponibilizou o ciclo.');
+            const mode=context.payload.inputs?.mode||'run';
+            const body=mode==='pause'?{action:'pause'}:{action:'run',enable:mode==='enable'||context.eventName==='push'};
+            const token=await core.getIDToken('a3x-autonomy');
+            const response=await fetch(server+'/api/autonomy',{method:'POST',redirect:'error',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body),signal:AbortSignal.timeout(235000)});
+            if(!response.ok)throw Error('Ciclo recusado. Confira orçamento, política e limites.');
+            const result=await response.json();await fs.mkdir('.autonomy',{recursive:true});await fs.writeFile('.autonomy/run.json',JSON.stringify(result));core.setOutput('ready',result.status==='ready'?'true':'false');
+      - name: Validar em isolamento sem rede
+        if: steps.cycle.outputs.ready == 'true'
+        run: node_modules/.bin/tsx scripts/autonomy-prepare.ts
+      - name: Publicar somente após validação
+        if: steps.cycle.outputs.ready == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {pathToFileURL}=require('node:url');
+            const path=require('node:path');
+            const {publishAutonomy}=await import(pathToFileURL(path.join(process.cwd(),'scripts/autonomy-publish.mjs')).href);
+            await publishAutonomy({github,core,context});
+      - name: Registrar resultado e pausar em falha
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs/promises');
+            let run;try{run=JSON.parse(await fs.readFile('.autonomy/run.json','utf8'));}catch{return;}
+            if(run.status!=='ready')return;
+            let outcome;try{outcome=JSON.parse(await fs.readFile('.autonomy/outcome.json','utf8'));}catch{}
+            const status=outcome?.status==='deployed'?'deployed':'failed';
+            const token=await core.getIDToken('a3x-autonomy');
+            const r=await fetch('https://baixardado-production.up.railway.app/api/autonomy',{method:'POST',redirect:'error',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({action:'finish',id:run.id,status,...(outcome?.commit?{commit:outcome.commit}:{})}),signal:AbortSignal.timeout(15000)});
+            if(!r.ok)throw Error('Não foi possível registrar o resultado. Verifique o ciclo.');

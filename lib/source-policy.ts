@@ -1,5 +1,5 @@
 export const SOURCE_REPOSITORY="luisgussamazon/baixardado";
-export const WRITABLE_SOURCE=["components/chat-app.tsx","components/assistant-answer.tsx","components/mode-switch.tsx","app/a3x-theme.css","app/workspace-theme.css","app/globals.css","lib/a3x-personality.ts"];
+export const WRITABLE_SOURCE=["components/chat-app.tsx","components/mode-switch.tsx","app/a3x-theme.css","app/workspace-theme.css","app/globals.css","lib/a3x-personality.ts","lib/knowledge-terms.ts","lib/research/classifier.ts","components/project-tree.tsx"];
 export function safeSourcePath(path:unknown):path is string{return typeof path==="string"&&path.length<=180&&/^(?:app|components|lib|scripts|docs)\/[a-zA-Z0-9_./()[\]-]+\.(?:ts|tsx|css|md|mjs)$/.test(path)&&!path.includes("..")&&!path.split("/").some(p=>p.startsWith("."))||path==="README.md"||path==="AGENTS.md";}
 export type SourceFile={path:string;sha:string;content:string};
 export type SourceEdit={path:string;oldText:string;newText:string};
