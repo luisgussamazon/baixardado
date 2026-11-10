@@ -55,7 +55,7 @@ jobs:
             const body=mode==='pause'?{action:'pause'}:{action:'run',enable:mode==='enable'||context.eventName==='push'};
             const token=await core.getIDToken('a3x-autonomy');
             const response=await fetch(server+'/api/autonomy',{method:'POST',redirect:'error',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body),signal:AbortSignal.timeout(235000)});
-            if(!response.ok)throw Error('Ciclo recusado. Confira orçamento, política e limites.');
+            if(!response.ok){const failure=await response.json().catch(()=>({}));const code=typeof failure.code==='string'&&/^[a-z0-9-]{1,70}$/.test(failure.code)?failure.code:'unknown';throw Error('Ciclo recusado: '+code+'. Confira orçamento, política e limites.');}
             const result=await response.json();await fs.mkdir('.autonomy',{recursive:true});await fs.writeFile('.autonomy/run.json',JSON.stringify(result));core.setOutput('ready',result.status==='ready'?'true':'false');
       - name: Validar em isolamento sem rede
         if: steps.cycle.outputs.ready == 'true'

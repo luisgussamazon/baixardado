@@ -24,3 +24,15 @@ test("pausa e desativação bloqueiam publicação; conclusão exige o mesmo run
 test("limite global bloqueia antes de consumir API",async()=>{
  await pg.exec("UPDATE autonomy_policy SET enabled=TRUE");for(let i=0;i<3;i++)await pg.query("INSERT INTO autonomy_cycles(github_run_id,jti_hash,billing_user_id,base_sha,status) VALUES($1,$2,$3,$4,'no_change')",["old-"+i,"hash-"+i,user,"a".repeat(40)]);assert.equal((await api.POST(req({action:"run"},token()))).status,409);assert.equal(calls,0);
 });
+test("falha do provedor informa somente etapa fixa sem resposta privada ou credenciais",async()=>{
+ mock.method(globalThis,"fetch",async(url:unknown)=>String(url).includes("/.well-known/jwks")?Response.json({keys:[jwk]}):new Response("secret provider response",{status:429}));
+ const r=await api.POST(req({action:"run",enable:true},token()));assert.equal(r.status,409);const body=await r.json();assert.equal(body.code,"planning-provider-429");assert.doesNotMatch(JSON.stringify(body),/secret|FAKE-KEY/);assert.equal((await pg.query<{status:string}>("SELECT status FROM autonomy_cycles")).rows[0].status,"failed");
+});
+test("ciclo pequeno recusa múltiplas edições e pausa sem publicar",async()=>{
+ mock.method(globalThis,"fetch",async(url:unknown)=>{
+  if(String(url).includes("/.well-known/jwks"))return Response.json({keys:[jwk]});calls++;
+  const result=calls===1?{paths:[path],goal:"Texto"}:{summary:"Texto",edits:[{path,oldText:'"Original"',newText:'"Revisado"'},{path,oldText:'"Revisado"',newText:'"Outro texto"'}]};
+  return Response.json({status:"completed",output:[{type:"message",role:"assistant",content:[{type:"output_text",text:JSON.stringify(result)}]}],usage:{input_tokens:100,output_tokens:20}});
+ });
+ const r=await api.POST(req({action:"run",enable:true},token()));assert.equal(r.status,409);assert.equal((await r.json()).code,"proposal-policy");assert.equal((await pg.query<{enabled:boolean}>("SELECT enabled FROM autonomy_policy")).rows[0].enabled,false);assert.equal((await pg.query<{status:string}>("SELECT status FROM autonomy_cycles")).rows[0].status,"failed");
+});
