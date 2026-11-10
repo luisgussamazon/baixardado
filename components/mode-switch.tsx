@@ -7,6 +7,6 @@ export default function ModeSwitch({mode,disabled=false}:{mode:"chat"|"programme
       onClick={event=>{if(disabled)event.preventDefault();}}><MessageSquare size={15}/> Chat</Link>
     <Link href="/programador" aria-current={mode==="programmer"?"page":undefined} aria-disabled={disabled}
       onClick={event=>{if(disabled)event.preventDefault();}}><Code2 size={15}/> Programador</Link>
-    <Link href="/ensinar" aria-current={mode==="teach"?"page":undefined} aria-disabled={disabled} onClick={event=>{if(disabled)event.preventDefault();}}><BookOpen size={15}/> Ensinar</Link>
+    <Link href="/ensinar" aria-current={mode==="teach"?"page":undefined} aria-disabled={disabled} onClick={event=>{if(disabled)event.preventDefault();}}><BookOpen size={15}/> Modo de ensino</Link>
   </nav>;
 }
