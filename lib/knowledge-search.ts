@@ -8,7 +8,7 @@ export type KnowledgeHit = {
 import {knowledgeTerms} from "./knowledge-terms";
 export {knowledgeTerms} from "./knowledge-terms";
 
-export async function searchKnowledge(query:string,userId:string,limit=3):Promise<KnowledgeHit[]>{
+export async function searchKnowledge(query:string,userId:string,limit=3,includePrivate=true):Promise<KnowledgeHit[]>{
   if(!query.trim()||query.length>4000||query.includes("\0"))return [];
   const normalized=query.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
   if(/^(qual|mostre|revele|me diga).*\b(senha|token|chave)\b.*\b(minha|meu|conta)\b/.test(normalized)||/\b(hackeia|hackear|invadir)\b/.test(normalized))return [];
@@ -26,11 +26,11 @@ export async function searchKnowledge(query:string,userId:string,limit=3):Promis
       (SELECT COUNT(*)::int FROM unnest($4::text[]) term WHERE
         k.search_vector @@ (plainto_tsquery('portuguese',term)||plainto_tsquery('simple',term))) AS covered
     FROM knowledge_entries k CROSS JOIN q
-    WHERE k.is_active AND (k.owner_user_id IS NULL OR k.owner_user_id=$2::uuid)
+    WHERE k.is_active AND (k.owner_user_id IS NULL OR ($6::boolean AND k.owner_user_id=$2::uuid))
       AND k.search_vector @@ q.query
   ) SELECT * FROM candidates WHERE matched >= 1 AND covered >= $5
     ORDER BY matched DESC,covered DESC,score DESC,scope DESC,id ASC LIMIT $3`,
-    [terms.join(" OR "),userId,safeLimit,terms,Math.min(2,terms.length)]);
+    [terms.join(" OR "),userId,safeLimit,terms,Math.min(2,terms.length),includePrivate]);
   return result.rows;
 }
 

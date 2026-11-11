@@ -10,7 +10,7 @@ import Link from "next/link";
 import {
   Check, Copy, FileText, Menu,
   MessageSquare, PanelLeftClose, Plus, ShieldCheck,
-  Sparkles, Trash2, X, LogOut, Home, BarChart3, Layers, Settings2, HelpCircle, ChevronDown, ArrowRight
+  Sparkles, Trash2, X, LogOut, Home, BarChart3, Layers, Settings2, HelpCircle, ChevronDown, ArrowRight, Terminal
 } from "lucide-react";
 
 type ChatSummary = {id:string;title:string;updated_at:string};
@@ -42,6 +42,8 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
   const [copied,setCopied] = useState<string|null>(null);
   const [modelOnline,setModelOnline]=useState(false);
   const [provider,setProvider]=useState<"local"|"openai">("local");
+  const [shareKnowledge,setShareKnowledge]=useState(false);
+  const [shareComputerDocuments,setShareComputerDocuments]=useState(false);
   const [browserDeviceId,setBrowserDeviceId]=useState("");
   const [browserAction,setBrowserAction]=useState<{deviceId:string;url:string;label:string}|null>(null);
   const [browserStatus,setBrowserStatus]=useState("");
@@ -73,12 +75,16 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
 
   function newChat() {
     if (busy) return;
+    setShareKnowledge(false);
+    setShareComputerDocuments(false);
     setBrowserAction(null);setBrowserStatus("");
     setActiveId(null);setMessages([]);setError("");setInput("");setSidebar(false);
     textarea.current?.focus();
   }
   function selectChat(id:string) {
     if (busy || activeId===id) return;
+    setShareKnowledge(false);
+    setShareComputerDocuments(false);
     setBrowserAction(null);setBrowserStatus("");
     setActiveId(id);setSidebar(false);setError("");
   }
@@ -119,7 +125,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
       setMessages(prev=>[...prev,{id:humanId,role:"user",content:question},{id:answerId,role:"assistant",content:""}]);
       const res=await fetch("/api/chat",{
         method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({conversationId:id,message:question,...(browserDeviceId?{browserDeviceId,shareBrowserContext:true,shareBrowserContextWithCloud:provider==="openai"}:{})}),
+        body:JSON.stringify({conversationId:id,message:question,shareKnowledgeWithCloud:provider==="openai"&&shareKnowledge,shareComputerDocuments:provider==="openai"&&shareComputerDocuments,...(browserDeviceId?{browserDeviceId,shareBrowserContext:true,shareBrowserContextWithCloud:provider==="openai"}:{})}),
       });
       if (!res.ok) {
         const data=await res.json().catch(()=>({}));
@@ -165,7 +171,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
         } catch { setMessages(prev=>prev.filter(m=>!m.id.startsWith("local-"))); }
       }
       await refreshChats();
-    }finally{sending.current=false;setBusy(false);}
+    }finally{sending.current=false;setBusy(false);setShareKnowledge(false);setShareComputerDocuments(false);}
   }
   const currentTitle=chats.find(c=>c.id===activeId)?.title || "Nova conversa";
   return <div className="app-shell">
@@ -184,6 +190,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
           <button onClick={()=>prepareRequest(suggestions[0].text)} disabled={busy} title="Relatórios"><FileText/>{!collapsed&&<span>Relatórios</span>}</button>
           <button onClick={()=>prepareRequest(suggestions[1].text)} disabled={busy} title="Análises"><BarChart3/>{!collapsed&&<span>Análises</span>}</button>
           <Link href="/programador" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}} title="Projetos"><Layers/>{!collapsed&&<span>Projetos</span>}</Link>
+          <Link href="/chat-x" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}} title="Chat X"><Terminal/>{!collapsed&&<span>Chat X</span>}</Link>
           <Link href="/memoria" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}} className="navigation-settings" title="Configurações"><Settings2/>{!collapsed&&<span>Configurações</span>}</Link>
         </nav>
         <button className="new-chat" onClick={newChat} disabled={busy}><Plus size={19}/>{!collapsed&&"Nova conversa"}</button>
@@ -215,8 +222,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
         <div className="conversation-content">
           {loading ? <div className="loading-chat"><span className="spinner"/> Carregando conversa...</div> : messages.length===0 ?
           <div className="welcome">
-            <div className="workspace-eyebrow">ESPAÇO DE TRABALHO</div><h1>Como posso ajudar?</h1>
-            <p className="hero-tagline">Crie relatórios, analise dados e acompanhe seus projetos.</p>
+            <div className="welcome-icon"><Sparkles size={28} aria-hidden="true"/></div><h1>Como posso ajudar?</h1>
             <div className="suggestion-grid">{suggestions.map(item=><button className="suggestion" aria-label={item.title} key={item.title} onClick={()=>prepareRequest(item.text)} disabled={busy}><item.icon size={36} strokeWidth={1.6}/><div><strong>{item.title}</strong><span>{item.description}</span></div><ArrowRight className="card-arrow" size={21}/></button>)}<Link className="suggestion" aria-label="Apoio em projetos" href="/programador" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}}><Layers size={36} strokeWidth={1.6}/><div><strong>Apoio em projetos</strong><span>Planeje, acompanhe e organize entregas.</span></div><ArrowRight className="card-arrow" size={21}/></Link></div>
           </div> : <div className="messages">
             {messages.map(m=><div key={m.id} className={`message-row ${m.role}`}>
@@ -229,6 +235,12 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
         </div>
       </div>
       <div className="chat-composer-area">
+        {provider==="openai"&&<details className="document-options">
+          <summary>Fontes da resposta</summary>
+          <p>A Luna consulta a base compartilhada. Estas permissões valem apenas para a próxima pergunta.</p>
+          <label><input type="checkbox" checked={shareKnowledge} disabled={busy} onChange={e=>setShareKnowledge(e.target.checked)}/> Enviar à OpenAI trechos privados pertinentes da base do servidor nesta pergunta</label>
+          <label><input type="checkbox" checked={shareComputerDocuments} disabled={busy} onChange={e=>setShareComputerDocuments(e.target.checked)}/> Consultar o computador conectado e enviar à OpenAI trechos pertinentes nesta pergunta</label>
+        </details>}
         {error&&<div className="chat-error" role="alert">{error}<button onClick={()=>setError("")} aria-label="Fechar erro"><X size={15}/></button></div>}
         <div className="composer"><textarea ref={textarea} rows={1} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void send();}}} placeholder="Descreva o que você precisa..." disabled={busy||loading} aria-label="Mensagem" maxLength={4000}/>
           <div className="composer-actions"><button className="send-btn" disabled={!input.trim()||busy||loading} title="Enviar mensagem" aria-label="Enviar mensagem" onClick={()=>void send()}>{busy?<span className="mini-spinner"/>:<ArrowRight size={24}/>}</button></div>

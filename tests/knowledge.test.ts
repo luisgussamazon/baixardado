@@ -79,6 +79,7 @@ test("privados são exclusivos do dono, globais continuam legíveis e índices a
   await pg.query(`INSERT INTO knowledge_entries(id,owner_user_id,topic,title,question,answer,keywords,content_origin)
     VALUES('user:isolamento',$1,'Privado','Projeto zirconioprivado','Como configurar zirconioprivado?','Segredo local de teste',ARRAY['zirconioprivado'],'user_owned')`,[users[0]]);
   assert.equal((await search.searchKnowledge("zirconioprivado",users[0])).length,1);
+  assert.equal((await search.searchKnowledge("zirconioprivado",users[0],3,false)).length,0);
   assert.equal((await search.searchKnowledge("zirconioprivado",users[1])).length,0);
   const mine=await session(0,()=>api.GET(new Request("https://app.example/api/knowledge?q=zirconioprivado&userId="+users[1])));
   assert.match(await mine.text(),/Segredo local/);
