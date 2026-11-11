@@ -25,18 +25,18 @@ export default function AuthForm({mode}:{mode:"login"|"setup"}) {
     } catch(error) {setError(error instanceof Error ? error.message:"Erro desconhecido.");}
     finally {setBusy(false);}
   }
-  return <main className={`auth-shell auth-neon ${isSetup?"auth-setup":"auth-login"}`}>
+  return <main className={`auth-shell auth-neon ${isSetup?"auth-setup":"auth-login auth-redesign"}`}>
     <div className="auth-decoration auth-decoration-1"/><div className="auth-decoration auth-decoration-2"/>
     <div className="auth-layout">
       <section className="auth-intro">
-        <div className="auth-wordmark"><img src="/a3x-orbit.svg" alt="A3X IA" width={620} height={230}/><span>ASSISTENTE INTELIGENTE</span></div>
-        <div className="hero-label"><span/> PESQUISE <b>•</b> ANALISE <b>•</b> CRIE <b>•</b> OTIMIZE</div>
-        <h1>Um universo de<br/> <em>ideias</em> começa<br/>aqui.</h1>
-        <p>Sua plataforma de Inteligência Artificial para pesquisas, relatórios e análises.</p>
+        <div className="auth-wordmark"><img src="/a3x-orbit.svg" alt="A3X IA" width={620} height={230}/>{isSetup&&<span>ASSISTENTE INTELIGENTE</span>}</div>
+        {isSetup&&<div className="hero-label"><span/> PESQUISE <b>•</b> ANALISE <b>•</b> CRIE <b>•</b> OTIMIZE</div>}
+        <h1>{isSetup?<>Um universo de<br/> <em>ideias</em> começa<br/>aqui.</>:"Converse, pesquise e desenvolva."}</h1>
+        {isSetup&&<p>Sua plataforma de Inteligência Artificial para pesquisas, relatórios e análises.</p>}
       </section>
       <section className="auth-card">
-        <div className="auth-card-top"><ShieldCheck size={34}/><span>{isSetup?"Primeiro acesso":"Acesso Seguro"}</span></div>
-        <h2>{isSetup?"Crie sua conta":"Bem-vindo à A3X IA"}</h2>
+        {isSetup&&<div className="auth-card-top"><ShieldCheck size={34}/><span>Primeiro acesso</span></div>}
+        <h2>{isSetup?"Crie sua conta":"Entrar na A3X IA"}</h2>
         <p className="auth-subtitle">{isSetup?"Configure o primeiro acesso ao seu espaço.":"Entre com sua conta para continuar"}</p>
         <form onSubmit={submit} className="auth-form">
           <label htmlFor="email">E-mail</label>

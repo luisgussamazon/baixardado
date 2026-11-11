@@ -55,6 +55,44 @@ test("histórico documental do computador é excluído somente no contexto nuvem
  assert.doesNotMatch(JSON.stringify(model.modelMessages("Oi",history,[],[],null,[],"openai")),/SEGREDO LOCAL/);
  assert.match(JSON.stringify(model.modelMessages("Oi",history,[],[])),/SEGREDO LOCAL/);
 });
+test("Luna recebe trechos recuperados agora sem reenviar citações privadas antigas",()=>{
+ const history=[{role:"assistant" as const,content:"TRECHO PRIVADO ANTIGO\n\n**Fontes:**\n- [K1] registro-antigo"}];
+ const hits=[{id:"referencia",title:"Política de inventário",topic:"inventário",question:"Como contar?",answer:"TRECHO RECUPERADO",source_url:null,scope:"global" as const,score:1,matched:1,covered:2}];
+ const context=JSON.stringify(model.modelMessages("Como contar?",history,[],hits,null,[],"openai"));
+ assert.match(context,/K1.*TRECHO RECUPERADO/);
+ assert.doesNotMatch(context,/TRECHO PRIVADO ANTIGO/);
+ const document=model.modelMessages("Como contar?",history,[],hits,null,[],"openai",null,"[L1] TRECHO AUTORIZADO DO COMPUTADOR");
+ assert.match(document[0].content,/\[L1\] TRECHO AUTORIZADO DO COMPUTADOR/);
+});
+test("Chat consulta a ponte para a Luna somente na pergunta autorizada",async()=>{
+ for(const file of ["003_knowledge_entries.sql","006_cognitive_engine.sql","007_local_model_bridge.sql"])await pg.exec(await readFile("sql/"+file,"utf8"));
+ const chat=await import("../app/api/chat/route");
+ const conversation=(await pg.query<{id:string}>("INSERT INTO conversations(user_id) VALUES($1) RETURNING id",[users[0]])).rows[0].id;
+ assert.equal((await session(0,()=>api.POST(req({provider:"openai",consent:true})))).status,200);
+ let lookups=0;
+ const bridgeQuery=async(sql:string,params?:unknown[])=>{
+  if(sql.startsWith("SELECT id FROM local_model_devices")){lookups++;return {rows:[{id:conversation}],rowCount:1};}
+  if(sql.startsWith("INSERT INTO local_model_jobs"))return {rows:[{id:conversation}],rowCount:1};
+  if(sql.startsWith("SELECT status,result FROM local_model_jobs"))return {rows:[{status:"completed",result:"TRECHO PRIVADO DA PONTE\n\n**Fontes:**\n- [L1] inventario.md"}],rowCount:1};
+  return query(sql,params);
+ };
+ mock.method(db,"query",bridgeQuery);
+ mock.method(db,"connect",async()=>({query:bridgeQuery,release(){}}));
+ const requests:string[]=[];
+ mock.method(globalThis,"fetch",async(_url:unknown,init:RequestInit)=>{
+  requests.push(init.body as string);
+  return Response.json({status:"completed",output:[{type:"message",role:"assistant",content:[{type:"output_text",text:"Resposta com fontes."}]}],usage:{input_tokens:100,output_tokens:20}});
+ });
+ for(const shareComputerDocuments of [false,true,false]){
+  const response=await session(0,()=>chat.POST(req({conversationId:conversation,message:"Como funciona a contagem de inventário?",shareComputerDocuments})));
+  assert.match(await response.text(),/event: done/);
+ }
+ assert.equal(lookups,1);
+ assert.equal(requests.length,3);
+ assert.doesNotMatch(requests[0],/TRECHO PRIVADO DA PONTE/);
+ assert.match(requests[1],/TRECHO PRIVADO DA PONTE/);
+ assert.doesNotMatch(requests[2],/TRECHO PRIVADO DA PONTE/);
+});
 test("rede incerta, JSON inválido e resposta incompleta preservam reserva e não retornam conteúdo parcial",async()=>{
  for(const result of ["network","json","incomplete","empty","oversize"]){
   await pg.exec("DELETE FROM ai_api_usage");let calls=0;
