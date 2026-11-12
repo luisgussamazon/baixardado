@@ -2,7 +2,7 @@ import {test,afterEach,mock} from "node:test";
 import assert from "node:assert/strict";
 import {zipSync,strToU8} from "fflate";
 import {randomBytes} from "node:crypto";
-import {mkdtempSync,rmSync,readdirSync,readFileSync} from "node:fs";
+import {mkdirSync,mkdtempSync,rmSync,readdirSync,readFileSync} from "node:fs";
 import {join,resolve,relative,isAbsolute} from "node:path";
 import {readLearningZip} from "../scripts/learning-zip";
 import {redactLearningText,learningChunks,findLearning,addLearningContext,learningSources,learningSelectionPayload,localDocumentReply} from "../lib/local-learning";
@@ -54,7 +54,7 @@ test("base local preserva pesquisas web explícitas e fontes web já recuperadas
   const payload={messages:[{role:"system" as const,content:'Referências {"sources":[{"id":"W1","text":"fonte pública"}]}'},{role:"user" as const,content:"FOUND GAIN mapa"}]};assert.equal(addLearningContext(payload,fixture()).sources.length,0);
 });
 test("base privada usa DPAPI e não pode ser reutilizada por outra credencial",{skip:process.platform!=="win32"},()=>{
-  const parent=resolve(".tools"),root=mkdtempSync(join(parent,"learning-test-")),token=randomBytes(32).toString("hex");
+  const parent=resolve(".tools");mkdirSync(parent,{recursive:true});const root=mkdtempSync(join(parent,"learning-test-")),token=randomBytes(32).toString("hex");
   try{
     const store=localLearningStore("https://app.example/",token,root),bundle:LearningBundle={version:1,kind:"inventory-documents",binding:store.binding,sourceSha256:"0".repeat(64),importedAt:new Date().toISOString(),documents:["cycle-count.md"],chunks:fixture()};
     store.save(bundle);assert.deepEqual(store.load(),bundle);

@@ -62,8 +62,11 @@ npm run dev
 | `BOOTSTRAP_SECRET` | Segredo de pelo menos 24 caracteres para a primeira conta. Pode ser removido após o cadastro inicial. |
 | `DAILY_PROJECT_LIMIT` | Cota de projetos por usuário e dia; padrão 50, máximo 1000. Chat sem cota diária. |
 | `NEXT_PUBLIC_APP_NAME` | Nome público, padrão A3X AI. |
+| `OPENAI_API_KEY` | Opcional. Somente no cofre de variáveis do Railway; ativa GPT-6 Luna, Chat X, Astro e Autonomia para contas que consentirem. Nunca em `NEXT_PUBLIC_*`, cliente ou Git. |
+| `OPENAI_ENABLED` / `OPENAI_MONTHLY_BUDGET_USD` | `0` desliga a Luna; teto mensal interno, padrão US$5. |
+| `A3X_AUTONOMY_ENABLED` | `0` desliga os ciclos de autonomia e as tarefas Astro no servidor. |
 
-Nenhuma chave de IA é necessária. `OPENAI_API_KEY` e `AI_MODEL` são ignoradas e podem ser removidas do painel pelo responsável. Remover o SDK não revoga uma chave antiga no provedor.
+Nenhuma chave de IA é obrigatória: sem `OPENAI_API_KEY`, o Chat funciona com regras e com o modelo local. `AI_MODEL` é ignorada; o modelo da Luna é fixo no código.
 
 ## Railway
 
@@ -101,6 +104,10 @@ CI em `.github/workflows/ci.yml`, sem deploy. Testes usam PostgreSQL descartáve
 ## Diálogo Interativo v2
 
 `/ensinar` permite cadastrar, editar e excluir até 150 perguntas e respostas privadas por conta. Biblioteca editorial com 55 cartões e continuidade contextual. Migrações 003/004 preservadas; 005 adiciona somente novos IDs. Sem upload de documentos ou modelos. [Relatório](docs/RELATORIO-DIALOGO-v2.md).
+
+## Tarefas A3X-6 Astro
+
+No Chat X, a seção **Tarefas do A3X-6 Astro** recebe objetivos de engenharia (até 3 por dia e por conta, com consentimento da Luna). Não existe executor local: a tarefa mais antiga é assumida pelo próximo ciclo da [Autonomia A3X](docs/AUTONOMIA-CONTINUA.md), que usa o objetivo do usuário em vez de escolher uma melhoria própria. Os limites são os mesmos do ciclo: um arquivo de `WRITABLE_SOURCE`, uma edição pequena, validação sem rede e publicação somente após a aprovação. Objetivos fora desse escopo são encerrados com o motivo. A interrupção é aceita até a autorização da publicação e não pausa a autonomia. Se o ciclo não concluir em 60 minutos, a tarefa falha e a fila é liberada. Estados e histórico ficam visíveis na própria seção.
 
 ## Autonomia controlada
 

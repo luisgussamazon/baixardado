@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {mkdtempSync,readFileSync,readdirSync,rmSync} from "node:fs";
+import {mkdirSync,mkdtempSync,readFileSync,readdirSync,rmSync} from "node:fs";
 import {join,resolve,relative,isAbsolute} from "node:path";
 import {randomBytes} from "node:crypto";
 import {credentialStore,validSavedConnection,type SavedConnection} from "../scripts/credential-store";
@@ -8,7 +8,7 @@ import {connectComputer,ConnectionUnauthorized} from "../scripts/model-link";
 const server=new URL("https://app.example/");
 const fake=():SavedConnection=>({version:1,server:server.href,token:randomBytes(32).toString("hex"),code:"123456ABCDEF"});
 test("DPAPI Windows guarda somente ciphertext e recupera a credencial no mesmo usuário",{skip:process.platform!=="win32"},()=>{
-  const parent=resolve(".tools"),root=mkdtempSync(join(parent,"credential-test-"));
+  const parent=resolve(".tools");mkdirSync(parent,{recursive:true});const root=mkdtempSync(join(parent,"credential-test-"));
   try{
     const store=credentialStore(server.href,root),value=fake();assert.equal(store.load(),null);store.save(value);
     assert.deepEqual(store.load(),value);
