@@ -24,6 +24,8 @@ Este repositório contém apenas o projeto independente A3X AI. **Não modificar
 11. Identidade institucional: A3X IA criada pela A3X TECH, fundada pelos amigos Luis Gustavo e Samuel Moraes, sem concessão de privilégios. Em 09/11/2026 o responsável autorizou melhorias e publicação automáticas após testes/verificações, mantendo credenciais, autenticação e banco protegidos. O workflow `a3x-autonomy.yml` pode planejar, aplicar em branch isolada, executar testes/typecheck/build em contêiner sem rede ou credenciais e publicar somente após aprovação desses controles. Fora do workflow confiável, não executar propostas geradas no computador ou servidor de produção. Os caminhos de `WRITABLE_SOURCE` limitam a escrita e não podem ser ampliados pela IA. O agente nunca altera seus próprios controles, dependências, CI, credenciais ou SQL. Ver `docs/AUTONOMIA-CONTINUA.md`.
 
 ## Verificação e entrega
+
+Especificação de 13/11/2026: a Central de comando substitui a publicação direta por branch e PR. O workflow `a3x-engineering.yml` pode consumir a fila Astro detalhada em `engineering_tasks`, ler fontes públicos e validar em Docker, mas não escrever na main, fazer merge ou deploy. Produção exige aprovação independente. O publicador legado fica desativado; os nove caminhos de escrita e os controles de privacidade/custo continuam protegidos. Ver `docs/COMMAND-CENTER.md` para os limites e a integração VS Code autorizada.
 - Com dependências instaladas, executar `npm run typecheck` e `npm run build`.
 - Revisar `git diff`, evitar segredos e verificar fluxos afetados (login, chat, histórico, logout).
 - Informar arquivos alterados, causa, testes realizados, resultado e estado de deploy.

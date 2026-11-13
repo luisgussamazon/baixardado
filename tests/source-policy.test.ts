@@ -14,3 +14,6 @@ test("bloqueia traversal, arquivos protegidos, rede, execução e excesso",()=>{
  for(const newText of ['fetch("/api/delete")','process.env.SECRET','eval("1")','document.cookie','https://evil.test/',"x".repeat(6001)])assert.throws(()=>validateSourceEdits({...candidate,edits:[{...candidate.edits[0],newText}]},[file]));
  assert.throws(()=>validateSourceEdits({...candidate,edits:Array(9).fill(candidate.edits[0])},[file]));assert.throws(()=>applySourceEdits({...validateSourceEdits(candidate,[file]),repository:"other/repo" as never},[file]));
 });
+test("propostas públicas bloqueiam formatos de credenciais e dados pessoais antes de criar PR",()=>{
+ for(const newText of ['"sk-'+"x".repeat(24)+'"','"ghp_'+"x".repeat(24)+'"','"private@example.test"','"012.345.678-90"',"password = 'FIXTURE-ONLY'"]){assert.throws(()=>validateSourceEdits({...candidate,edits:[{...candidate.edits[0],newText}]},[file]),/credencial ou dado pessoal/);}
+});

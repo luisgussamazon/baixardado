@@ -1,0 +1,50 @@
+name: A3X Engineering
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+concurrency:
+  group: a3x-engineering
+  cancel-in-progress: false
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+jobs:
+  queue:
+    if: github.repository == 'luisgussamazon/baixardado' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Consultar fila antes de instalar dependências
+        id: pending
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token=await core.getIDToken('a3x-engineering');
+            const r=await fetch('https://baixardado-production.up.railway.app/api/engineering/worker',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({action:'claim'}),redirect:'error',signal:AbortSignal.timeout(15000)});
+            if(!r.ok)throw Error('Fila indisponível ou runner pausado.');
+            const result=await r.json();
+            core.setOutput('task',result.task?JSON.stringify(result.task):'');
+      - uses: actions/checkout@v4
+        if: steps.pending.outputs.task != ''
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        if: steps.pending.outputs.task != ''
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+        if: steps.pending.outputs.task != ''
+      - name: Executar uma tarefa autorizada
+        if: steps.pending.outputs.task != ''
+        uses: actions/github-script@v7
+        env:
+          A3X_TASK: ${{ steps.pending.outputs.task }}
+        with:
+          script: |
+            const {pathToFileURL}=require('node:url');
+            const path=require('node:path');
+            const {runEngineering}=await import(pathToFileURL(path.join(process.cwd(),'scripts/engineering-runner.mjs')).href);
+            await runEngineering({github,core,context,task:JSON.parse(process.env.A3X_TASK)});

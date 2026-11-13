@@ -21,7 +21,8 @@ export default function AuthForm({mode}:{mode:"login"|"setup"}) {
       });
       const result = await response.json().catch(()=>({error:"Serviço temporariamente indisponível. Tente novamente."}));
       if (!response.ok) throw new Error(result.error || "Não foi possível entrar.");
-      router.replace("/chat");router.refresh();
+      const pair=new URL(window.location.href).searchParams.get("pair");
+      router.replace(pair&&/^[A-F0-9]{12}$/.test(pair)?"/central/configuracoes?pair="+pair:"/central");router.refresh();
     } catch(error) {setError(error instanceof Error ? error.message:"Erro desconhecido.");}
     finally {setBusy(false);}
   }

@@ -13,11 +13,18 @@ test("login mantém campos acessíveis, alterna visibilidade e envia só para AP
  ui.render(<AppRouterContext.Provider value={router}><AuthForm mode="login"/></AppRouterContext.Provider>);
  const email=ui.screen.getByLabelText("E-mail"),password=ui.screen.getByLabelText("Senha");assert.equal(password.getAttribute("autocomplete"),"current-password");assert.equal(password.getAttribute("type"),"password");
  ui.fireEvent.click(ui.screen.getByRole("button",{name:"Mostrar senha"}));assert.equal(password.getAttribute("type"),"text");assert.equal(calls,0);ui.fireEvent.click(ui.screen.getByRole("button",{name:"Ocultar senha"}));assert.equal(password.getAttribute("type"),"password");
- ui.fireEvent.change(email,{target:{value:"local@example.test"}});ui.fireEvent.change(password,{target:{value:"SENHA-APENAS-TESTE"}});ui.fireEvent.click(ui.screen.getByRole("button",{name:"Entrar na A3X IA"}));await ui.waitFor(()=>assert.equal(destination,"/chat"));assert.equal(calls,1);
+ ui.fireEvent.change(email,{target:{value:"local@example.test"}});ui.fireEvent.change(password,{target:{value:"SENHA-APENAS-TESTE"}});ui.fireEvent.click(ui.screen.getByRole("button",{name:"Entrar na A3X IA"}));await ui.waitFor(()=>assert.equal(destination,"/central"));assert.equal(calls,1);
 });
 test("primeiro acesso preserva chave de configuração e exibe falhas sem perder campos",async()=>{
  mock.method(globalThis,"fetch",async(url:unknown,init:RequestInit)=>{assert.equal(url,"/api/setup");const body=JSON.parse(init.body as string);assert.equal(body.setupKey,"CHAVE-FICTICIA-DE-TESTE");return Response.json({error:"Configuração recusada."},{status:403});});
  ui.render(<AppRouterContext.Provider value={router}><AuthForm mode="setup"/></AppRouterContext.Provider>);
  assert.equal(ui.screen.getByLabelText("Senha").getAttribute("autocomplete"),"new-password");assert.equal(ui.screen.getByLabelText("Senha").getAttribute("minlength"),"12");
  ui.fireEvent.change(ui.screen.getByLabelText("E-mail"),{target:{value:"local@example.test"}});ui.fireEvent.change(ui.screen.getByLabelText("Senha"),{target:{value:"SENHA-APENAS-TESTE"}});ui.fireEvent.change(ui.screen.getByLabelText("Chave de configuração"),{target:{value:"CHAVE-FICTICIA-DE-TESTE"}});ui.fireEvent.click(ui.screen.getByRole("button",{name:"Criar conta e começar"}));await ui.screen.findByRole("alert");assert.equal(destination,"");assert.equal((ui.screen.getByLabelText("E-mail") as HTMLInputElement).value,"local@example.test");assert.equal(ui.screen.getByRole("alert").textContent,"Configuração recusada.");
+});
+test("login preserves only a valid pairing code and never redirects to an external URL",async()=>{
+ mock.method(globalThis,"fetch",async()=>Response.json({ok:true}));
+ for(const [query,expected] of [["pair=ABCDEF123456","/central/configuracoes?pair=ABCDEF123456"],["pair=https%3A%2F%2Fevil.example&next=https%3A%2F%2Fevil.example","/central"]]){
+  destination="";dom.reconfigure({url:"https://app.example/login?"+query});ui.render(<AppRouterContext.Provider value={router}><AuthForm mode="login"/></AppRouterContext.Provider>);ui.fireEvent.change(ui.screen.getByLabelText("E-mail"),{target:{value:"local@example.test"}});ui.fireEvent.change(ui.screen.getByLabelText("Senha"),{target:{value:"SENHA-APENAS-TESTE"}});ui.fireEvent.click(ui.screen.getByRole("button",{name:"Entrar na A3X IA"}));await ui.waitFor(()=>assert.equal(destination,expected));ui.cleanup();
+ }
+ dom.reconfigure({url:"https://app.example/login"});
 });

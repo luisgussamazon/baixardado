@@ -1,0 +1,5 @@
+{
+ "name":"a3x-workspace","displayName":"A3X Workspace","description":"Workspace autorizado, propostas revisadas e fila de engenharia A3X.","publisher":"a3x-tech","version":"0.1.0","engines":{"vscode":"^1.95.0"},"main":"./extension.cjs","activationEvents":["onCommand:a3x.connect"],
+ "capabilities":{"untrustedWorkspaces":{"supported":false}},
+ "contributes":{"commands":[{"command":"a3x.connect","title":"A3X: Conectar workspace"},{"command":"a3x.files","title":"A3X: Abrir arquivo autorizado"},{"command":"a3x.search","title":"A3X: Buscar no workspace"},{"command":"a3x.proposals","title":"A3X: Revisar e aplicar proposta isolada"},{"command":"a3x.rollback","title":"A3X: Reverter alterações experimentais desta sessão"},{"command":"a3x.tests","title":"A3X: Abrir testes no runner isolado"},{"command":"a3x.disconnect","title":"A3X: Desconectar"}]}
+}

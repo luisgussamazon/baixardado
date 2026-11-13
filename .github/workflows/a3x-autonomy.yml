@@ -1,17 +1,12 @@
 name: Autonomia A3X
 on:
-  schedule:
-    - cron: '17 3 * * *'
-  push:
-    branches: [main]
-    paths: ['.github/workflows/a3x-autonomy.yml']
   workflow_dispatch:
     inputs:
       mode:
         description: Executar, ativar ou pausar
         type: choice
-        options: [run, enable, pause]
-        default: run
+        options: [pause]
+        default: pause
 concurrency:
   group: a3x-autonomy
   cancel-in-progress: false

@@ -1,4 +1,5 @@
 export const SOURCE_REPOSITORY="luisgussamazon/baixardado";
+export function sensitiveSourceContent(value:string){return /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}|\b(?:ghp_|gho_|github_pat_)[A-Za-z0-9_]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|postgres(?:ql)?:\/\/[^\s]+:[^\s]+@|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b\d{3}\.\d{3}\.\d{3}-\d{2}\b|\b(?:password|passwd|api[_-]?key|secret|access[_-]?token)\s*[:=]\s*["'][^"']{4,}["']/i.test(value);}
 export const WRITABLE_SOURCE=["components/chat-app.tsx","components/mode-switch.tsx","app/a3x-theme.css","app/workspace-theme.css","app/globals.css","lib/a3x-personality.ts","lib/knowledge-terms.ts","lib/research/classifier.ts","components/project-tree.tsx"];
 export function safeSourcePath(path:unknown):path is string{return typeof path==="string"&&path.length<=180&&/^(?:app|components|lib|scripts|docs)\/[a-zA-Z0-9_./()[\]-]+\.(?:ts|tsx|css|md|mjs)$/.test(path)&&!path.includes("..")&&!path.split("/").some(p=>p.startsWith("."))||path==="README.md"||path==="AGENTS.md";}
 export type SourceFile={path:string;sha:string;content:string};
@@ -11,6 +12,7 @@ export function validateSourceEdits(value:unknown,files:SourceFile[]):SourceProp
  for(const item of v.edits){
   if(!item||typeof item!=="object"||Array.isArray(item)||Object.keys(item).some(k=>!["path","oldText","newText"].includes(k)))throw Error("Alteração inválida.");
   const e=item as SourceEdit;
+  if(typeof e.newText==="string"&&sensitiveSourceContent(e.newText))throw Error("Proposta contém possível credencial ou dado pessoal. Remova antes de publicar código.");
   if(!WRITABLE_SOURCE.includes(e.path)||!working.has(e.path)||typeof e.oldText!=="string"||e.oldText.length<8||e.oldText.length>4000||typeof e.newText!=="string"||e.newText.length>6000||e.newText===e.oldText||/[\u0000]/.test(e.newText)||(total+=e.oldText.length+e.newText.length)>18000)throw Error("Alteração fora dos caminhos ou limites permitidos.");
   if(/\b(?:eval|Function|require)\s*\(|process\s*\.|child_process|node:fs|dangerouslySetInnerHTML|document\s*\.\s*cookie|localStorage|\bfetch\s*\(|https?:\/\//i.test(e.newText))throw Error("A proposta acrescenta código ou acesso externo não permitido nesta versão.");
   const content=working.get(e.path)!;const start=content.indexOf(e.oldText);if(start<0||content.indexOf(e.oldText,start+1)>=0)throw Error("O trecho original deve existir uma única vez no arquivo selecionado.");

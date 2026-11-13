@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS engineering_devices (
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(), token_hash TEXT UNIQUE NOT NULL,
+ code_hash TEXT UNIQUE, user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+ expires_at TIMESTAMPTZ NOT NULL DEFAULT NOW()+INTERVAL '10 minutes',
+ authorized_at TIMESTAMPTZ, last_seen TIMESTAMPTZ, revoked BOOLEAN NOT NULL DEFAULT FALSE,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
