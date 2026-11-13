@@ -1,5 +1,7 @@
 # A3X AI — pesquisa na web com histórico privado
 
+**Conexões de desenvolvimento:** o Chat e o Chat X oferecem acesso a `/central/conexoes`, com download da extensão VS Code instalável, clonagem do repositório, autorização do workspace e links do GitHub/runner. Veja [instalação e limites](docs/CONEXOES-DESENVOLVIMENTO.md). Os links não concedem autorização automática.
+
 A A3X IA é criada pela **A3X TECH**, fundada pelos amigos **Luis Gustavo e Samuel Moraes**. Essa identidade institucional não concede privilégios nem representa autoria de modelos de terceiros.
 
 A nova [Central de comando A3X](docs/COMMAND-CENTER.md), em `/central`, integra Chat, catálogo/diff, tarefas Astro, seis responsabilidades de engenharia e eventos reais. A especificação de 13/11/2026 substitui a publicação direta pelo fluxo de branch e PR com revisão independente antes de produção. Veja instalação, permissões, extensão VS Code e limitações no documento; integrações não verificadas não são apresentadas como ativas.

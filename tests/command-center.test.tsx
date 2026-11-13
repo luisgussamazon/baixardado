@@ -13,3 +13,26 @@ test("command center shows real empty states, requires consent and enqueues only
   if(url==="/api/source")return Response.json({files:[]});if(url==="/api/conversations")return Response.json({conversations:[]});if(url==="/api/local-model")return Response.json({devices:[],enabled:false});return Response.json({provider:"local",available:true});
  });ui.render(<AppRouterContext.Provider value={router}><CommandCenter email="local@example.test"/></AppRouterContext.Provider>);await ui.screen.findByText("gpt-6-luna");assert.equal(ui.screen.getAllByText("Sem execução").length,6);assert.equal(posts,0);const button=ui.screen.getByRole("button",{name:"Iniciar análise"}) as HTMLButtonElement;assert.equal(button.disabled,true);ui.fireEvent.change(ui.screen.getByLabelText("Objetivo da tarefa"),{target:{value:"Revisar catálogo"}});assert.equal(button.disabled,true);ui.fireEvent.click(ui.screen.getByRole("checkbox",{name:/Autorizo esta tarefa/}));ui.fireEvent.click(button);await ui.waitFor(()=>assert.equal(posts,1));assert.equal(ui.screen.queryByText(/32%|50%|5\/5/),null);assert.ok(ui.screen.getByRole("separator",{name:"Redimensionar painel de Chat"}));assert.ok(ui.screen.getByRole("link",{name:"Memória"}));
 });
+
+test("connections expose install, repository and runner paths without pretending OAuth authorization",async()=>{
+ const IntegrationConnections=(await import("../components/integration-connections")).default;
+ mock.method(globalThis,"fetch",async(url:unknown,init?:RequestInit)=>{
+  assert.equal(url,"/api/engineering/device");assert.deepEqual(JSON.parse(String(init?.body)),{action:"list"});return Response.json({devices:[]});
+ });
+ ui.render(<IntegrationConnections/>);
+ await ui.screen.findByText(/Nenhum workspace autorizado/);
+ assert.equal(ui.screen.getByRole("link",{name:/Baixar extensão A3X/}).getAttribute("href"),"/a3x-workspace.vsix");
+ assert.equal(ui.screen.getByRole("link",{name:/Abrir repositório/}).getAttribute("href"),"https://github.com/luisgussamazon/baixardado");
+ assert.match(ui.screen.getByRole("link",{name:/Clonar projeto/}).getAttribute("href")??"",/^vscode:\/\/vscode.git\/clone\?url=https%3A/);
+ assert.equal((ui.screen.getByRole("button",{name:"Autorizar workspace"}) as HTMLButtonElement).disabled,true);
+ assert.ok(ui.screen.getByRole("link",{name:"Abrir runner"}));
+});
+
+test("workspace pairing requires code and explicit consent, and does not submit automatically",async()=>{
+ const WorkspaceConnection=(await import("../components/workspace-connection")).default;let approvals=0;
+ mock.method(globalThis,"fetch",async(_url:unknown,init?:RequestInit)=>{const body=JSON.parse(String(init?.body));if(body.action==="approve"){approvals++;assert.deepEqual(body,{action:"approve",code:"ABCDEF123456",consent:true});return Response.json({ok:true});}return Response.json({devices:[]});});
+ ui.render(<WorkspaceConnection/>);await ui.screen.findByText(/Nenhum workspace autorizado/);
+ const button=ui.screen.getByRole("button",{name:"Autorizar workspace"}) as HTMLButtonElement;
+ ui.fireEvent.change(ui.screen.getByLabelText("Código do workspace"),{target:{value:"ABCDEF123456"}});assert.equal(button.disabled,true);assert.equal(approvals,0);
+ ui.fireEvent.click(ui.screen.getByRole("checkbox"));ui.fireEvent.click(button);await ui.waitFor(()=>assert.equal(approvals,1));
+});

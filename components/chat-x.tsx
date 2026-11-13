@@ -5,6 +5,7 @@ import {useEffect,useRef,useState} from "react";
 import type {SourceProposal} from "@/lib/source-policy";
 import AutonomyStatus from "@/components/autonomy-status";
 import AstroTasks from "@/components/astro-tasks";
+import IntegrationConnections from "./integration-connections";
 
 type Source={path:string;chars:number;writable:boolean};
 type Record={id:string;goal:string;status:string};
@@ -56,6 +57,7 @@ export default function ChatX(){
   return <main className="source-studio chat-x">
     <nav><Link href="/chat">← Chat</Link><Link href="/autonomia">Ciclos automáticos</Link><Link href="/estudos">Estudos e referências</Link></nav>
     <h1>Chat X</h1>
+    <IntegrationConnections/>
     <AstroTasks/>
     <p>Peça à Luna para revisar arquivos da A3X IA e propor uma melhoria. Os ciclos automáticos e suas verificações ficam em Autonomia A3X.</p>
     <form onSubmit={submit}>

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
-    "prebuild": "node scripts/package-browser-extension.mjs && node scripts/package-source-context.mjs",
+    "prebuild": "node scripts/package-workspace-extension.mjs && node scripts/package-browser-extension.mjs && node scripts/package-source-context.mjs",
     "build": "next build",
     "postbuild": "node scripts/prepare-standalone.mjs",
     "start": "node scripts/start.mjs",

@@ -11,3 +11,5 @@ coverage/
 public/a3x-navegador.zip
 .generated/
 .autonomy/
+
+public/a3x-workspace.vsix

@@ -1,5 +1,7 @@
 # A3X Workspace — extensão local
 
+Instalação pelo site: abra **Conexões** no Chat ou `/central/conexoes`, baixe `a3x-workspace.vsix` e use **Extensões → ⋯ → Instalar do VSIX** no VS Code. Abra uma cópia de `luisgussamazon/baixardado` e execute **A3X: Conectar workspace** na paleta. Autorize o código na sua conta A3X. O build empacota somente os quatro arquivos públicos da extensão e os manifestos VSIX, sem dependências adicionais.
+
 Sem dependências de runtime além de Node/VS Code. Abra esta pasta em uma Extension Development Host (F5 usando o `launch.json`) ou instale o VSIX produzido com `npx @vscode/vsce package --allow-missing-repository`. Esse empacotamento requer obter a ferramenta pública; não é executado automaticamente pelo app.
 
 Use `A3X: Conectar workspace`, selecione apenas `luisgussamazon/baixardado` e autorize o código na central autenticada. O token permanece somente em memória e expira após oito horas. Reiniciar exige novo pareamento. O servidor guarda apenas hashes. Revogue em Configurações.

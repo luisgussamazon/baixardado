@@ -185,6 +185,7 @@ export default function ChatApp({email,appName,compact=false,onEngineeringGoal}:
       </div>
       <div className="sidebar-body">
         <nav className="primary-navigation" aria-label="Navegação principal">
+          <Link href="/central/conexoes" title="Conexões GitHub e VS Code"><Terminal/>{!collapsed&&<span>Conexões</span>}</Link>
           <Link href="/central" title="Central de comando"><Terminal/>{!collapsed&&<span>Central de comando</span>}</Link>
           <button className={!activeId&&messages.length===0?"active":""} onClick={newChat} disabled={busy} title="Início"><Home/>{!collapsed&&<span>Início</span>}</button>
           <button onClick={()=>textarea.current?.focus()} disabled={busy} title="Conversar"><MessageSquare/>{!collapsed&&<span>Conversar</span>}</button>
