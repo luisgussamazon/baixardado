@@ -15,6 +15,8 @@ Não é uma integração com o produto Codex nem equivale ao seu conjunto comple
 
 O pacote gerado no build usa somente os arquivos públicos explícitos de `extensions/a3x-workspace`, nunca arquivos locais ou credenciais. Nenhuma migração, dependência ou permissão de escrita do agente foi ampliada nesta mudança.
 
+O instalador é gerado em `.generated/a3x-workspace.vsix` e servido por uma rota autenticada com download e cache privado. Isso mantém o build e o teste compatíveis com o contêiner que monta o código e `public` somente para leitura, sem ampliar as permissões do sandbox. Foram adicionados testes de rejeição sem sessão e igualdade dos bytes do download com o pacote gerado.
+
 ## Validação
 
 Os testes cobrem os caminhos de instalação, download e runner, a ausência de aprovação automática, código + consentimento no pareamento, conteúdo restrito do VSIX e redirecionamento de login. A execução interativa do VS Code e um ciclo real GitHub não são substituídos por esses testes.
