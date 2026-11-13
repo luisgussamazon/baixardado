@@ -28,7 +28,7 @@ async function requestJson(url:string, init?:RequestInit) {
   return payload;
 }
 
-export default function ChatApp({email,appName}:{email:string;appName:string}) {
+export default function ChatApp({email,appName,compact=false,onEngineeringGoal}:{email:string;appName:string;compact?:boolean;onEngineeringGoal?:(goal:string)=>void}) {
   const router = useRouter();
   const [chats,setChats] = useState<ChatSummary[]>([]);
   const [activeId,setActiveId] = useState<string|null>(null);
@@ -174,7 +174,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
     }finally{sending.current=false;setBusy(false);setShareKnowledge(false);setShareComputerDocuments(false);}
   }
   const currentTitle=chats.find(c=>c.id===activeId)?.title || "Nova conversa";
-  return <div className="app-shell">
+  return <div className={`app-shell ${compact?"command-chat-embedded":""}`}>
     {sidebar && <button className="mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>}
     <aside className={`sidebar ${sidebar?"sidebar-open":""} ${collapsed?"sidebar-collapsed":""}`}>
       <div className="sidebar-header">
@@ -185,6 +185,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
       </div>
       <div className="sidebar-body">
         <nav className="primary-navigation" aria-label="Navegação principal">
+          <Link href="/central" title="Central de comando"><Terminal/>{!collapsed&&<span>Central de comando</span>}</Link>
           <button className={!activeId&&messages.length===0?"active":""} onClick={newChat} disabled={busy} title="Início"><Home/>{!collapsed&&<span>Início</span>}</button>
           <button onClick={()=>textarea.current?.focus()} disabled={busy} title="Conversar"><MessageSquare/>{!collapsed&&<span>Conversar</span>}</button>
           <button onClick={()=>prepareRequest(suggestions[0].text)} disabled={busy} title="Relatórios"><FileText/>{!collapsed&&<span>Relatórios</span>}</button>
@@ -212,6 +213,7 @@ export default function ChatApp({email,appName}:{email:string;appName:string}) {
       </div>
     </aside>
     <main className="main-chat neon-workspace">
+      {compact&&<div className="embedded-history"><select aria-label="Histórico do Chat" disabled={busy} value={activeId??""} onChange={e=>e.target.value?selectChat(e.target.value):newChat()}><option value="">Nova conversa</option>{chats.map(c=><option key={c.id} value={c.id}>{c.title}</option>)}</select><button onClick={newChat} disabled={busy}>Nova</button>{onEngineeringGoal&&<button disabled={busy||!input.trim()} onClick={()=>onEngineeringGoal(input.slice(0,1000))}>Preparar tarefa</button>}</div>}
       <header className="chat-topbar">
         <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/>{provider==="openai"?" GPT-6 Luna - OpenAI":modelOnline?" Qwen3 4B · no seu computador":" Modelo offline · respostas por regras"}</span></div></div>
         <div className="topbar-controls"><div className="cognitive-nav"><ModelProviderSwitch disabled={busy} onChange={setProvider}/><ModeSwitch mode="chat" disabled={busy}/></div><details className="help-menu"><summary aria-label="Ajuda"><HelpCircle size={23}/></summary><div className="header-popover"><strong>Como posso ajudar?</strong><p>Converse, prepare um relatório ou organize seus projetos. Os cartões preparam sua solicitação para você completar.</p><Link href="/navegador">Conectar uma página do ICQA</Link></div></details><details className="account-menu"><summary><span className="avatar">{email.charAt(0).toUpperCase()}</span><span className="account-name">Minha conta</span><ChevronDown size={16}/></summary><div className="header-popover"><span>{email}</span><Link href="/memoria">Minha memória</Link><Link href="/conectar">Modelo do computador</Link><button onClick={signOut} disabled={busy}>Sair da conta</button></div></details></div>

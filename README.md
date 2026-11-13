@@ -2,7 +2,9 @@
 
 A A3X IA é criada pela **A3X TECH**, fundada pelos amigos **Luis Gustavo e Samuel Moraes**. Essa identidade institucional não concede privilégios nem representa autoria de modelos de terceiros.
 
-Na [Autonomia A3X](docs/AUTONOMIA-CONTINUA.md), um workflow diário analisa fontes públicos, prepara uma melhoria em branch e publica após testes/typecheck/build isolados. O mantenedor autorizou esse fluxo automático, mantendo credenciais, autenticação e banco protegidos. O estado real aparece em `/autonomia`; não há download de JSON nem aplicação manual a cada ciclo. A ativação inicial depende do workflow instalado e do primeiro ciclo autenticado.
+A nova [Central de comando A3X](docs/COMMAND-CENTER.md), em `/central`, integra Chat, catálogo/diff, tarefas Astro, seis responsabilidades de engenharia e eventos reais. A especificação de 13/11/2026 substitui a publicação direta pelo fluxo de branch e PR com revisão independente antes de produção. Veja instalação, permissões, extensão VS Code e limitações no documento; integrações não verificadas não são apresentadas como ativas.
+
+O histórico da [Autonomia A3X](docs/AUTONOMIA-CONTINUA.md) permanece em `/autonomia`. Na especificação nova, o agendamento/publicador direto legado é desativado no código e pela migração; a fila da Central abre PRs após testes isolados e exige aprovação independente para integrar e publicar. Essa política só entra em produção depois do deploy aprovado desta versão.
 
 GPT-6 Luna agora pode ser selecionado no Chat, com chave exclusivamente no servidor e teto interno de US$5/mês. O modo local continua disponível. Veja [configuração e limitações](docs/OPENAI-LUNA.md).
 
