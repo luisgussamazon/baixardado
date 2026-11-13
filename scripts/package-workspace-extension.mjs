@@ -13,7 +13,7 @@ export async function packageWorkspaceExtension(){
  return zipSync(entries);
 }
 if(process.argv[1]&&new URL('file:///'+process.argv[1].replaceAll('\\','/')).pathname.endsWith('/package-workspace-extension.mjs')){
- await fs.mkdir(new URL('../public/',import.meta.url),{recursive:true});
- await fs.writeFile(new URL('../public/a3x-workspace.vsix',import.meta.url),await packageWorkspaceExtension());
+ await fs.mkdir(new URL('../.generated/',import.meta.url),{recursive:true});
+ await fs.writeFile(new URL('../.generated/a3x-workspace.vsix',import.meta.url),await packageWorkspaceExtension());
  console.log('Extensão VS Code A3X empacotada sem dependências externas.');
 }
