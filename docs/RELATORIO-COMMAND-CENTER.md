@@ -24,6 +24,7 @@ Data de referência: 13/11/2026. Repositório único: `luisgussamazon/baixardado
 - Bloqueios de traversal, arquivos secretos, novos escopos/comandos e sobrescrita de alterações posteriores testados. Verificação de symlinks também roda no teste Linux; no Windows depende das permissões do sistema.
 - Typecheck e build standalone aprovados durante a implementação. A CI do PR executa novamente suíte, typecheck, build e validação Linux/Docker sobre o commit revisado.
 - `npm audit`: **zero vulnerabilidades** informadas na consulta das dependências instaladas, sem instalar/atualizar pacotes.
+- A CI do primeiro commit desta branch aprovou a suíte, typecheck, build e o job Linux/Docker. A revisão final acrescentou uma regressão de bloqueio de formatos sensíveis em patches/objetivos; os testes de política e engenharia passaram. O estado do último commit deve ser confirmado nas verificações do PR.
 
 Nenhum teste ou migração de teste acessou o PostgreSQL de produção. Nenhuma chamada paga real à OpenAI foi feita por esses testes. Nenhum merge ou deploy desta implementação foi realizado.
 
@@ -77,6 +78,7 @@ A publicação exige aprovação independente, conforme a seção AUTONOMIA do p
 - Novo: `lib/engineering-policy.ts`
 - Novo: `lib/engineering-tools.ts`
 - Novo: `lib/openai-engineering.ts`
+- Alterado: `lib/source-policy.ts`
 - Alterado: `scripts/autonomy-publish.mjs`
 - Alterado: `scripts/autonomy-sandbox.mjs`
 - Novo: `scripts/engineering-prepare.ts`
@@ -91,4 +93,5 @@ A publicação exige aprovação independente, conforme a seção AUTONOMIA do p
 - Novo: `tests/command-center.test.tsx`
 - Novo: `tests/engineering-publish.test.ts`
 - Novo: `tests/engineering.test.ts`
+- Alterado: `tests/source-policy.test.ts`
 - Novo: `tests/workspace-extension.test.ts`

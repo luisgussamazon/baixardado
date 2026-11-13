@@ -14,6 +14,7 @@ Object.assign(globalThis,{AsyncLocalStorage});
 const first="00000000-0000-4000-8000-000000000001",second="00000000-0000-4000-8000-000000000002",identity={runId:"789",sha:"a".repeat(40),jti:"fixture",event:"workflow_dispatch"};
 function request(body:unknown,origin="https://app.example"){return new Request("https://app.example/api/engineering",{method:"POST",headers:{host:"app.example",origin,"content-type":"application/json"},body:JSON.stringify(body)});}
 test("engineering validation rejects injected tools, scopes, missing consent and invalid transitions",()=>{
+ assert.throws(()=>newEngineeringTask({action:"create",goal:"Enviar private@example.test",mode:"develop",consent:true}),/dados pessoais/);
  assert.throws(()=>newEngineeringTask({action:"create",goal:"inspect",mode:"develop",consent:true,command:"rm -rf"}));assert.throws(()=>newEngineeringTask({action:"create",goal:"inspect",mode:"shell",consent:true}));assert.throws(()=>newEngineeringTask({action:"create",goal:"inspect",mode:"observe"}));assert.equal(canControlTask("review","resume"),false);assert.equal(canControlTask("running","pause"),true);
 });
 test("engineering migration, isolation, durable queue, lease cancellation and read-only analysis",async()=>{

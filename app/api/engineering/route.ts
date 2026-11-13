@@ -17,7 +17,7 @@ export async function GET(req:Request){try{
 export async function POST(req:Request){try{
  if(!validOrigin(req)||!isJson(req))return apiError("Solicitação não autorizada.",403);const user=await getUser();if(!user)return apiError("Faça login.",401);const b=await parseJson(req);if(!b)return apiError("Dados inválidos.");
  if(b.action==="create"){
-  let task;try{task=newEngineeringTask(b);}catch{return apiError("Informe o objetivo e confirme o consentimento.");}
+  let task;try{task=newEngineeringTask(b);}catch(error){return apiError(error instanceof Error?error.message:"Informe o objetivo e confirme o consentimento.");}
   if(["develop","integration"].includes(task.mode)&&await selectedProvider(user.id)!=="openai")return apiError("Autorize GPT-6 Luna no Chat antes de enviar código e objetivo à API.",409);
   const c=await db.connect();try{await c.query("BEGIN");await c.query("SELECT pg_advisory_xact_lock(hashtextextended($1,87541))",[user.id]);
    const count=await c.query<{n:number;pending:number}>("SELECT COUNT(*) FILTER(WHERE created_at>NOW()-INTERVAL '24 hours')::int n,COUNT(*) FILTER(WHERE status IN ('PENDING','ANALYZING','PLANNING','CODING','TESTING'))::int pending FROM astro_tasks WHERE user_id=$1",[user.id]);if(count.rows[0].n>=3||count.rows[0].pending>=2){await c.query("ROLLBACK");return apiError("Limite de três tarefas por 24h ou duas pendentes.",429);}
