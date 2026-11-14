@@ -17,7 +17,7 @@ test("DOT uses real findings, keeps chat history and requires explicit paid sett
   if(url==="/api/conversations")return Response.json({conversations:[]});if(url==="/api/local-model")return Response.json({devices:[],enabled:false});return Response.json({provider:"local",available:true});
  });
  ui.render(<AppRouterContext.Provider value={router}><Provider><DotWorkspace email="fixture@example.test"/></Provider></AppRouterContext.Provider>);
- await ui.screen.findByText(/Encontrei uma tarefa interrompida/);assert.equal(posts,0,"Opening Chat X never creates paid work");
+ await ui.screen.findByText(/O planejamento pediu uma ferramenta fora do escopo/);assert.equal(posts,0,"Opening Chat X never creates paid work");
  assert.ok(ui.screen.getByRole("button",{name:"Nova conversa"}));
  assert.equal(ui.screen.getAllByRole("navigation",{name:"Navega\u00e7\u00e3o principal"}).length,1);
  ui.fireEvent.click(ui.screen.getByRole("button",{name:"Fechar mini chat"}));
@@ -38,11 +38,21 @@ test("first animation frame positions robots; navigation preserves them and mini
  const robot=document.querySelector<HTMLElement>('[data-agent="pipo"]')!;assert.equal(robot.style.width,"132px");assert.equal(robot.style.visibility,"visible");const position=robot.style.transform;
  view.rerender(tree("Memory page"));assert.equal(document.querySelector('[data-agent="pipo"]'),robot);assert.equal(robot.style.transform,position);assert.equal(requests,1);
  ui.fireEvent.click(ui.screen.getByRole("button",{name:"Conversar com Pipo"}));ui.fireEvent.click(ui.screen.getByRole("button",{name:"Fixar"}));assert.ok(ui.screen.getByRole("button",{name:"Soltar"}));ui.fireEvent.click(ui.screen.getByRole("button",{name:"Minimizar"}));
- ui.fireEvent.click(ui.screen.getByRole("button",{name:"Mostrar agentes"}));ui.fireEvent.change(ui.screen.getByRole("textbox",{name:"Preparar pergunta no Chat"}),{target:{value:"Explique TypeScript"}});ui.fireEvent.click(ui.screen.getByRole("button",{name:"Abrir"}));assert.equal(requests,1,"mini chat only prepares a draft, never calls Luna");
+ ui.fireEvent.click(ui.screen.getByRole("button",{name:"Mostrar agentes"}));ui.fireEvent.change(ui.screen.getByRole("textbox",{name:"Fale com Pipo"}),{target:{value:"Explique TypeScript"}});ui.fireEvent.click(ui.screen.getByRole("button",{name:"Responder"}));ui.fireEvent.click(ui.screen.getByRole("button",{name:"Continuar no Chat"}));assert.equal(requests,1,"mini chat only prepares a draft, never calls Luna");
 });
 
 test("memory panel opens even when there are no engineering tasks",async()=>{
  mock.method(globalThis,"fetch",async(url:unknown)=>{if(url==="/api/dot")return Response.json({settings:{enabled:true,luna_enabled:false,quiet:true,animations:false,main_agent:"pipo",theme:"dark",suggestion_minutes:60},tasks:[],findings:[],memory:{approved:3,pending:2},jobs:[],globalPaused:false});if(url==="/api/conversations")return Response.json({conversations:[]});if(url==="/api/local-model")return Response.json({devices:[],enabled:false});return Response.json({provider:"local",available:false});});
  ui.render(<AppRouterContext.Provider value={router}><Provider><DotWorkspace email="fixture@example.test"/></Provider></AppRouterContext.Provider>);await ui.waitFor(()=>assert.ok(document.querySelector('[data-agent="pipo"]')));
  ui.fireEvent.click(ui.screen.getByRole("button",{name:"Atividade e memória"}));assert.ok(ui.screen.getByText("Mimo · Memória autorizada"));assert.match(ui.screen.getByText(/registros aprovados/).textContent??"",/3.*2/);ui.fireEvent.click(ui.screen.getByRole("button",{name:"Fechar painel"}));assert.equal(ui.screen.queryByText("Mimo · Memória autorizada"),null);
+});
+
+test("mini chat answers locally, dismisses notices durably and keeps failed acknowledgements visible",async()=>{
+ const findingId="00000000-0000-4000-8000-000000000009";let dismissed=false,attempts=0;
+ mock.method(globalThis,"fetch",async(url:unknown,init?:RequestInit)=>{assert.equal(url,"/api/dot");if(init?.method==="POST"){attempts++;assert.deepEqual(JSON.parse(String(init.body)),{action:"dismiss",id:findingId});if(attempts===1)return Response.json({error:"Fixture unavailable"},{status:503});dismissed=true;return Response.json({ok:true});}return Response.json({settings:{enabled:true,luna_enabled:false,quiet:false,animations:false,main_agent:"pipo",theme:"dark",suggestion_minutes:60},tasks:[{id:"task",status:"failed",stage:"evolution",attempts:1,pr_number:null,result:{failureCode:"PLAN_FORMAT"}}],findings:dismissed?[]:[{id:findingId,task_id:"task",kind:"failure",code:"PLAN_FORMAT",message:"Fixture"}],memory:{approved:1,pending:0},jobs:[],globalPaused:false});});
+ const tree=<AppRouterContext.Provider value={router}><Provider><div>Fixture</div></Provider></AppRouterContext.Provider>;const view=ui.render(tree);await ui.screen.findByRole("region",{name:"Mini chat com Nino"});
+ ui.fireEvent.change(ui.screen.getByRole("textbox",{name:"Fale com Nino"}),{target:{value:"Por que falhou?"}});ui.fireEvent.click(ui.screen.getByRole("button",{name:"Responder"}));assert.match(ui.screen.getByLabelText("Conversa breve").textContent??"",/formato inválido/);assert.equal(attempts,0,"A local answer never starts an API operation");
+ ui.fireEvent.click(ui.screen.getByRole("button",{name:"Dispensar"}));await ui.screen.findByRole("alert");assert.ok(ui.screen.getByRole("region",{name:"Mini chat com Nino"}));
+ ui.fireEvent.click(ui.screen.getByRole("button",{name:"Dispensar"}));await ui.waitFor(()=>assert.equal(ui.screen.queryByRole("region",{name:"Mini chat com Nino"}),null));assert.equal(attempts,2);
+ view.unmount();ui.render(tree);await ui.waitFor(()=>assert.ok(document.querySelector('[data-agent="pipo"]')));assert.equal(ui.screen.queryByRole("region",{name:"Mini chat com Nino"}),null,"The server acknowledgement prevents the notice from reopening after remount");
 });

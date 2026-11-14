@@ -5,6 +5,7 @@ import ChatApp from "./chat-app";
 import {DOT_AGENTS,dotEngineeringIntent,type DotAgent} from "@/lib/dot-policy";
 import {dotApi as api,useLivingAgents,type DotSettings as Settings} from "./living-agents-provider";
 import {AGENT_NAMES as names,taskStatusLabel,taskStageLabel} from "@/lib/living-agents";
+import {taskBrief} from "@/lib/agent-communication";
 import styles from "./dot-chat.module.css";
 
 export default function DotWorkspace({email}:{email:string}){
@@ -19,7 +20,7 @@ export default function DotWorkspace({email}:{email:string}){
  return <div className={styles.shell} data-theme={data?.settings.theme??"dark"}>
   <ChatApp email={email} appName={names[agent]+" · A3X DOT"} dot dotAgent={agent} onAgentSettings={()=>setSettingsOpen(!settingsOpen)} agentStatus={!data?"Conectando":data.globalPaused||!data.settings.enabled?"Autonomia pausada":data.settings.luna_enabled&&data.cloudConsent?"Luna autorizada":"Observação ativa"} onActivity={setBusy} onEngineeringRequest={engineeringRequest} preparedMessage={preparedMessage} onPreparedMessage={clearDraft} activity={<div className={styles.taskStream}>
     {(error||loadError)&&<p role="alert" className={styles.error}>{error||loadError}</p>}{message&&<p role="status">{message}</p>}
-    {task&&<details open={evidenceOpen} onToggle={e=>setEvidenceOpen(e.currentTarget.open)}><summary><span className={styles.pulse}/> {task.goal} <small>{taskStatusLabel(task.status)} · {taskStageLabel(task.stage)}</small></summary><div className={styles.timeline}><p><b>Detectar → Investigar → Planejar → Propor → Testar → Comparar → Registrar → Revisão</b></p><p>{task.result?.hypothesis??"Consulte os eventos reais da tarefa. Nenhuma hipótese registrada."}</p><Link href="/central/projetos">Abrir tarefa e evidências</Link>{task.pr_number&&<a href={"https://github.com/luisgussamazon/baixardado/pull/"+task.pr_number}>Revisar PR #{task.pr_number}</a>}</div></details>}
+    {task&&<details open={evidenceOpen} onToggle={e=>setEvidenceOpen(e.currentTarget.open)}><summary><span className={styles.pulse}/> {task.goal} <small>{taskStatusLabel(task.status)} · {taskStageLabel(task.stage)}</small></summary><div className={styles.timeline}><p><b>Detectar → Investigar → Planejar → Propor → Testar → Comparar → Registrar → Revisão</b></p><p>{taskBrief(task)}</p><Link href="/central/projetos">Abrir tarefa e evidências</Link>{task.pr_number&&<a href={"https://github.com/luisgussamazon/baixardado/pull/"+task.pr_number}>Revisar PR #{task.pr_number}</a>}</div></details>}
     <button className={styles.detailsButton} onClick={()=>setPanelOpen(!panelOpen)} aria-expanded={panelOpen}>Atividade e memória</button>
   </div>}/>
   {panelOpen&&<aside className={styles.drawer} aria-label="Evidências da tarefa"><button onClick={()=>setPanelOpen(false)}>Fechar painel</button><section className={styles.evidence}><h2>Atividade real</h2>{!data&&<p>Carregando atividades registradas...</p>}{data&&!data.tasks.length&&<p>Nenhuma tarefa registrada. Converse ou prepare uma tarefa autorizada.</p>}{data?.tasks.map(t=><button className={task?.id===t.id?styles.chosen:""} key={t.id} onClick={()=>setSelected(t.id)}><strong>{t.goal}</strong><small>{taskStatusLabel(t.status)} · {taskStageLabel(t.stage)}</small></button>)}

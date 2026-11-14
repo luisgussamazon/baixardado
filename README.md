@@ -1,5 +1,7 @@
 # A3X AI — pesquisa na web com histórico privado
 
+**Comunicação dos assistentes:** respostas locais no mini chat, diagnósticos, avisos priorizados e triagem de investigações. Veja [funcionamento e limites](docs/COMUNICACAO-AUTONOMA.md).
+
 **Nova experiência Living Agents:** chat único e companheiros flutuantes globais na branch `feature/a3x-living-agents`. Veja [arquitetura, funcionamento, validação e limites](docs/A3X-LIVING-AGENTS.md). Sem merge/deploy nesta entrega.
 
 **A3X DOT:** a experiência `/chat-x` reúne Pipo, Nino, Bubu e Mimo com observação determinística por padrão e investigação Luna opcional. Reutiliza fila Astro/Engineering, memória, orçamento e runner isolado; gera propostas em PR, sem merge/deploy automático. Veja [plano, arquitetura, controles e ativação](docs/A3X-DOT.md). Esta implementação depende de aprovação antes de entrar em produção.
