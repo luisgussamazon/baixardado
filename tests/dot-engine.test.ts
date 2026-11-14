@@ -8,6 +8,9 @@ import {ensureDotSettings,scanDotUser,scheduledDotTick,queueDotInvestigation,che
 import {dotFinding,dotAgentState,validateDotSettings,dotEngineeringIntent} from "../lib/dot-policy";
 import {openAIBudgetMicros,reserveAIUsage} from "../lib/ai-provider";
 import {insertEngineeringTask,EngineeringQueueLimit} from "../lib/engineering-queue";
+import {modelMessages} from "../lib/local-model";
+import {validateInference} from "../lib/local-inference";
+import {dotPersona} from "../lib/dot-policy";
 import {claimEngineering,prepareEngineering} from "../lib/engineering-engine";
 
 const first="00000000-0000-4000-8000-000000000001",second="00000000-0000-4000-8000-000000000002";
@@ -19,6 +22,7 @@ test("DOT classification is evidence-based and settings cannot expand permission
  assert.equal(validateDotSettings(preferences).luna_enabled,false);
  assert.throws(()=>validateDotSettings({...preferences,luna_enabled:true}));assert.throws(()=>validateDotSettings({...preferences,repository:"other/repo"}));assert.throws(()=>validateDotSettings({...preferences,suggestion_minutes:1}));
  assert.equal(dotEngineeringIntent("Pipo, revise seu sistema"),true);assert.equal(dotEngineeringIntent("Como revisar seu sistema?"),false);assert.equal(dotEngineeringIntent("Bom dia"),false);
+ const long=modelMessages("x".repeat(4000),Array.from({length:12},()=>({role:"user" as const,content:"y".repeat(1200)})),[],[],null,[],"local",null,undefined,dotPersona("pipo"));assert.equal(validateInference({messages:long}),true,"Persona uses the same context allocation; no overflow on long local conversations");assert.match(long[0].content,/Pipo, coordenador/);
 });
 
 test("DOT scheduled observations, consent, paid queue, ownership, pause, budget and recovery use a disposable database",async()=>{

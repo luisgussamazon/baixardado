@@ -115,8 +115,7 @@ export async function POST(req: Request) {
                 }
                 abort.signal.throwIfAborted();
                 const documentContext=computerDocument&&computerDocument.sources.slice(0,250)+"\n"+computerDocument.text.slice(0,850);
-                const messages=modelMessages(message,dialogueHistory,context.records,hits,research,studies,provider,pageContext,documentContext);
-                if(body.dotAgent&&messages[0]?.role==="system")messages[0].content+="\n"+dotPersona(body.dotAgent as DotAgent);
+                const messages=modelMessages(message,dialogueHistory,context.records,hits,research,studies,provider,pageContext,documentContext,body.dotAgent?dotPersona(body.dotAgent as DotAgent):undefined);
                 generated=provider==="openai"?await openAILunaReply(user.id,messages,abort.signal):await connectedModelReply(user.id,id,messages,abort.signal).catch(()=>null);
                 if(generated&&body.shareComputerDocuments===true&&provider==="openai"&&!research){
                   generated+=computerDocument?"\n\n**Fontes:**\n"+computerDocument.sources.slice(0,250)+"\n- **Trechos privados fornecidos ao modelo:** documentos do computador, autorizados para esta pergunta.":"\n\n_Nenhum trecho do computador foi recuperado para esta pergunta. Verifique se a ponte está conectada._";

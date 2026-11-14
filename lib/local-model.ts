@@ -11,7 +11,7 @@ import type {BrowserObservation} from "./browser-policy";
 import {A3X_IDENTITY} from "./brand";
 export const LOCAL_MODEL="qwen3:4b-instruct";
 export type ModelMessage={role:"system"|"user"|"assistant";content:string};
-export function modelMessages(message:string,history:ConversationTurn[],memories:MemoryRecord[],hits:KnowledgeHit[],research?:WebResearch|null,studies:StudyNote[]=[],provider:"local"|"openai"="local",page?:BrowserObservation|null,computerDocument?:string):ModelMessage[]{
+export function modelMessages(message:string,history:ConversationTurn[],memories:MemoryRecord[],hits:KnowledgeHit[],research?:WebResearch|null,studies:StudyNote[]=[],provider:"local"|"openai"="local",page?:BrowserObservation|null,computerDocument?:string,persona?:string):ModelMessage[]{
   const creator=creatorProfile(memories);
   const approved=memories.filter(item=>item.status==="approved"&&(item.kind==="fact"||item.kind==="preference")).slice(0,5).map(item=>({title:item.label,value:item.value.slice(0,150)}));
   const sources=research?.results.slice(0,6).map((item,i)=>({id:"W"+(i+1),title:item.title,text:item.snippet,url:item.url}))??[];
@@ -26,7 +26,8 @@ export function modelMessages(message:string,history:ConversationTurn[],memories
       "\nConhecimento (JSON): "+JSON.stringify(knowledge)+
       pageReference+"\nReferências adicionais (JSON): "+JSON.stringify({approved,sources,studies:studyContext(studies)}).slice(0,1400)
     : page?localSystem.slice(0,Math.max(1200,4000-pageReference.length))+pageReference:localSystem.slice(0,4000);
-  const effectiveSystem=prompt.slice(0,8500-message.length);
+  const role=persona?.slice(0,650)??"";
+  const effectiveSystem=prompt.slice(0,8500-message.length-(role?role.length+1:0))+(role?"\n"+role:"");
   let remaining=Math.max(0,8000-effectiveSystem.length-message.length);
   const recent:ModelMessage[]=[];
   for(const turn of history.slice(-12).reverse()){
