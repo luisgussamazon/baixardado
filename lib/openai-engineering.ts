@@ -2,14 +2,14 @@ import {EngineeringFailure,providerEngineeringFailure,safeEngineeringFailure} fr
 import {OPENAI_MODEL,openAIConfigured,reserveAIUsage,finishAIUsage,CloudAIError,selectedProvider} from "./ai-provider";
 import {ENGINEERING_TOOLS,engineeringTool} from "./engineering-tools";
 // Same configured model, price ledger and conservative reservations as Chat. Only read tools.
-export async function engineeringPlan(userId:string,system:string,goal:string,signal:AbortSignal,beforeRound?:()=>Promise<unknown>){
+export async function engineeringPlan(userId:string,system:string,goal:string,signal:AbortSignal,beforeRound?:(reservation:number)=>Promise<unknown>){
  const input:unknown[]=[{role:"system",content:system},{role:"user",content:goal}];let calls=0;
  for(let round=0;round<4;round++){
-  await beforeRound?.();
   if(!openAIConfigured()||await selectedProvider(userId)!=="openai")throw new CloudAIError("Modelo ou consentimento indisponível.");
   const finalRound=round===3;if(finalRound)input.push({role:"system",content:'Finalize agora: use apenas os dados ja recebidos. Nao solicite ferramentas. Retorne somente o plano JSON com path, hypothesis e criterion.'});
   const encoded=JSON.stringify(input);if(encoded.length>32000)throw new EngineeringFailure("PLAN_CONTEXT");signal.throwIfAborted();
-  const usageId=await reserveAIUsage(userId,Math.ceil((Buffer.byteLength(encoded)+4096)*.1+1200*.5));let settled=false,requested=false;
+  const reservation=Math.ceil((Buffer.byteLength(encoded)+4096)*.1+1200*.5);await beforeRound?.(reservation);
+  const usageId=await reserveAIUsage(userId,reservation);let settled=false,requested=false;
   try{
    requested=true;const r=await fetch("https://api.openai.com/v1/responses",{method:"POST",redirect:"error",headers:{"Content-Type":"application/json",Authorization:"Bearer "+process.env.OPENAI_API_KEY!.trim()},body:JSON.stringify({model:OPENAI_MODEL,input,tools:ENGINEERING_TOOLS,tool_choice:finalRound?"none":"auto",parallel_tool_calls:false,reasoning:{effort:"none"},max_output_tokens:1200,service_tier:"default",store:false,stream:false,text:{format:{type:"json_object"}}}),signal:AbortSignal.any([signal,AbortSignal.timeout(90000)])});
    if(!r.ok){await r.body?.cancel();if(r.status>=400&&r.status<500){await finishAIUsage(usageId,"rejected");settled=true;}throw providerEngineeringFailure(r.status);}

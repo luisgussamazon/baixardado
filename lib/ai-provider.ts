@@ -4,7 +4,7 @@ export type AIProvider="local"|"openai";
 export function openAIConfigured(){return process.env.OPENAI_ENABLED!=="0"&&!!process.env.OPENAI_API_KEY?.trim();}
 export function openAIBudgetMicros(){
   const value=Number(process.env.OPENAI_MONTHLY_BUDGET_USD??"5");
-  if(!Number.isFinite(value)||value<=0||value>1000)throw new Error("Orçamento da API inválido.");
+  if(!Number.isFinite(value)||value<=0||value>5)throw new Error("Orçamento da API inválido.");
   return Math.floor(value*1_000_000);
 }
 export async function selectedProvider(userId:string):Promise<AIProvider>{

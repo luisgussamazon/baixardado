@@ -1,3 +1,4 @@
+import {insertEngineeringTask,EngineeringQueueLimit} from "@/lib/engineering-queue";
 import {NextResponse} from "next/server";
 import {getUser,validOrigin} from "@/lib/security";
 import {db} from "@/lib/db";
@@ -20,11 +21,8 @@ export async function POST(req:Request){try{
  if(b.action==="create"){
   let task;try{task=newEngineeringTask(b);}catch(error){return apiError(error instanceof Error?error.message:"Informe o objetivo e confirme o consentimento.");}
   if(["develop","integration"].includes(task.mode)&&await selectedProvider(user.id)!=="openai")return apiError("Autorize GPT-6 Luna no Chat antes de enviar código e objetivo à API.",409);
-  let createdId="";const c=await db.connect();try{await c.query("BEGIN");await c.query("SELECT pg_advisory_xact_lock(hashtextextended($1,87541))",[user.id]);
-   const count=await c.query<{n:number;pending:number}>("SELECT COUNT(*) FILTER(WHERE created_at>NOW()-INTERVAL '24 hours')::int n,COUNT(*) FILTER(WHERE status IN ('PENDING','ANALYZING','PLANNING','CODING','TESTING'))::int pending FROM astro_tasks WHERE user_id=$1",[user.id]);if(count.rows[0].n>=3||count.rows[0].pending>=2){await c.query("ROLLBACK");return apiError("Limite de três tarefas por 24h ou duas pendentes.",429);}
-   const parent=await c.query<{id:string}>("INSERT INTO astro_tasks(user_id,repository,goal) VALUES($1,'luisgussamazon/baixardado',$2) RETURNING id",[user.id,task.goal]);
-   const r=await c.query<{id:string}>("INSERT INTO engineering_tasks(id,user_id,goal,mode) VALUES($1,$2,$3,$4) RETURNING id",[parent.rows[0].id,user.id,task.goal,task.mode]);await c.query("INSERT INTO engineering_events(task_id,agent,state,message) VALUES($1,'evolution','waiting','Tarefa registrada. Aguardando runner autenticado.')",[r.rows[0].id]);await c.query("COMMIT");createdId=r.rows[0].id;
-  }catch{await c.query("ROLLBACK").catch(()=>{});throw Error("queue");}finally{c.release();}
+  let createdId="";const c=await db.connect();try{await c.query("BEGIN");createdId=await insertEngineeringTask(c,user.id,task);await c.query("COMMIT");
+  }catch(error){await c.query("ROLLBACK").catch(()=>{});if(error instanceof EngineeringQueueLimit)return apiError(error.message,429);throw error;}finally{c.release();}
   const dispatch=await dispatchEngineering(createdId,user.id).catch(()=>"unavailable");return NextResponse.json({id:createdId,dispatch},{status:201,headers});
  }
  if(b.action==="start"&&typeof b.id==="string"&&isUuid(b.id)&&Object.keys(b).length===2){const owned=await db.query("SELECT id FROM engineering_tasks WHERE id=$1 AND user_id=$2",[b.id,user.id]);if(!owned.rows.length)return apiError("Tarefa n\u00e3o encontrada.",404);return NextResponse.json({ok:true,dispatch:await dispatchEngineering(b.id,user.id)},{headers});}
