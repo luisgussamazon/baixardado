@@ -1,5 +1,7 @@
 # A3X AI — pesquisa na web com histórico privado
 
+**A3X DOT:** a experiência `/chat-x` reúne Pipo, Nino, Bubu e Mimo com observação determinística por padrão e investigação Luna opcional. Reutiliza fila Astro/Engineering, memória, orçamento e runner isolado; gera propostas em PR, sem merge/deploy automático. Veja [plano, arquitetura, controles e ativação](docs/A3X-DOT.md). Esta implementação depende de aprovação antes de entrar em produção.
+
 **Conexões de desenvolvimento:** o Chat e o Chat X oferecem acesso a `/central/conexoes`, com download da extensão VS Code instalável, clonagem do repositório, autorização do workspace e links do GitHub/runner. Veja [instalação e limites](docs/CONEXOES-DESENVOLVIMENTO.md). Os links não concedem autorização automática.
 
 A A3X IA é criada pela **A3X TECH**, fundada pelos amigos **Luis Gustavo e Samuel Moraes**. Essa identidade institucional não concede privilégios nem representa autoria de modelos de terceiros.

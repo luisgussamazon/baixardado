@@ -1,7 +1,7 @@
 import {validateInference} from "./local-inference";
 import type {ModelMessage} from "./local-model";
 import {OPENAI_MODEL,openAIConfigured,CloudAIError,reserveAIUsage,finishAIUsage} from "./ai-provider";
-export async function openAILunaReply(userId:string,messages:ModelMessage[],signal:AbortSignal,purpose?:"source"):Promise<string>{
+export async function openAILunaReply(userId:string,messages:ModelMessage[],signal:AbortSignal,purpose?:"source",beforeReserve?:(reservation:number)=>Promise<unknown>):Promise<string>{
   if(!openAIConfigured())throw new CloudAIError("GPT-6 Luna não está configurado no servidor.");
   const valid=purpose==="source"?Array.isArray(messages)&&messages.length===2&&messages.every(m=>m&&["system","user"].includes(m.role)&&typeof m.content==="string")&&messages.reduce((n,m)=>n+m.content.length,0)<=40000:validateInference({messages});
   if(!valid)throw new CloudAIError("Contexto acima do limite permitido.",400);
@@ -9,6 +9,7 @@ export async function openAILunaReply(userId:string,messages:ModelMessage[],sign
   const maxOutput=purpose==="source"?4000:600;
   // Um token de entrada ocupa pelo menos um byte. Acrescenta folga para estrutura e papéis.
   const reserved=Math.ceil((Buffer.byteLength(JSON.stringify(messages))+4096)*.1+maxOutput*.5);
+  await beforeReserve?.(reserved);
   const id=await reserveAIUsage(userId,reserved);let settled=false,requested=false;
   try{
     signal.throwIfAborted();

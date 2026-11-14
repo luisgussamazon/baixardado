@@ -28,13 +28,14 @@ async function requestJson(url:string, init?:RequestInit) {
   return payload;
 }
 
-export default function ChatApp({email,appName,compact=false,onEngineeringGoal}:{email:string;appName:string;compact?:boolean;onEngineeringGoal?:(goal:string)=>void}) {
+export default function ChatApp({email,appName,compact=false,onEngineeringGoal,onActivity,onEngineeringRequest}:{email:string;appName:string;compact?:boolean;onEngineeringGoal?:(goal:string)=>void;onActivity?:(busy:boolean)=>void;onEngineeringRequest?:(question:string)=>boolean}) {
   const router = useRouter();
   const [chats,setChats] = useState<ChatSummary[]>([]);
   const [activeId,setActiveId] = useState<string|null>(null);
   const [messages,setMessages] = useState<Message[]>([]);
   const [input,setInput] = useState("");
   const [busy,setBusy] = useState(false);
+  useEffect(()=>{onActivity?.(busy);return()=>onActivity?.(false);},[busy,onActivity]);
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState("");
   const [sidebar,setSidebar] = useState(false);
@@ -108,6 +109,7 @@ export default function ChatApp({email,appName,compact=false,onEngineeringGoal}:
   async function send(override?:string) {
     const question=(override??input).trim();
     if (!question || busy || sending.current || loading || question.length>4000) return;
+    if(onEngineeringRequest?.(question)){setInput("");return;}
     if(browserDeviceId&&provider==="openai"&&!window.confirm("Enviar o trecho revisado da tela selecionada à OpenAI junto com esta pergunta? Remova dados pessoais e segredos antes de compartilhar."))return;
     sending.current=true;
     setBrowserAction(null);setBrowserStatus("");

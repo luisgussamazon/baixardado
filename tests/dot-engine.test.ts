@@ -1,0 +1,70 @@
+import {test,mock} from "node:test";
+import assert from "node:assert/strict";
+import {PGlite} from "@electric-sql/pglite";
+import {readFile,writeFile,mkdir,unlink} from "node:fs/promises";
+import {AsyncLocalStorage} from "node:async_hooks";
+import {db} from "../lib/db";
+import {ensureDotSettings,scanDotUser,scheduledDotTick,queueDotInvestigation,checkDotTask} from "../lib/dot-engine";
+import {dotFinding,dotAgentState,validateDotSettings,dotEngineeringIntent} from "../lib/dot-policy";
+import {openAIBudgetMicros,reserveAIUsage} from "../lib/ai-provider";
+import {insertEngineeringTask,EngineeringQueueLimit} from "../lib/engineering-queue";
+import {claimEngineering,prepareEngineering} from "../lib/engineering-engine";
+
+const first="00000000-0000-4000-8000-000000000001",second="00000000-0000-4000-8000-000000000002";
+const preferences={action:"settings",enabled:true,luna_enabled:false,quiet:false,animations:true,main_agent:"pipo",theme:"dark",suggestion_minutes:60};
+test("DOT classification is evidence-based and settings cannot expand permissions",()=>{
+ const task={id:first,status:"failed",stage:"architect",attempts:2,pr_number:null,result:{failureCode:"PLAN_TOOL_SCOPE"}};
+ assert.match(dotFinding(task)!.message,/PLAN_TOOL_SCOPE/);assert.equal(dotFinding({...task,status:"running"}),null);
+ assert.equal(dotAgentState("bubu",[task]),"blocked");assert.equal(dotAgentState("pipo",[],true),"thinking");assert.equal(dotAgentState("nino",[{...task,status:"running",stage:"coder"}]),"coding");
+ assert.equal(validateDotSettings(preferences).luna_enabled,false);
+ assert.throws(()=>validateDotSettings({...preferences,luna_enabled:true}));assert.throws(()=>validateDotSettings({...preferences,repository:"other/repo"}));assert.throws(()=>validateDotSettings({...preferences,suggestion_minutes:1}));
+ assert.equal(dotEngineeringIntent("Pipo, revise seu sistema"),true);assert.equal(dotEngineeringIntent("Como revisar seu sistema?"),false);assert.equal(dotEngineeringIntent("Bom dia"),false);
+});
+
+test("DOT scheduled observations, consent, paid queue, ownership, pause, budget and recovery use a disposable database",async()=>{
+ const pg=new PGlite();Object.assign(globalThis,{AsyncLocalStorage});await mkdir(".generated",{recursive:true});const catalogBackup=await readFile(".generated/a3x-source.json").catch(()=>undefined);
+ const backup={key:process.env.OPENAI_API_KEY,budget:process.env.OPENAI_MONTHLY_BUDGET_USD,dot:process.env.A3X_DOT_ENABLED};
+ try{
+  await pg.exec((await readFile("sql/001_initial.sql","utf8")).replace("CREATE EXTENSION IF NOT EXISTS pgcrypto;",""));
+  for(const name of ["006_cognitive_engine.sql","010_openai_luna.sql","013_autonomy_cycles.sql","014_astro_tasks.sql","015_astro_cycle_link.sql","016_engineering.sql","018_dot_agents.sql","018_dot_agents.sql"])await pg.exec(await readFile("sql/"+name,"utf8"));
+  const query=async(sql:string,params?:unknown[])=>{const r=await pg.query(sql,params);return {rows:r.rows,rowCount:r.affectedRows??r.rows.length};};mock.method(db,"query",query);mock.method(db,"connect",async()=>({query,release(){}}));
+  let network=0;mock.method(globalThis,"fetch",async()=>{network++;throw Error("DOT deterministic checks must not use a model, web or GitHub API");});
+  for(const [id,email] of [[first,"first@example.test"],[second,"second@example.test"]])await pg.query("INSERT INTO users(id,email,password_hash) VALUES($1,$2,'fixture')",[id,email]);
+  const create=async(user:string,status:string,code="PLAN_TOOL_SCOPE")=>{const parent=await pg.query<{id:string}>("INSERT INTO astro_tasks(user_id,repository,goal) VALUES($1,'luisgussamazon/baixardado','Fixture') RETURNING id",[user]);const id=parent.rows[0].id;await pg.query("INSERT INTO engineering_tasks(id,user_id,goal,mode,status,attempts,result) VALUES($1,$2,'Fixture','observe',$3,2,$4::jsonb)",[id,user,status,JSON.stringify({failureCode:code})]);return id;};
+  const source=await create(first,"failed"),foreign=await create(second,"review");
+  await pg.query("INSERT INTO cognitive_records(user_id,kind,label,value) VALUES($1,'fact','Private fixture','never send this personal memory')",[first]);
+  await scheduledDotTick();assert.equal(network,0);assert.equal((await pg.query("SELECT * FROM dot_jobs")).rows.length,0);
+  const settings=await pg.query<{enabled:boolean;luna_enabled:boolean}>("SELECT * FROM dot_settings WHERE user_id=$1",[first]);assert.equal(settings.rows[0].enabled,true);assert.equal(settings.rows[0].luna_enabled,false);
+  const count=(await pg.query("SELECT * FROM dot_findings")).rows.length;await scheduledDotTick();await scanDotUser(first);assert.equal((await pg.query("SELECT * FROM dot_findings")).rows.length,count,"Repeated ticks do not duplicate findings");
+  const {GET,POST}=await import("../app/api/dot/route"),{workUnitAsyncStorage:storage}=await import("next/dist/server/app-render/work-unit-async-storage.external"),{workAsyncStorage:work}=await import("next/dist/server/app-render/work-async-storage.external"),{ResponseCookies:Cookies}=await import("next/dist/server/web/spec-extension/cookies");
+  const userMock=mock.method(db,"query",async(sql:string,params?:unknown[])=>sql.includes("FROM sessions s")?{rows:[{id:first,email:"first@example.test"}],rowCount:1}:query(sql,params));
+  const session=<T,>(authorized:boolean,fn:()=>T)=>{const cookies=new Cookies(new Headers());if(authorized)cookies.set("a3x_session","fixture");return work.run({route:"/api/dot"} as never,()=>storage.run({type:"request",phase:"action",cookies,userspaceMutableCookies:cookies} as never,fn));};
+  const request=(body:unknown,origin="https://app.example")=>new Request("https://app.example/api/dot",{method:"POST",headers:{host:"app.example",origin,"content-type":"application/json"},body:JSON.stringify(body)});
+  assert.equal((await session(false,GET)).status,401);assert.equal((await session(true,()=>POST(request(preferences,"https://evil.example")))).status,403);
+  const snapshot=await (await session(true,GET)).json();assert.equal(snapshot.memory.pending,1);assert.ok(snapshot.tasks.every((t:{id:string})=>t.id!==foreign));assert.doesNotMatch(JSON.stringify(snapshot),/never send this personal memory|second@example/);
+  const foreignFinding=await pg.query<{id:string}>("SELECT id FROM dot_findings WHERE user_id=$1",[second]);await session(true,()=>POST(request({action:"dismiss",id:foreignFinding.rows[0].id})));assert.equal((await pg.query<{dismissed:boolean}>("SELECT dismissed FROM dot_findings WHERE id=$1",[foreignFinding.rows[0].id])).rows[0].dismissed,false);
+  process.env.OPENAI_API_KEY="FAKE-DOT-KEY";process.env.OPENAI_MONTHLY_BUDGET_USD="5";
+  assert.equal((await session(true,()=>POST(request({...preferences,luna_enabled:true,consent:true})))).status,409);
+  await pg.query("INSERT INTO ai_preferences(user_id,provider,cloud_consent_version,cloud_consented_at) VALUES($1,'openai',1,NOW())",[first]);
+  assert.equal((await session(true,()=>POST(request({...preferences,luna_enabled:true})))).status,400);
+  const enabled=await (await session(true,()=>POST(request({...preferences,luna_enabled:true,consent:true})))).json();assert.ok(enabled.taskId);assert.equal(network,0,"Enqueueing does not itself call Luna; no dispatch token in this test");
+  const id=enabled.taskId;assert.equal((await pg.query("SELECT * FROM astro_tasks WHERE id=$1",[id])).rows.length,1);assert.equal((await pg.query("SELECT * FROM dot_jobs WHERE source_task_id=$1",[source])).rows.length,1);
+  assert.equal(await queueDotInvestigation(first),null,"Frequency and source dedup prevent another task");
+  await writeFile(".generated/a3x-source.json",JSON.stringify({repository:"luisgussamazon/baixardado",files:[{path:"lib/knowledge-terms.ts",sha:"b".repeat(40),content:"export const value = 1;"}]}));
+  let calls=0;mock.method(globalThis,"fetch",async(_url:unknown,init?:RequestInit)=>{calls++;const body=JSON.parse(String(init?.body));assert.doesNotMatch(JSON.stringify(body),/never send this personal memory/);const value=calls===4?{path:"lib/knowledge-terms.ts",hypothesis:"Fixture hypothesis",criterion:"Fixture criterion"}:{summary:"Fixture proposal",edits:[{path:"lib/knowledge-terms.ts",oldText:"value = 1;",newText:"value = 2;"}]};return Response.json({status:"completed",usage:{input_tokens:20,output_tokens:20},output:calls<4?[{type:"function_call",name:"list_sources",arguments:"{}",call_id:"dot_"+calls}]:[{type:"message",role:"assistant",content:[{type:"output_text",text:JSON.stringify(value)}]}]});});
+  const identity={runId:"42",sha:"a".repeat(40),jti:"fixture",event:"schedule"};assert.equal((await claimEngineering(identity))?.id,id);assert.equal((await prepareEngineering(id,identity,new AbortController().signal)).status,"ready");assert.equal(calls,5);assert.equal((await pg.query<{calls:number}>("SELECT calls FROM dot_jobs WHERE engineering_task_id=$1",[id])).rows[0].calls,5);assert.equal((await pg.query("SELECT * FROM ai_api_usage")).rows.length,5);
+  mock.method(globalThis,"fetch",async()=>{network++;throw Error("Unexpected extra paid request");});await pg.query("UPDATE dot_jobs SET calls=0,allocated_micros=0 WHERE engineering_task_id=$1",[id]);
+  for(let i=0;i<5;i++)await checkDotTask(id,first,true,1000);await assert.rejects(checkDotTask(id,first,true,1),/call limit/);
+  await pg.query("UPDATE dot_jobs SET calls=0,allocated_micros=29000 WHERE engineering_task_id=$1",[id]);await assert.rejects(checkDotTask(id,first,true,1001),/call limit/);
+  await pg.query("UPDATE dot_jobs SET created_at=NOW()-INTERVAL '2 hours' WHERE engineering_task_id=$1",[id]);await assert.rejects(checkDotTask(id,first),/expired/);await pg.query("UPDATE dot_jobs SET created_at=NOW() WHERE engineering_task_id=$1",[id]);
+  await session(true,()=>POST(request(preferences)));assert.equal((await pg.query<{status:string}>("SELECT status FROM engineering_tasks WHERE id=$1",[id])).rows[0].status,"paused");await assert.rejects(checkDotTask(id,first),/paused/);
+  assert.equal((await pg.query<{status:string}>("SELECT status FROM engineering_tasks WHERE id=$1",[source])).rows[0].status,"failed","Pausing DOT preserves original tasks");
+  await pg.query("UPDATE dot_settings SET luna_enabled=TRUE,consent_at=NOW(),last_paid_at=NOW()-INTERVAL '2 days' WHERE user_id=$1",[first]);await pg.query("UPDATE engineering_tasks SET status='failed' WHERE id=$1",[id]);
+  assert.equal(await queueDotInvestigation(first),null,"A failed generated investigation cannot spawn an infinite chain or retry the same source");
+  await create(first,"failed");await pg.query("INSERT INTO ai_api_usage(user_id,reserved_microusd,charged_microusd,status) VALUES($1,1,4999999,'succeeded')",[first]);assert.equal(await queueDotInvestigation(first),null,"Insufficient shared budget prevents enqueue");await assert.rejects(reserveAIUsage(first,2),/Teto mensal/);
+  process.env.OPENAI_MONTHLY_BUDGET_USD="6";assert.throws(openAIBudgetMicros,/inválido/);process.env.OPENAI_MONTHLY_BUDGET_USD="5";
+  await pg.exec("DELETE FROM ai_api_usage");await assert.rejects(insertEngineeringTask({query} as never,first,{goal:"Extra",mode:"observe"}),EngineeringQueueLimit);
+  process.env.A3X_DOT_ENABLED="0";await assert.rejects(checkDotTask(id,first),/paused/);await scheduledDotTick();assert.equal(network,0);
+  userMock.mock.restore();
+ }finally{mock.restoreAll();for(const [key,value] of [["OPENAI_API_KEY",backup.key],["OPENAI_MONTHLY_BUDGET_USD",backup.budget],["A3X_DOT_ENABLED",backup.dot]]){if(value===undefined)delete process.env[key!];else process.env[key!]=value;}if(catalogBackup)await writeFile(".generated/a3x-source.json",catalogBackup);else await unlink(".generated/a3x-source.json").catch(()=>{});await pg.close();}
+});

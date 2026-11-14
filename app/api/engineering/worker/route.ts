@@ -1,3 +1,4 @@
+import {scheduledDotTick} from "@/lib/dot-engine";
 import {safeEngineeringFailure} from "@/lib/engineering-errors";
 import {NextResponse} from "next/server";
 import {verifyEngineeringToken} from "@/lib/autonomy-oidc";
@@ -9,7 +10,7 @@ export const runtime="nodejs";export const dynamic="force-dynamic";export const 
 export async function POST(req:Request){
  if(!isJson(req))return apiError("Dados inválidos.",403);let identity;try{identity=await verifyEngineeringToken(req.headers.get("authorization")?.match(/^Bearer (\S+)$/)?.[1]??"");}catch{return apiError("Runner não autorizado.",401);}
  let id:string|undefined;try{if(process.env.A3X_ENGINEERING_ENABLED==="0")return apiError("Runner pausado.",409);const b=await parseJson(req);if(!b)return apiError("Dados inválidos.");
-  if(b.action==="claim"&&Object.keys(b).length===1)return NextResponse.json({task:await claimEngineering(identity)},{headers:{"Cache-Control":"no-store"}});
+  if(b.action==="claim"&&Object.keys(b).length===1){await scheduledDotTick().catch(()=>{});return NextResponse.json({task:await claimEngineering(identity)},{headers:{"Cache-Control":"no-store"}});}
   if(typeof b.id!=="string"||!isUuid(b.id))return apiError("Tarefa inválida.");id=b.id;
   if(b.action==="prepare"&&Object.keys(b).length===2)return NextResponse.json(await prepareEngineering(id,identity,req.signal),{headers:{"Cache-Control":"no-store"}});
   const task=await ownedLease(id,identity);
