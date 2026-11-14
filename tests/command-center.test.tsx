@@ -36,3 +36,20 @@ test("workspace pairing requires code and explicit consent, and does not submit 
  ui.fireEvent.change(ui.screen.getByLabelText("Código do workspace"),{target:{value:"ABCDEF123456"}});assert.equal(button.disabled,true);assert.equal(approvals,0);
  ui.fireEvent.click(ui.screen.getByRole("checkbox"));ui.fireEvent.click(button);await ui.waitFor(()=>assert.equal(approvals,1));
 });
+
+test("queued task requests immediate execution and waits for actual runner status",async()=>{
+ const id="00000000-0000-4000-8000-000000000001";let starts=0;
+ mock.method(globalThis,"fetch",async(url:unknown,init?:RequestInit)=>{
+  if(String(url).startsWith("/api/engineering")){
+   if(init?.method==="POST"){assert.deepEqual(JSON.parse(String(init.body)),{action:"start",id});starts++;return Response.json({ok:true,dispatch:"requested"});}
+   return Response.json({tasks:[{id,goal:"Revisar interface",mode:"observe",status:"queued",stage:"pending",attempts:0,created_at:"2026-11-14T10:00:00Z"}],detail:null,version:null,model:{id:"gpt-6-luna",configured:true,usage:{cost:"0",input:"0",output:"0"}},runner:{immediate:true,productionApproval:true}});
+  }
+  if(url==="/api/source")return Response.json({files:[]});if(url==="/api/conversations")return Response.json({conversations:[]});if(url==="/api/local-model")return Response.json({devices:[],enabled:false});return Response.json({provider:"local",available:true});
+ });
+ ui.render(<AppRouterContext.Provider value={router}><CommandCenter email="local@example.test"/></AppRouterContext.Provider>);
+ ui.fireEvent.click(await ui.screen.findByRole("button",{name:/Revisar interface/}));
+ ui.fireEvent.click(await ui.screen.findByRole("button",{name:"Executar agora"}));
+ await ui.waitFor(()=>assert.equal(starts,1));
+ await ui.screen.findByText(/Runner acionado no GitHub/);
+ assert.ok(ui.screen.getAllByText("Na fila").length>0,"Dispatch acknowledgment does not invent a running state");
+});
