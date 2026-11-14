@@ -16,9 +16,9 @@ export async function scanDotUser(userId:string){
   const findings=tasks.rows.flatMap(task=>{const f=dotFinding(task);return f?[{task_id:task.id,...f}]:[];});
   if(findings.length)await c.query("INSERT INTO dot_findings(user_id,task_id,fingerprint,kind,code,message) SELECT $1,x.task_id,x.fingerprint,x.kind,x.code,x.message FROM jsonb_to_recordset($2::jsonb) AS x(task_id UUID,fingerprint TEXT,kind TEXT,code TEXT,message TEXT) ON CONFLICT(user_id,fingerprint) DO UPDATE SET active=TRUE",[userId,JSON.stringify(findings)]);
   await c.query("UPDATE dot_findings f SET active=FALSE WHERE f.user_id=$1 AND f.task_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM engineering_tasks t WHERE t.id=f.task_id AND t.user_id=$1 AND CASE t.status WHEN 'failed' THEN 'failure' WHEN 'queued' THEN 'queued' WHEN 'review' THEN 'review' WHEN 'completed' THEN 'completed' ELSE '' END=f.kind)",[userId]);
-  const pending=await c.query<{n:number}>("SELECT COUNT(*)::int n FROM cognitive_records WHERE user_id=$1 AND status='pending'",[userId]);
-  if(pending.rows[0].n>0)await c.query("INSERT INTO dot_findings(user_id,fingerprint,kind,code,message) VALUES($1,'memory:pending','memory','MEMORY_PENDING','Há memórias aguardando sua aprovação. Deseja analisar?') ON CONFLICT(user_id,fingerprint) DO UPDATE SET active=TRUE",[userId]);
-  else await c.query("UPDATE dot_findings SET active=FALSE WHERE user_id=$1 AND fingerprint='memory:pending'",[userId]);
+  const pending=await c.query<{n:number;latest:string|null}>("SELECT COUNT(*)::int n,MAX(created_at)::text latest FROM cognitive_records WHERE user_id=$1 AND status='pending'",[userId]);
+  await c.query("UPDATE dot_findings SET active=FALSE WHERE user_id=$1 AND kind='memory'",[userId]);
+  if(pending.rows[0].n>0)await c.query("INSERT INTO dot_findings(user_id,fingerprint,kind,code,message) VALUES($1,$2,'memory','MEMORY_PENDING','Há memórias aguardando sua aprovação. Deseja analisar?') ON CONFLICT(user_id,fingerprint) DO UPDATE SET active=TRUE",[userId,"memory:"+pending.rows[0].latest]);
   await c.query("UPDATE dot_settings SET last_scan_at=NOW() WHERE user_id=$1",[userId]);
   await c.query("COMMIT");return true;
  }catch(error){await c.query("ROLLBACK").catch(()=>{});throw error;}finally{c.release();}
