@@ -1,3 +1,4 @@
+import {safeEngineeringFailure} from "@/lib/engineering-errors";
 import {NextResponse} from "next/server";
 import {verifyEngineeringToken} from "@/lib/autonomy-oidc";
 import {claimEngineering,prepareEngineering,ownedLease,engineeringEvent} from "@/lib/engineering-engine";
@@ -22,5 +23,5 @@ export async function POST(req:Request){
    await db.query("UPDATE engineering_tasks SET status=$3,stage='evolution',experimental_sha=$4,pr_number=$5,result=COALESCE(result,'{}'::jsonb)||$6::jsonb,lease_until=NULL,updated_at=NOW() WHERE id=$1 AND run_id=$2 AND status='running'",[id,identity.runId,b.status,b.commit??null,b.pr??null,JSON.stringify({metrics:metrics??null})]);await engineeringEvent(id,"evolution",b.status==="failed"?"failed":"passed",b.status==="review"?"PR criado; aguardando aprovação independente. Nenhum deploy executado.":b.status==="completed"?"Validação concluída e registrada.":"Execução interrompida. Nenhuma integração autorizada.");return NextResponse.json({ok:true});
   }
   return apiError("Ação inválida.");
- }catch{if(id){await db.query("UPDATE engineering_tasks SET status='failed',stage='evolution',lease_until=NULL,updated_at=NOW() WHERE id=$1 AND run_id=$2 AND status='running'",[id,identity.runId]).catch(()=>{});await engineeringEvent(id,"evolution","failed","Etapa interrompida. Respostas brutas e credenciais omitidas.").catch(()=>{});}return apiError("Etapa interrompida ou tarefa pausada/cancelada.",409);}
+ }catch(error){const failure=safeEngineeringFailure(error);if(id){const changed=await db.query("UPDATE engineering_tasks SET status='failed',stage='evolution',lease_until=NULL,result=COALESCE(result,'{}'::jsonb)||jsonb_build_object('failureCode',$3::text),updated_at=NOW() WHERE id=$1 AND run_id=$2 AND status='running' RETURNING id",[id,identity.runId,failure.code]).catch(()=>null);if(changed?.rows.length)await engineeringEvent(id,"evolution","failed","["+failure.code+"] "+failure.message).catch(()=>{});}return NextResponse.json({error:failure.message,code:failure.code},{status:409,headers:{"Cache-Control":"no-store"}});}
 }

@@ -5,8 +5,9 @@ import {createHash} from 'node:crypto';
 import {validateInSandbox} from './autonomy-sandbox.mjs';
 import {publishEngineering} from './engineering-publish.mjs';
 const SERVER='https://baixardado-production.up.railway.app';
+const SAFE_FAILURES=new Set(['AI_AUTH','AI_ACCESS','AI_MODEL','AI_REQUEST','AI_LIMIT','AI_UNAVAILABLE','AI_TIMEOUT','LOCAL_BUDGET','LOCAL_CONCURRENCY','AI_CONSENT','PLAN_FORMAT','PLAN_INCOMPLETE','PLAN_TOOLS','PLAN_CONTEXT','TASK_LEASE','ENGINEERING_UNKNOWN']);
 export async function runEngineering({github,core,context,task:claimedTask,root=process.cwd()}){
- const call=async body=>{const token=await core.getIDToken('a3x-engineering');const r=await fetch(SERVER+'/api/engineering/worker',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body),redirect:'error',signal:AbortSignal.timeout(body.action==='prepare'?235000:15000)});if(!r.ok)throw Error('Task unavailable or stage rejected');return r.json();};
+ const call=async body=>{const token=await core.getIDToken('a3x-engineering');const r=await fetch(SERVER+'/api/engineering/worker',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body),redirect:'error',signal:AbortSignal.timeout(body.action==='prepare'?235000:15000)});if(!r.ok){let code='ENGINEERING_UNKNOWN';try{const body=await r.json();if(SAFE_FAILURES.has(body.code))code=body.code;}catch{}const failure=Error('Task unavailable or stage rejected');failure.code=code;throw failure;}return r.json();};
  const task=claimedTask??(await call({action:'claim'})).task;if(!task){core.info('Nenhuma tarefa na fila.');return;}if(!/^[a-f0-9-]{36}$/.test(task.id)||task.base!==context.sha)throw Error('Invalid claimed task');
  const event=(agent,state,code)=>call({action:'event',id:task.id,agent,state,code});let timer,activeAgent='architect';const abort=new AbortController();
  try{
@@ -26,6 +27,6 @@ export async function runEngineering({github,core,context,task:claimedTask,root=
   if(run.status==='validate'){await call({action:'finish',id:task.id,status:'completed',metrics});return;}
   const stateFile=path.join(root,'.autonomy/validated.json'),state=JSON.parse(await fs.readFile(stateFile,'utf8'));for(const f of state.files)if(createHash('sha256').update(await fs.readFile(path.join(worktree,f.path))).digest('hex')!==f.hash)throw Error('Source changed during validation');state.checked=true;await fs.writeFile(stateFile,JSON.stringify(state));
   activeAgent='evolution';await event('evolution','running','create-review-branch');const outcome=await publishEngineering({github,context,root,authorize:()=>call({action:'authorize',id:task.id})});await call({action:'finish',id:task.id,status:'review',...outcome,metrics});core.info('Branch e PR criados. Produção aguarda revisão independente.');
- }catch{abort.abort();await event(activeAgent,'failed','runner-stage-rejected').catch(()=>{});await call({action:'finish',id:task.id,status:'failed'}).catch(()=>{});throw Error('Engineering interrupted. No main update or deployment authorized.');}
+ }catch(error){abort.abort();await event(activeAgent,'failed','runner-stage-rejected').catch(()=>{});await call({action:'finish',id:task.id,status:'failed'}).catch(()=>{});throw Error('Engineering interrupted ['+(SAFE_FAILURES.has(error?.code)?error.code:'ENGINEERING_UNKNOWN')+']. No main update or deployment authorized.');}
  finally{if(timer)clearInterval(timer);}
 }

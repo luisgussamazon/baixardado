@@ -10,6 +10,8 @@ import {claimEngineering,prepareEngineering,ownedLease} from "../lib/engineering
 
 import {newEngineeringTask,canControlTask} from "../lib/engineering-policy";
 import {engineeringTool} from "../lib/engineering-tools";
+import {engineeringPlan} from "../lib/openai-engineering";
+import {EngineeringFailure} from "../lib/engineering-errors";
 Object.assign(globalThis,{AsyncLocalStorage});
 const first="00000000-0000-4000-8000-000000000001",second="00000000-0000-4000-8000-000000000002",identity={runId:"789",sha:"a".repeat(40),jti:"fixture",event:"workflow_dispatch"};
 function request(body:unknown,origin="https://app.example"){return new Request("https://app.example/api/engineering",{method:"POST",headers:{host:"app.example",origin,"content-type":"application/json"},body:JSON.stringify(body)});}
@@ -44,6 +46,8 @@ test("engineering migration, isolation, durable queue, lease cancellation and re
   assert.equal((await (await device.GET(deviceRequest())).json()).authorized,false);assert.equal((await session(()=>device.POST(request({action:"approve",code:pairing.code,consent:false})))).status,400);assert.equal((await session(()=>device.POST(request({action:"approve",code:pairing.code,consent:true})))).status,200);assert.equal((await session(()=>device.POST(request({action:"approve",code:pairing.code,consent:true})))).status,409);
   const deviceSnapshot=await (await device.GET(deviceRequest())).json();assert.equal(deviceSnapshot.authorized,true);assert.ok(deviceSnapshot.tasks.every((t:{id:string})=>t.id!=="foreign-task"));assert.equal(deviceSnapshot.tasks.length,3);
   const stored=await pg.query<{id:string;token_hash:string;code_hash:string|null}>("SELECT id,token_hash,code_hash FROM engineering_devices");assert.doesNotMatch(JSON.stringify(stored.rows),new RegExp(pairing.token));assert.equal(stored.rows[0].code_hash,null);current={id:second,email:"second@example.test"};await session(()=>device.POST(request({action:"revoke",id:stored.rows[0].id})));assert.equal((await (await device.GET(deviceRequest())).json()).authorized,true);current={id:first,email:"first@example.test"};await session(()=>device.POST(request({action:"revoke",id:stored.rows[0].id})));assert.equal((await device.GET(deviceRequest())).status,401);
+  for(const [status,code] of [[401,"AI_AUTH"],[400,"AI_REQUEST"],[429,"AI_LIMIT"]] as const){let requests=0;mock.method(globalThis,"fetch",async()=>{requests++;return Response.json({error:{message:"private-provider-details"}},{status});});await assert.rejects(engineeringPlan(first,"Return JSON","Fixture",new AbortController().signal),(error:unknown)=>error instanceof EngineeringFailure&&error.code===code&&!error.message.includes("private-provider-details"));assert.equal(requests,1,"Provider rejection is never retried automatically");}
+  assert.equal((await pg.query("SELECT * FROM ai_api_usage WHERE status='rejected'")).rows.length,3);
   await pg.query("UPDATE astro_tasks SET cancel_requested=TRUE WHERE id=$1",[development.id]);await assert.rejects(ownedLease(development.id,developIdentity));assert.equal((await pg.query<{status:string}>("SELECT status FROM engineering_tasks WHERE id=$1",[development.id])).rows[0].status,"cancelled");assert.equal((await pg.query<{cancel_requested:boolean}>("SELECT cancel_requested FROM astro_tasks WHERE id=$1",[development.id])).rows[0].cancel_requested,true);
  }finally{mock.restoreAll();delete process.env.OPENAI_API_KEY;if(backup)await writeFile(sourceFile,backup);else await unlink(sourceFile);await pg.close();}
 });
