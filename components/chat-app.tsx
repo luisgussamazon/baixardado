@@ -28,7 +28,7 @@ async function requestJson(url:string, init?:RequestInit) {
   return payload;
 }
 
-export default function ChatApp({email,appName,compact=false,onEngineeringGoal,onActivity,onEngineeringRequest}:{email:string;appName:string;compact?:boolean;onEngineeringGoal?:(goal:string)=>void;onActivity?:(busy:boolean)=>void;onEngineeringRequest?:(question:string)=>boolean}) {
+export default function ChatApp({email,appName,compact=false,onEngineeringGoal,onActivity,onEngineeringRequest,dotAgent}:{email:string;appName:string;compact?:boolean;onEngineeringGoal?:(goal:string)=>void;onActivity?:(busy:boolean)=>void;onEngineeringRequest?:(question:string)=>boolean;dotAgent?:"pipo"|"nino"|"bubu"|"mimo"}) {
   const router = useRouter();
   const [chats,setChats] = useState<ChatSummary[]>([]);
   const [activeId,setActiveId] = useState<string|null>(null);
@@ -127,7 +127,7 @@ export default function ChatApp({email,appName,compact=false,onEngineeringGoal,o
       setMessages(prev=>[...prev,{id:humanId,role:"user",content:question},{id:answerId,role:"assistant",content:""}]);
       const res=await fetch("/api/chat",{
         method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({conversationId:id,message:question,shareKnowledgeWithCloud:provider==="openai"&&shareKnowledge,shareComputerDocuments:provider==="openai"&&shareComputerDocuments,...(browserDeviceId?{browserDeviceId,shareBrowserContext:true,shareBrowserContextWithCloud:provider==="openai"}:{})}),
+        body:JSON.stringify({conversationId:id,message:question,...(dotAgent?{dotAgent}:{}),shareKnowledgeWithCloud:provider==="openai"&&shareKnowledge,shareComputerDocuments:provider==="openai"&&shareComputerDocuments,...(browserDeviceId?{browserDeviceId,shareBrowserContext:true,shareBrowserContextWithCloud:provider==="openai"}:{})}),
       });
       if (!res.ok) {
         const data=await res.json().catch(()=>({}));

@@ -84,11 +84,13 @@ test("Chat consulta a ponte para a Luna somente na pergunta autorizada",async()=
   return Response.json({status:"completed",output:[{type:"message",role:"assistant",content:[{type:"output_text",text:"Resposta com fontes."}]}],usage:{input_tokens:100,output_tokens:20}});
  });
  for(const shareComputerDocuments of [false,true,false]){
-  const response=await session(0,()=>chat.POST(req({conversationId:conversation,message:"Como funciona a contagem de inventário?",shareComputerDocuments})));
+  const response=await session(0,()=>chat.POST(req({conversationId:conversation,message:"Como funciona a contagem de inventário?",shareComputerDocuments,dotAgent:shareComputerDocuments?"mimo":"pipo"})));
   assert.match(await response.text(),/event: done/);
  }
  assert.equal(lookups,1);
  assert.equal(requests.length,3);
+ assert.match(requests[0],/Pipo, coordenador/);assert.match(requests[1],/Mimo, organizador/);
+ assert.equal((await session(0,()=>chat.POST(req({conversationId:conversation,message:"Fixture",dotAgent:"admin"})))).status,400);assert.equal(requests.length,3,"Invalid persona neither changes permissions nor triggers another call");
  assert.doesNotMatch(requests[0],/TRECHO PRIVADO DA PONTE/);
  assert.match(requests[1],/TRECHO PRIVADO DA PONTE/);
  assert.doesNotMatch(requests[2],/TRECHO PRIVADO DA PONTE/);

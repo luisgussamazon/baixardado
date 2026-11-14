@@ -1,3 +1,4 @@
+import {DOT_AGENTS,dotPersona,type DotAgent} from "@/lib/dot-policy";
 import { searchMany, researchMarkdown } from "@/lib/web-search";
 import { db } from "@/lib/db";
 import { apiError, isJson, isUuid, parseJson } from "@/lib/http";
@@ -26,6 +27,7 @@ export async function POST(req: Request) {
     if (!body || typeof body.conversationId !== "string" || !isUuid(body.conversationId) ||
         typeof body.message !== "string" || !body.message.trim() || body.message.length > 4_000)
       return apiError("Mensagem inválida ou acima do limite de 4.000 caracteres.");
+    if(body.dotAgent!==undefined&&!DOT_AGENTS.includes(body.dotAgent as DotAgent))return apiError("Personagem DOT invalido.");
     const id = body.conversationId;
     const message = body.message.trim();
     const provider=await selectedProvider(user.id);
@@ -114,6 +116,7 @@ export async function POST(req: Request) {
                 abort.signal.throwIfAborted();
                 const documentContext=computerDocument&&computerDocument.sources.slice(0,250)+"\n"+computerDocument.text.slice(0,850);
                 const messages=modelMessages(message,dialogueHistory,context.records,hits,research,studies,provider,pageContext,documentContext);
+                if(body.dotAgent&&messages[0]?.role==="system")messages[0].content+="\n"+dotPersona(body.dotAgent as DotAgent);
                 generated=provider==="openai"?await openAILunaReply(user.id,messages,abort.signal):await connectedModelReply(user.id,id,messages,abort.signal).catch(()=>null);
                 if(generated&&body.shareComputerDocuments===true&&provider==="openai"&&!research){
                   generated+=computerDocument?"\n\n**Fontes:**\n"+computerDocument.sources.slice(0,250)+"\n- **Trechos privados fornecidos ao modelo:** documentos do computador, autorizados para esta pergunta.":"\n\n_Nenhum trecho do computador foi recuperado para esta pergunta. Verifique se a ponte está conectada._";
