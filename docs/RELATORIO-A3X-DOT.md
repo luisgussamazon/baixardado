@@ -22,9 +22,11 @@ Pipo/Nino/Bubu/Mimo são componentes SVG originais ligados ao estado real de Cha
 - `components/dot-mascot.tsx`: quatro personagens vetoriais originais.
 - `components/dot-workspace.tsx`, `components/dot-workspace.module.css`: Chat X DOT, evidências, preferências e animações acessíveis/responsivas.
 - `components/chat-app.tsx`: hooks opcionais de atividade/encaminhamento, sem alterar o protocolo de Chat nem repetir chamadas.
+- `app/api/chat/route.ts`, `lib/local-model.ts`: persona DOT validada por enum e incluída no mesmo orçamento de contexto, sem mensagem extra ou chamada duplicada; histórico longo e compartilhamento documental continuam sujeitos aos limites existentes.
 - `components/command-center.tsx`: recebe objetivo preparado para confirmação, sem execução automática pela URL.
 - `app/chat-x/page.tsx`: acesso DOT com a sessão existente.
 - `tests/dot-engine.test.ts`, `tests/dot-ui.test.tsx`: novos fluxos, limites e consentimento; `tests/engineering.test.ts` inclui a nova migração no banco descartável.
+- `tests/openai-luna.test.ts`: verifica persona na mesma chamada e mantém o bloqueio de envio documental não autorizado; personagem inválido não chama modelo.
 - `README.md`, `.env.example`, `docs/A3X-DOT.md`, este relatório: entrada, configuração e limites.
 
 ## Verificações
