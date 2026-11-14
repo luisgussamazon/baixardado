@@ -28,7 +28,7 @@ async function requestJson(url:string, init?:RequestInit) {
   return payload;
 }
 
-export default function ChatApp({email,appName,compact=false,onEngineeringGoal,onActivity,onEngineeringRequest,dotAgent}:{email:string;appName:string;compact?:boolean;onEngineeringGoal?:(goal:string)=>void;onActivity?:(busy:boolean)=>void;onEngineeringRequest?:(question:string)=>boolean;dotAgent?:"pipo"|"nino"|"bubu"|"mimo"}) {
+export default function ChatApp({email,appName,compact=false,onEngineeringGoal,onActivity,onEngineeringRequest,dotAgent,dot=false,activity,agentStatus,onAgentSettings,preparedMessage,onPreparedMessage}:{email:string;appName:string;compact?:boolean;onEngineeringGoal?:(goal:string)=>void;onActivity?:(busy:boolean)=>void;onEngineeringRequest?:(question:string)=>boolean;dotAgent?:"pipo"|"nino"|"bubu"|"mimo";dot?:boolean;activity?:React.ReactNode;agentStatus?:string;onAgentSettings?:()=>void;preparedMessage?:string;onPreparedMessage?:()=>void}) {
   const router = useRouter();
   const [chats,setChats] = useState<ChatSummary[]>([]);
   const [activeId,setActiveId] = useState<string|null>(null);
@@ -52,6 +52,8 @@ export default function ChatApp({email,appName,compact=false,onEngineeringGoal,o
   const sending = useRef(false);
   const chatEnd = useRef<HTMLDivElement|null>(null);
   const textarea = useRef<HTMLTextAreaElement|null>(null);
+
+  useEffect(()=>{if(preparedMessage&&!busy){setInput(preparedMessage);textarea.current?.focus();onPreparedMessage?.();}},[preparedMessage,busy,onPreparedMessage]);
 
   const refreshChats = useCallback(async()=>{
     try {const data=await requestJson("/api/conversations");setChats(data.conversations);}catch(err){setError(err instanceof Error?err.message:"Erro de conexão.");}
@@ -176,17 +178,23 @@ export default function ChatApp({email,appName,compact=false,onEngineeringGoal,o
     }finally{sending.current=false;setBusy(false);setShareKnowledge(false);setShareComputerDocuments(false);}
   }
   const currentTitle=chats.find(c=>c.id===activeId)?.title || "Nova conversa";
-  return <div className={`app-shell ${compact?"command-chat-embedded":""}`}>
+  return <div className={`app-shell ${compact?"command-chat-embedded":""} ${dot?"dot-chat-shell":""}`}>
     {sidebar && <button className="mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>}
     <aside className={`sidebar ${sidebar?"sidebar-open":""} ${collapsed?"sidebar-collapsed":""}`}>
       <div className="sidebar-header">
-        <div className="brand workspace-brand" aria-label={appName}>A3X{!collapsed&&<span> IA</span>}</div>
+        <div className="brand workspace-brand" aria-label={appName}>A3X{!collapsed&&<span> {dot?"DOT":"IA"}</span>}</div>
         {!collapsed&&<button className="icon-button desktop-only" title="Recolher menu" onClick={()=>setCollapsed(true)}><PanelLeftClose size={18}/></button>}
         {collapsed&&<button className="icon-button expand-button" title="Expandir menu" onClick={()=>setCollapsed(false)}><Menu size={18}/></button>}
         <button className="icon-button mobile-only" aria-label="Fechar menu" onClick={()=>setSidebar(false)}><X size={20}/></button>
       </div>
       <div className="sidebar-body">
-        <nav className="primary-navigation" aria-label="Navegação principal">
+        {dot?<nav className="primary-navigation" aria-label="Navegação principal">
+          <button className="active" onClick={()=>textarea.current?.focus()}><MessageSquare/>{!collapsed&&"Chat"}</button>
+          <Link href="/programador" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}}><Layers/>{!collapsed&&"Projetos"}</Link>
+          <Link href="/memoria" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}}><FileText/>{!collapsed&&"Memória"}</Link>
+          <Link href="/central/projetos" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}}><Check/>{!collapsed&&"Tarefas"}</Link>
+          <button onClick={onAgentSettings}><Settings2/>{!collapsed&&"Configurações"}</button>
+        </nav>:<>        <nav className="primary-navigation" aria-label="Navegação principal">
           <Link href="/central/conexoes" title="Conexões GitHub e VS Code"><Terminal/>{!collapsed&&<span>Conexões</span>}</Link>
           <Link href="/central" title="Central de comando"><Terminal/>{!collapsed&&<span>Central de comando</span>}</Link>
           <button className={!activeId&&messages.length===0?"active":""} onClick={newChat} disabled={busy} title="Início"><Home/>{!collapsed&&<span>Início</span>}</button>
@@ -196,7 +204,7 @@ export default function ChatApp({email,appName,compact=false,onEngineeringGoal,o
           <Link href="/programador" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}} title="Projetos"><Layers/>{!collapsed&&<span>Projetos</span>}</Link>
           <Link href="/chat-x" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}} title="Chat X"><Terminal/>{!collapsed&&<span>Chat X</span>}</Link>
           <Link href="/memoria" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}} className="navigation-settings" title="Configurações"><Settings2/>{!collapsed&&<span>Configurações</span>}</Link>
-        </nav>
+        </nav></>}
         <button className="new-chat" onClick={newChat} disabled={busy}><Plus size={19}/>{!collapsed&&"Nova conversa"}</button>
         {!collapsed && <><div className="section-heading">RECENTES</div><div className="chat-list">
           {chats.length===0 && <p className="empty-side">Suas conversas aparecerão aqui.</p>}
@@ -207,10 +215,10 @@ export default function ChatApp({email,appName,compact=false,onEngineeringGoal,o
         </div></>}
       </div>
       <div className="sidebar-bottom">
-        {!collapsed&&<Link href="/autonomia" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Autonomia A3X · melhorias contínuas</Link>}
+        {!dot&&!collapsed&&<Link href="/autonomia" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Autonomia A3X · melhorias contínuas</Link>}
         {!collapsed&&<Link href="/conectar" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Conectar modelo do meu computador</Link>}
-        {!collapsed&&<Link href="/estudos" className="privacy-note">Estudos automáticos</Link>}
-        {!collapsed&&<Link href="/laboratorio" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Laboratório científico · experimental</Link>}
+        {!dot&&!collapsed&&<Link href="/estudos" className="privacy-note">Estudos automáticos</Link>}
+        {!dot&&!collapsed&&<Link href="/laboratorio" className="privacy-note" onClick={event=>{if(busy)event.preventDefault();}}>Laboratório científico · experimental</Link>}
         {!collapsed&&<div className="privacy-note"><ShieldCheck size={16}/><span>Conversas privadas e salvas</span></div>}
         <div className="profile"><div className="avatar">{email.slice(0,1).toUpperCase()}</div>{!collapsed&&<div className="profile-meta"><strong>Minha conta</strong><span title={email}>{email}</span></div>}<button className="icon-button logout" title="Sair" aria-label="Sair" onClick={signOut}><LogOut size={17}/></button></div>
       </div>
@@ -219,7 +227,7 @@ export default function ChatApp({email,appName,compact=false,onEngineeringGoal,o
       {compact&&<div className="embedded-history"><select aria-label="Histórico do Chat" disabled={busy} value={activeId??""} onChange={e=>e.target.value?selectChat(e.target.value):newChat()}><option value="">Nova conversa</option>{chats.map(c=><option key={c.id} value={c.id}>{c.title}</option>)}</select><button onClick={newChat} disabled={busy}>Nova</button>{onEngineeringGoal&&<button disabled={busy||!input.trim()} onClick={()=>onEngineeringGoal(input.slice(0,1000))}>Preparar tarefa</button>}</div>}
       <header className="chat-topbar">
         <div className="chat-header-left"><button className="icon-button mobile-only" aria-label="Abrir menu" onClick={()=>setSidebar(true)}><Menu size={21}/></button><div className="header-title"><strong>{currentTitle}</strong><span><span className="online-dot"/>{provider==="openai"?" GPT-6 Luna - OpenAI":modelOnline?" Qwen3 4B · no seu computador":" Modelo offline · respostas por regras"}</span></div></div>
-        <div className="topbar-controls"><div className="cognitive-nav"><ModelProviderSwitch disabled={busy} onChange={setProvider}/><ModeSwitch mode="chat" disabled={busy}/></div><details className="help-menu"><summary aria-label="Ajuda"><HelpCircle size={23}/></summary><div className="header-popover"><strong>Como posso ajudar?</strong><p>Converse, prepare um relatório ou organize seus projetos. Os cartões preparam sua solicitação para você completar.</p><Link href="/navegador">Conectar uma página do ICQA</Link></div></details><details className="account-menu"><summary><span className="avatar">{email.charAt(0).toUpperCase()}</span><span className="account-name">Minha conta</span><ChevronDown size={16}/></summary><div className="header-popover"><span>{email}</span><Link href="/memoria">Minha memória</Link><Link href="/conectar">Modelo do computador</Link><button onClick={signOut} disabled={busy}>Sair da conta</button></div></details></div>
+        {dot?<div className="topbar-controls"><span className="dot-status">{agentStatus}</span><ModelProviderSwitch disabled={busy} onChange={setProvider}/><button className="icon-button" aria-label="Preferências dos agentes" onClick={onAgentSettings}><Settings2 size={20}/></button></div>:<>        <div className="topbar-controls"><div className="cognitive-nav"><ModelProviderSwitch disabled={busy} onChange={setProvider}/><ModeSwitch mode="chat" disabled={busy}/></div><details className="help-menu"><summary aria-label="Ajuda"><HelpCircle size={23}/></summary><div className="header-popover"><strong>Como posso ajudar?</strong><p>Converse, prepare um relatório ou organize seus projetos. Os cartões preparam sua solicitação para você completar.</p><Link href="/navegador">Conectar uma página do ICQA</Link></div></details><details className="account-menu"><summary><span className="avatar">{email.charAt(0).toUpperCase()}</span><span className="account-name">Minha conta</span><ChevronDown size={16}/></summary><div className="header-popover"><span>{email}</span><Link href="/memoria">Minha memória</Link><Link href="/conectar">Modelo do computador</Link><button onClick={signOut} disabled={busy}>Sair da conta</button></div></details></div></>}
       </header>
       <div className="conversation-scroll">
         <details className="browser-tools"><summary>Navegador assistido{browserDeviceId?" · tela selecionada":""}</summary><BrowserContextSelect disabled={busy} value={browserDeviceId} onChange={setBrowserDeviceId}/></details>
@@ -227,7 +235,7 @@ export default function ChatApp({email,appName,compact=false,onEngineeringGoal,o
         <div className="conversation-content">
           {loading ? <div className="loading-chat"><span className="spinner"/> Carregando conversa...</div> : messages.length===0 ?
           <div className="welcome">
-            <div className="welcome-icon"><Sparkles size={28} aria-hidden="true"/></div><h1>Como posso ajudar?</h1>
+            <div className="welcome-icon"><Sparkles size={28} aria-hidden="true"/></div><h1>{dot?"Converse com o A3X":"Como posso ajudar?"}</h1>{dot&&<p className="dot-intro">Investigue, construa e evolua seu sistema com agentes autônomos.</p>}
             <div className="suggestion-grid">{suggestions.map(item=><button className="suggestion" aria-label={item.title} key={item.title} onClick={()=>prepareRequest(item.text)} disabled={busy}><item.icon size={36} strokeWidth={1.6}/><div><strong>{item.title}</strong><span>{item.description}</span></div><ArrowRight className="card-arrow" size={21}/></button>)}<Link className="suggestion" aria-label="Apoio em projetos" href="/programador" aria-disabled={busy} onClick={e=>{if(busy)e.preventDefault();}}><Layers size={36} strokeWidth={1.6}/><div><strong>Apoio em projetos</strong><span>Planeje, acompanhe e organize entregas.</span></div><ArrowRight className="card-arrow" size={21}/></Link></div>
           </div> : <div className="messages">
             {messages.map(m=><div key={m.id} className={`message-row ${m.role}`}>
@@ -239,7 +247,8 @@ export default function ChatApp({email,appName,compact=false,onEngineeringGoal,o
             </div>)}<div ref={chatEnd}/></div>}
         </div>
       </div>
-      <div className="chat-composer-area">
+      {activity}
+      <div className="chat-composer-area" data-agent-safe>
         {provider==="openai"&&<details className="document-options">
           <summary>Fontes da resposta</summary>
           <p>A Luna consulta a base compartilhada. Estas permissões valem apenas para a próxima pergunta.</p>
