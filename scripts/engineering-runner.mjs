@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 import {validateInSandbox} from './autonomy-sandbox.mjs';
 import {publishEngineering} from './engineering-publish.mjs';
 const SERVER='https://baixardado-production.up.railway.app';
-const SAFE_FAILURES=new Set(['AI_AUTH','AI_ACCESS','AI_MODEL','AI_REQUEST','AI_LIMIT','AI_UNAVAILABLE','AI_TIMEOUT','LOCAL_BUDGET','LOCAL_CONCURRENCY','AI_CONSENT','PLAN_FORMAT','PLAN_INCOMPLETE','PLAN_TOOLS','PLAN_CONTEXT','TASK_LEASE','ENGINEERING_UNKNOWN']);
+const SAFE_FAILURES=new Set(['AI_AUTH','AI_ACCESS','AI_MODEL','AI_REQUEST','AI_LIMIT','AI_UNAVAILABLE','AI_TIMEOUT','LOCAL_BUDGET','LOCAL_CONCURRENCY','AI_CONSENT','PLAN_FORMAT','PLAN_INCOMPLETE','PLAN_TOOLS','PLAN_TOOL_FINAL','PLAN_TOOL_LIMIT','PLAN_TOOL_SCOPE','PLAN_CONTEXT','TASK_LEASE','ENGINEERING_UNKNOWN']);
 export async function runEngineering({github,core,context,task:claimedTask,root=process.cwd()}){
  const call=async body=>{const token=await core.getIDToken('a3x-engineering');const r=await fetch(SERVER+'/api/engineering/worker',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body),redirect:'error',signal:AbortSignal.timeout(body.action==='prepare'?235000:15000)});if(!r.ok){let code='ENGINEERING_UNKNOWN';try{const body=await r.json();if(SAFE_FAILURES.has(body.code))code=body.code;}catch{}const failure=Error('Task unavailable or stage rejected');failure.code=code;throw failure;}return r.json();};
  const task=claimedTask??(await call({action:'claim'})).task;if(!task){core.info('Nenhuma tarefa na fila.');return;}if(!/^[a-f0-9-]{36}$/.test(task.id)||task.base!==context.sha)throw Error('Invalid claimed task');
